@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PawCare Mobile - Selector de Modulos</title>
+  <style>
+    :root {
+      --color-background: hsl(43, 44%, 97%);
+      --color-foreground: hsl(210, 24%, 16%);
+      --color-card: hsl(0, 0%, 100%);
+      --color-primary: hsl(174, 55%, 47%);
+      --color-primary-foreground: hsl(0, 0%, 100%);
+      --color-secondary: hsl(174, 20%, 95%);
+      --color-secondary-foreground: hsl(174, 55%, 25%);
+      --color-muted: hsl(42, 25%, 92%);
+      --color-muted-foreground: hsl(215, 16%, 47%);
+      --color-border: hsl(174, 20%, 88%);
+      --color-success: hsl(142, 76%, 36%);
+      --color-destructive: hsl(0, 84%, 60%);
+      --color-warning: hsl(38, 92%, 50%);
+      --color-ring: hsl(174, 55%, 47%);
+      --radius: 0.5rem;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--color-background);
+      color: var(--color-foreground);
+      line-height: 1.5;
+      padding: 1.5rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+
+    .subtitle {
+      color: var(--color-muted-foreground);
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stats {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      position: sticky;
+      top: 0;
+      background: var(--color-background);
+      padding: 0.75rem 0;
+      z-index: 10;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+
+    .stat-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .stat-dot.included { background: var(--color-success); }
+    .stat-dot.excluded { background: var(--color-destructive); }
+    .stat-dot.total { background: var(--color-primary); }
+    .stat-dot.routes { background: var(--color-warning); }
+
+    .group { margin-bottom: 1.5rem; }
+
+    .group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.625rem 0.75rem;
+      background: var(--color-secondary);
+      border-radius: var(--radius) var(--radius) 0 0;
+      border: 1px solid var(--color-border);
+      border-bottom: none;
+      cursor: pointer;
+      user-select: none;
+    }
+    .group-header:hover { background: hsl(174, 25%, 90%); }
+
+    .group-title {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--color-secondary-foreground);
+    }
+
+    .group-badge {
+      font-size: 0.6875rem;
+      background: var(--color-primary);
+      color: var(--color-primary-foreground);
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+
+    .module {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border: 1px solid var(--color-border);
+      border-top: none;
+      background: var(--color-card);
+      transition: background 150ms ease;
+    }
+    .module:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+    .module.excluded { background: hsl(0, 20%, 97%); opacity: 0.65; }
+
+    /* Checkbox styling */
+    .cb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      border: 2px solid var(--color-border);
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+      transition: all 150ms ease;
+      margin: 0;
+    }
+    .cb:checked {
+      background: var(--color-success);
+      border-color: var(--color-success);
+    }
+    .cb:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 5px;
+      height: 9px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .cb.indeterminate {
+      background: var(--color-warning);
+      border-color: var(--color-warning);
+    }
+    .cb.indeterminate::after {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: 6px;
+      width: 8px;
+      height: 2px;
+      background: white;
+    }
+    .cb-module { width: 20px; height: 20px; min-width: 20px; margin-top: 2px; }
+
+    .module-info { flex: 1; min-width: 0; }
+
+    .module-name { font-weight: 600; font-size: 0.875rem; margin-bottom: 0.125rem; }
+
+    .module-scope {
+      font-size: 0.6875rem;
+      color: var(--color-muted-foreground);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .module-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* Routes list */
+    .module-routes {
+      margin-top: 0.375rem;
+      padding: 0;
+      list-style: none;
+    }
+
+    .module-routes li {
+      font-size: 0.75rem;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      padding: 0.125rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .module-routes li.route-excluded {
+      opacity: 0.4;
+      text-decoration: line-through;
+    }
+
+    .method { font-weight: 700; min-width: 3rem; text-align: right; }
+    .method.get { color: hsl(142, 76%, 36%); }
+    .method.post { color: hsl(199, 89%, 48%); }
+    .method.patch, .method.put { color: hsl(38, 92%, 50%); }
+    .method.delete { color: hsl(0, 84%, 60%); }
+
+    .route-path { color: var(--color-foreground); }
+
+    .route-controller {
+      color: var(--color-muted-foreground);
+      font-size: 0.6875rem;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .module-notes { margin-top: 0.375rem; }
+    .module-notes textarea {
+      width: 100%;
+      font-size: 0.75rem;
+      font-family: system-ui, sans-serif;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      padding: 0.375rem 0.5rem;
+      resize: vertical;
+      min-height: 2rem;
+      color: var(--color-foreground);
+      background: var(--color-background);
+    }
+    .module-notes textarea:focus { outline: none; border-color: var(--color-ring); }
+
+    .priority-select {
+      font-size: 0.6875rem;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      padding: 0.125rem 0.25rem;
+      background: var(--color-card);
+      color: var(--color-foreground);
+      cursor: pointer;
+    }
+
+    .routes-toggle {
+      font-size: 0.6875rem;
+      color: var(--color-primary);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-weight: 600;
+      padding: 0;
+    }
+    .routes-toggle:hover { text-decoration: underline; }
+
+    .module-routes.collapsed { display: none; }
+
+    .actions {
+      position: sticky;
+      bottom: 0;
+      background: var(--color-background);
+      padding: 1rem 0;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+    .btn-primary { background: var(--color-primary); color: var(--color-primary-foreground); }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-outline { border-color: var(--color-border); background: var(--color-card); color: var(--color-foreground); }
+    .btn-outline:hover { background: var(--color-secondary); }
+    .btn-ghost { background: transparent; color: var(--color-muted-foreground); }
+    .btn-ghost:hover { background: var(--color-muted); }
+
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--color-foreground);
+      color: var(--color-background);
+      padding: 0.5rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: all 300ms ease;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .route-select-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+      margin-bottom: 0.125rem;
+    }
+    .route-select-actions button {
+      font-size: 0.625rem;
+      color: var(--color-primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 0;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<h1>PawCare Mobile - Selector de Modulos</h1>
+<p class="subtitle">Marca modulos completos o rutas individuales. El checkbox del modulo selecciona/deselecciona todas sus rutas. Exporta a JSON al final.</p>
+
+<div class="stats" id="stats">
+  <span class="stat"><span class="stat-dot total"></span> Modulos: <span id="stat-total">0</span></span>
+  <span class="stat"><span class="stat-dot included"></span> Incluidos: <span id="stat-included">0</span></span>
+  <span class="stat"><span class="stat-dot excluded"></span> Excluidos: <span id="stat-excluded">0</span></span>
+  <span class="stat"><span class="stat-dot routes"></span> Rutas activas: <span id="stat-routes">0</span> / <span id="stat-routes-total">0</span></span>
+</div>
+
+<div id="app"></div>
+
+<div class="actions">
+  <button class="btn btn-primary" onclick="copyJSON()">Copiar JSON</button>
+  <button class="btn btn-outline" onclick="selectAll(true)">Marcar todos</button>
+  <button class="btn btn-outline" onclick="selectAll(false)">Desmarcar todos</button>
+  <button class="btn btn-ghost" onclick="toggleAllRoutes()">Mostrar/Ocultar rutas</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MODULES = [
+  {
+    group: "Autenticacion y Sesion",
+    scope: "owner",
+    modules: [
+      {
+        id: "auth", name: "Autenticacion",
+        description: "Login, registro, logout, refresh token, password recovery",
+        priority: "must", notes: "",
+        routes: [
+          { method: "GET", path: "/auth", controller: "auth#index", included: false },
+          { method: "POST", path: "/auth/register_owner", controller: "auth#register_owner", included: true },
+          { method: "POST", path: "/auth/login", controller: "auth#login", included: true },
+          { method: "DELETE", path: "/auth/logout", controller: "auth#logout", included: true },
+          { method: "POST", path: "/auth/refresh", controller: "auth#refresh", included: true },
+          { method: "GET", path: "/auth/current_user", controller: "auth#current_user", included: true },
+          { method: "GET", path: "/auth/debug", controller: "auth#debug", included: false },
+          { method: "POST", path: "/auth/forgot_password", controller: "auth#forgot_password", included: true },
+          { method: "POST", path: "/auth/reset_password", controller: "auth#reset_password", included: true },
+          { method: "GET", path: "/auth/reset_password/:token", controller: "auth#edit_password_reset", included: false },
+        ]
+      },
+      {
+        id: "profile", name: "Perfil de Usuario",
+        description: "Ver, editar perfil y cambiar contrasena",
+        priority: "must", notes: "",
+        routes: [
+          { method: "GET", path: "/profile", controller: "profile#show", included: true },
+          { method: "PATCH", path: "/profile", controller: "profile#update", included: true },
+          { method: "PATCH", path: "/profile/password", controller: "profile#change_password", included: true },
+          { method: "DELETE", path: "/profile", controller: "profile#destroy", included: true },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Dashboard y Resumen",
+    scope: "owner",
+    modules: [
+      {
+        id: "dashboard", name: "Dashboard",
+        description: "Pantalla principal con resumen de actividad",
+        priority: "must", notes: "",
+        routes: [
+          { method: "GET", path: "/dashboard", controller: "dashboard#index", included: true },
+          { method: "GET", path: "/dashboard-summary", controller: "dashboard#summary", included: true },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Mascotas",
+    scope: "owner",
+    modules: [
+      {
+        id: "pets", name: "Gestion de Mascotas",
+        description: "CRUD de mascotas, foto de perfil",
+        priority: "must", notes: "",
+        routes: [
+          { method: "GET", path: "/pets", controller: "pets#index", included: true },
+          { method: "POST", path: "/pets", controller: "pets#create", included: true },
+          { method: "GET", path: "/pets/new", controller: "pets#new", included: false },
+          { method: "GET", path: "/pets/:id/edit", controller: "pets#edit", included: false },
+          { method: "GET", path: "/pets/:id", controller: "pets#show", included: true },
+          { method: "PATCH", path: "/pets/:id", controller: "pets#update", included: true },
+          { method: "PUT", path: "/pets/:id", controller: "pets#update", included: false },
+          { method: "DELETE", path: "/pets/:id", controller: "pets#destroy", included: true },
+          { method: "POST", path: "/pets/:id/photo", controller: "pets#photo", included: true },
+          { method: "DELETE", path: "/pets/:id/photo", controller: "pets#delete_photo", included: true },
+        ]
+      },
+      {
+        id: "pets_medical_profile", name: "Perfil Medico de Mascota",
+        description: "Perfil medico, alergias, condiciones",
+        priority: "should", notes: "",
+        routes: [
+          { method: "GET", path: "/pets/:pet_id/medical_profile", controller: "owner_medical_profiles#show", included: true },
+        ]
+      },
+      {
+        id: "owner_pages", name: "Paginas del Owner",
+        description: "Mis mascotas, historial, apadrinamientos, citas, pagos",
+        priority: "must", notes: "",
+        routes: [
+          { method: "GET", path: "/my-pets", controller: "owner_pages#pets", included: true },
+          { method: "GET", path: "/my-pets/:pet_id/medical-history", controller: "owner_pages#medical_history", included: true },
+          { method: "GET", path: "/my-sponsorships", controller: "owner_pages#sponsorships", included: true },
+          { method: "GET", path: "/my-appointments", controller: "owner_pages#appointments", included: true },
+          { method: "GET", path: "/my-payments", controller: "owner_pages#payments", included: true },
+          { method: "GET", path: "/my-medical-history", controller: "owner_pages#medical_history_index", included: true },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Citas y Disponibilidad",
+    scope: "owner",
+    modules: [
+      {
+        id: "owner_appointments", name: "Citas del Owner",
+        description: "Agendar, ver, cancelar y confirmar citas",
+        priority: "must", notes: "",
+        routes: [
+          { method: "GET", path: "/owner-appointments-list", controller: "owner_appointments#index", included: true },
+          { method: "GET", path: "/owner-appointments/:id", controller: "owner_appointments#show", included: true },
+          { method: "POST", path: "/owner-appointments", controller: "owner_appointments#create", included: true },
+          { method: "PATCH", path: "/owner-appointments/:id", controller: "owner_appointments#update", included: true },
+          { method: "POST", path: "/owner-appointments/:id/cancel", controller: "owner_appointments#cancel", included: true },
+          { method: "POST", path: "/owner-appointments/:id/confirm", controller: "owner_appointments#confirm", included: true },
+        ]
+      },
+      {
+        id: "owner_availability", name: "Disponibilidad de Veterinarios",
+        description: "Consultar veterinarios y dias disponibles",
+        priority: "must", notes: "",
+        routes: [
+          { method: "GET", path: "/owner-available-vets", controller: "owner_availability#index", included: true },
+          { method: "GET", path: "/owner-available-days", controller: "owner_availability#days", included: true },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Historial Medico",
+    scope: "owner",
+    modules: [
+      {
+        id: "owner_consultations", name: "Consultas Medicas",
+        description: "Ver consultas, exportar receta, completar tratamiento",
+        priority: "should", notes: "",
+        routes: [
+          { method: "GET", path: "/pets/:pet_id/consultations", controller: "owner_consultations#index", included: true },
+          { method: "GET", path: "/owner/consultations/:id/export_recipe", controller: "owner_consultations#export_recipe", included: true },
+          { method: "POST", path: "/owner/consultations/:id/complete_treatment", controller: "owner_consultations#complete_treatment", included: true },
+          { method: "POST", path: "/owner/prescription_items/:id/complete", controller: "owner_prescription_items#complete", included: true },
+        ]
+      },
+      {
+        id: "owner_vaccinations", name: "Vacunaciones",
+        description: "Historial de vacunaciones por mascota",
+        priority: "should", notes: "",
+        routes: [
+          { method: "GET", path: "/pets/:pet_id/vaccinations", controller: "owner_vaccinations#index", included: true },
+        ]
+      },
+      {
+        id: "owner_dewormings", name: "Desparasitaciones",
+        description: "Historial de desparasitaciones por mascota",
+        priority: "should", notes: "",
+        routes: [
+          { method: "GET", path: "/pets/:pet_id/dewormings", controller: "owner_dewormings#index", included: true },
+        ]
+      },
+      {
+        id: "owner_medical_reports", name: "Reportes Medicos",
+        description: "Ver y descargar reportes medicos en PDF",
+        priority: "could", notes: "",
+        routes: [
+          { method: "GET", path: "/pets/:pet_id/medical_reports", controller: "owner_medical_reports#index", included: true },
+          { method: "GET", path: "/pets/:pet_id/medical_reports/:id", controller: "owner_medical_reports#show", included: true },
+          { method: "GET", path: "/pets/:pet_id/medical_reports/:id/download_pdf", controller: "owner_medical_reports#download_pdf", included: true },
+        ]
+      },
+      {
+        id: "owner_medical_summary", name: "Resumen Medico",
+        description: "Vista consolidada del historial medico",
+        priority: "should", notes: "",
+        routes: [
+          { method: "GET", path: "/owner-medical-summary", controller: "owner_medical_summary#index", included: true },
+        ]
+      },
+      {
+        id: "owner_lab_exams", name: "Examenes de Laboratorio",
+        description: "Subir archivos y ver resultados de labs",
+        priority: "could", notes: "",
+        routes: [
+          { method: "POST", path: "/owner/lab_exams/:id/files", controller: "owner_lab_exams#upload_files", included: false },
+          { method: "PATCH", path: "/owner/lab_exams/:id/results", controller: "owner_lab_exams#update_results", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Servicios y Pagos",
+    scope: "owner",
+    modules: [
+      {
+        id: "owner_services", name: "Catalogo de Servicios",
+        description: "Ver servicios disponibles de la clinica",
+        priority: "should", notes: "",
+        routes: [
+          { method: "GET", path: "/owner-services-list", controller: "owner_services#index", included: true },
+        ]
+      },
+      {
+        id: "owner_payments", name: "Pagos del Owner",
+        description: "Ver y registrar pagos pendientes",
+        priority: "must", notes: "",
+        routes: [
+          { method: "GET", path: "/owner-payments-list", controller: "owner_payments#index", included: true },
+          { method: "GET", path: "/owner-payments/:id", controller: "owner_payments#show", included: true },
+          { method: "POST", path: "/owner-payments/:id/register", controller: "owner_payments#register", included: true },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Adopcion",
+    scope: "public",
+    modules: [
+      {
+        id: "adoption", name: "Adopcion de Mascotas",
+        description: "Ver mascotas en adopcion y detalle",
+        priority: "could", notes: "",
+        routes: [
+          { method: "GET", path: "/adoption", controller: "adoption#index", included: false },
+          { method: "GET", path: "/adoption/pets", controller: "adoption#pets", included: false },
+          { method: "GET", path: "/adoption/pets/:id", controller: "adoption#show", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Apadrinamiento",
+    scope: "owner",
+    modules: [
+      {
+        id: "sponsorships", name: "Apadrinamientos",
+        description: "Crear, ver y gestionar apadrinamientos y sus gastos",
+        priority: "could", notes: "",
+        routes: [
+          { method: "GET", path: "/sponsorships", controller: "sponsorships#index", included: false },
+          { method: "POST", path: "/sponsorships", controller: "sponsorships#create", included: false },
+          { method: "GET", path: "/sponsorships/:id", controller: "sponsorships#show", included: false },
+          { method: "PATCH", path: "/sponsorships/:id", controller: "sponsorships#update", included: false },
+          { method: "PUT", path: "/sponsorships/:id", controller: "sponsorships#update", included: false },
+          { method: "GET", path: "/sponsorships/:id/expenses/:expense_id", controller: "sponsorships#expense", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Tienda / Productos Publicos",
+    scope: "public",
+    modules: [
+      {
+        id: "public_products", name: "Catalogo de Productos",
+        description: "Ver productos y hacer ordenes publicas",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/public/products", controller: "public/products#index", included: false },
+          { method: "GET", path: "/public/products/:id", controller: "public/products#show", included: false },
+          { method: "POST", path: "/public/product_orders", controller: "public/product_orders#create", included: false },
+          { method: "POST", path: "/public/product_orders/:id/upload_proof", controller: "public/product_orders#upload_proof", included: false },
+        ]
+      },
+      {
+        id: "public_contact", name: "Mensajes de Contacto",
+        description: "Enviar mensaje de contacto desde la app",
+        priority: "could", notes: "",
+        routes: [
+          { method: "POST", path: "/public/contact_messages", controller: "public/contact_messages#create", included: false },
+        ]
+      },
+    ]
+  },
+  // === PAGINAS PUBLICAS WEB ===
+  {
+    group: "Paginas Web (server-rendered)",
+    scope: "web",
+    modules: [
+      {
+        id: "web_pages", name: "Paginas Estaticas Web",
+        description: "Home, about, contact, terms, privacy, etc. (server-rendered, no API)",
+        priority: "wont", notes: "Estas son paginas HTML del servidor, no endpoints API para la app",
+        routes: [
+          { method: "GET", path: "/", controller: "pages#home", included: false },
+          { method: "GET", path: "/unauthorized", controller: "pages#unauthorized", included: false },
+          { method: "GET", path: "/not-found", controller: "pages#not_found", included: false },
+          { method: "GET", path: "/products", controller: "pages#products", included: false },
+          { method: "GET", path: "/checkout", controller: "pages#checkout", included: false },
+          { method: "GET", path: "/services", controller: "pages#services", included: false },
+          { method: "GET", path: "/about", controller: "pages#about", included: false },
+          { method: "GET", path: "/contact", controller: "pages#contact", included: false },
+          { method: "GET", path: "/terms", controller: "pages#terms", included: false },
+          { method: "GET", path: "/privacy", controller: "pages#privacy", included: false },
+          { method: "GET", path: "/pawcare", controller: "pages#pawcare", included: false },
+          { method: "GET", path: "/user_manual", controller: "pages#user_manual", included: false },
+          { method: "GET", path: "/landing", controller: "public/landing#index", included: false },
+        ]
+      },
+    ]
+  },
+  // === ADMIN ===
+  {
+    group: "Admin - Mascotas y Owners",
+    scope: "admin",
+    modules: [
+      {
+        id: "admin_pets", name: "Admin: Mascotas",
+        description: "CRUD mascotas, foto, perfil medico desde admin",
+        priority: "wont", notes: "La app mobile es para owners, no admin",
+        routes: [
+          { method: "GET", path: "/admin/pets-list", controller: "admin/pets#index", included: false },
+          { method: "POST", path: "/admin/pets", controller: "admin/pets#create", included: false },
+          { method: "GET", path: "/admin/pets/:id", controller: "admin/pets#show", included: false },
+          { method: "PATCH", path: "/admin/pets/:id", controller: "admin/pets#update", included: false },
+          { method: "PUT", path: "/admin/pets/:id", controller: "admin/pets#update", included: false },
+          { method: "DELETE", path: "/admin/pets/:id", controller: "admin/pets#destroy", included: false },
+          { method: "POST", path: "/admin/pets/:id/photo", controller: "admin/pets#photo", included: false },
+          { method: "DELETE", path: "/admin/pets/:id/photo", controller: "admin/pets#delete_photo", included: false },
+          { method: "GET", path: "/admin/pets/:pet_id/medical_profile", controller: "admin/medical_profiles#show", included: false },
+          { method: "PATCH", path: "/admin/pets/:pet_id/medical_profile", controller: "admin/medical_profiles#update", included: false },
+          { method: "PUT", path: "/admin/pets/:pet_id/medical_profile", controller: "admin/medical_profiles#update", included: false },
+        ]
+      },
+      {
+        id: "admin_owners", name: "Admin: Owners",
+        description: "CRUD owners y sus mascotas desde admin",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/owners-list", controller: "admin/owners#index", included: false },
+          { method: "POST", path: "/admin/owners", controller: "admin/owners#create", included: false },
+          { method: "GET", path: "/admin/owners/:id", controller: "admin/owners#show", included: false },
+          { method: "PATCH", path: "/admin/owners/:id", controller: "admin/owners#update", included: false },
+          { method: "PUT", path: "/admin/owners/:id", controller: "admin/owners#update", included: false },
+          { method: "POST", path: "/admin/owners/:owner_id/pets", controller: "admin/owner_pets#create", included: false },
+          { method: "GET", path: "/admin/owners/:owner_id/pets/:id", controller: "admin/owner_pets#show", included: false },
+          { method: "PATCH", path: "/admin/owners/:owner_id/pets/:id", controller: "admin/owner_pets#update", included: false },
+          { method: "PUT", path: "/admin/owners/:owner_id/pets/:id", controller: "admin/owner_pets#update", included: false },
+          { method: "POST", path: "/admin/owners/:owner_id/pets/:id/photo", controller: "admin/owner_pets#photo", included: false },
+          { method: "DELETE", path: "/admin/owners/:owner_id/pets/:id/photo", controller: "admin/owner_pets#delete_photo", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Admin - Staff y Horarios",
+    scope: "admin",
+    modules: [
+      {
+        id: "admin_staff", name: "Admin: Staff",
+        description: "CRUD del personal de la clinica",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/staff-list", controller: "admin/staff#index", included: false },
+          { method: "POST", path: "/admin/staff", controller: "admin/staff#create", included: false },
+          { method: "GET", path: "/admin/staff/:id", controller: "admin/staff#show", included: false },
+          { method: "PATCH", path: "/admin/staff/:id", controller: "admin/staff#update", included: false },
+          { method: "PUT", path: "/admin/staff/:id", controller: "admin/staff#update", included: false },
+          { method: "DELETE", path: "/admin/staff/:id", controller: "admin/staff#destroy", included: false },
+        ]
+      },
+      {
+        id: "admin_staff_schedules", name: "Admin: Horarios de Staff",
+        description: "CRUD horarios del personal",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/staff-schedules-list", controller: "admin/staff_schedules#index", included: false },
+          { method: "POST", path: "/admin/staff_schedules", controller: "admin/staff_schedules#create", included: false },
+          { method: "GET", path: "/admin/staff_schedules/:id", controller: "admin/staff_schedules#show", included: false },
+          { method: "PATCH", path: "/admin/staff_schedules/:id", controller: "admin/staff_schedules#update", included: false },
+          { method: "PUT", path: "/admin/staff_schedules/:id", controller: "admin/staff_schedules#update", included: false },
+          { method: "DELETE", path: "/admin/staff_schedules/:id", controller: "admin/staff_schedules#destroy", included: false },
+        ]
+      },
+      {
+        id: "admin_shifts", name: "Admin: Turnos",
+        description: "Horario clinica, horarios staff, excepciones, vista semanal",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/shifts/clinic_schedule", controller: "admin/shifts#clinic_schedule", included: false },
+          { method: "PATCH", path: "/admin/shifts/clinic_schedule", controller: "admin/shifts#update_clinic_schedule", included: false },
+          { method: "GET", path: "/admin/shifts/staff_schedules", controller: "admin/shifts#staff_schedules", included: false },
+          { method: "PATCH", path: "/admin/shifts/staff_schedules/:user_id", controller: "admin/shifts#update_staff_schedule", included: false },
+          { method: "GET", path: "/admin/shifts/weekly_overview", controller: "admin/shifts#weekly_overview", included: false },
+          { method: "POST", path: "/admin/shifts/exceptions", controller: "admin/shifts#create_exception", included: false },
+          { method: "DELETE", path: "/admin/shifts/exceptions/:id", controller: "admin/shifts#destroy_exception", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Admin - Citas",
+    scope: "admin",
+    modules: [
+      {
+        id: "admin_appointments", name: "Admin: Citas",
+        description: "CRUD citas, disponibilidad, time slots",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/appointments-list", controller: "admin/appointments#index", included: false },
+          { method: "POST", path: "/admin/appointments", controller: "admin/appointments#create", included: false },
+          { method: "GET", path: "/admin/appointments/:id", controller: "admin/appointments#show", included: false },
+          { method: "PATCH", path: "/admin/appointments/:id", controller: "admin/appointments#update", included: false },
+          { method: "PUT", path: "/admin/appointments/:id", controller: "admin/appointments#update", included: false },
+          { method: "DELETE", path: "/admin/appointments/:id", controller: "admin/appointments#destroy", included: false },
+          { method: "GET", path: "/admin/appointments/available-days", controller: "admin/appointments#available_days", included: false },
+          { method: "GET", path: "/admin/appointments/available-vets", controller: "admin/appointments#available_vets", included: false },
+          { method: "GET", path: "/admin/appointments/time-slots", controller: "admin/appointments#time_slots", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Admin - Servicios y Productos",
+    scope: "admin",
+    modules: [
+      {
+        id: "admin_services", name: "Admin: Servicios",
+        description: "CRUD servicios veterinarios",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/services-list", controller: "admin/services#index", included: false },
+          { method: "POST", path: "/admin/services", controller: "admin/services#create", included: false },
+          { method: "GET", path: "/admin/services/:id", controller: "admin/services#show", included: false },
+          { method: "PATCH", path: "/admin/services/:id", controller: "admin/services#update", included: false },
+          { method: "PUT", path: "/admin/services/:id", controller: "admin/services#update", included: false },
+          { method: "DELETE", path: "/admin/services/:id", controller: "admin/services#destroy", included: false },
+        ]
+      },
+      {
+        id: "admin_service_categories", name: "Admin: Categorias de Servicios",
+        description: "CRUD categorias",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/service-categories-list", controller: "admin/service_categories#index", included: false },
+          { method: "POST", path: "/admin/service_categories", controller: "admin/service_categories#create", included: false },
+          { method: "GET", path: "/admin/service_categories/:id", controller: "admin/service_categories#show", included: false },
+          { method: "PATCH", path: "/admin/service_categories/:id", controller: "admin/service_categories#update", included: false },
+          { method: "PUT", path: "/admin/service_categories/:id", controller: "admin/service_categories#update", included: false },
+          { method: "DELETE", path: "/admin/service_categories/:id", controller: "admin/service_categories#destroy", included: false },
+        ]
+      },
+      {
+        id: "admin_products", name: "Admin: Productos e Inventario",
+        description: "CRUD productos, gestion de stock, imagenes",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/products-list", controller: "admin/products#index", included: false },
+          { method: "POST", path: "/admin/products", controller: "admin/products#create", included: false },
+          { method: "GET", path: "/admin/products/:id", controller: "admin/products#show", included: false },
+          { method: "PATCH", path: "/admin/products/:id", controller: "admin/products#update", included: false },
+          { method: "PUT", path: "/admin/products/:id", controller: "admin/products#update", included: false },
+          { method: "DELETE", path: "/admin/products/:id", controller: "admin/products#destroy", included: false },
+          { method: "POST", path: "/admin/products/:id/add_stock", controller: "admin/products#add_stock", included: false },
+          { method: "POST", path: "/admin/products/:id/remove_stock", controller: "admin/products#remove_stock", included: false },
+          { method: "POST", path: "/admin/products/:id/adjust_stock", controller: "admin/products#adjust_stock", included: false },
+          { method: "POST", path: "/admin/products/:id/image", controller: "admin/products#image", included: false },
+          { method: "DELETE", path: "/admin/products/:id/image", controller: "admin/products#delete_image", included: false },
+          { method: "GET", path: "/admin/stock-movements-list", controller: "admin/stock_movements#index", included: false },
+          { method: "GET", path: "/admin/stock_movements/:id", controller: "admin/stock_movements#show", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Admin - Pagos y Finanzas",
+    scope: "admin",
+    modules: [
+      {
+        id: "admin_payments", name: "Admin: Pagos",
+        description: "CRUD pagos, registrar, extender, cancelar",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/payments-list", controller: "admin/payments#index", included: false },
+          { method: "POST", path: "/admin/payments", controller: "admin/payments#create", included: false },
+          { method: "GET", path: "/admin/payments/:id", controller: "admin/payments#show", included: false },
+          { method: "PATCH", path: "/admin/payments/:id", controller: "admin/payments#update", included: false },
+          { method: "PUT", path: "/admin/payments/:id", controller: "admin/payments#update", included: false },
+          { method: "POST", path: "/admin/payments/:id/register", controller: "admin/payments#register", included: false },
+          { method: "POST", path: "/admin/payments/:id/extend", controller: "admin/payments#extend", included: false },
+          { method: "POST", path: "/admin/payments/:id/cancel", controller: "admin/payments#cancel", included: false },
+        ]
+      },
+      {
+        id: "admin_financial", name: "Admin: Finanzas",
+        description: "Gastos, balance, reembolsos",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/financial/expenses", controller: "admin/financial#index", included: false },
+          { method: "GET", path: "/admin/financial/expenses/:id", controller: "admin/financial#show", included: false },
+          { method: "POST", path: "/admin/financial/expenses", controller: "admin/financial#create", included: false },
+          { method: "PATCH", path: "/admin/financial/expenses/:id", controller: "admin/financial#update", included: false },
+          { method: "DELETE", path: "/admin/financial/expenses/:id", controller: "admin/financial#destroy", included: false },
+          { method: "GET", path: "/admin/financial/balance", controller: "admin/financial#balance", included: false },
+          { method: "GET", path: "/admin/financial/refunds", controller: "admin/financial#refunds_index", included: false },
+          { method: "POST", path: "/admin/financial/refunds", controller: "admin/financial#refunds_create", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Admin - Historial Medico",
+    scope: "admin",
+    modules: [
+      {
+        id: "admin_consultations", name: "Admin: Consultas Medicas",
+        description: "CRUD consultas, prescripciones, labs, recetas",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/consultations-list", controller: "admin/consultations#index", included: false },
+          { method: "POST", path: "/admin/consultations", controller: "admin/consultations#create", included: false },
+          { method: "GET", path: "/admin/consultations/:id", controller: "admin/consultations#show", included: false },
+          { method: "PATCH", path: "/admin/consultations/:id", controller: "admin/consultations#update", included: false },
+          { method: "PUT", path: "/admin/consultations/:id", controller: "admin/consultations#update", included: false },
+          { method: "DELETE", path: "/admin/consultations/:id", controller: "admin/consultations#destroy", included: false },
+          { method: "GET", path: "/admin/consultations/:id/export_recipe", controller: "admin/consultations#export_recipe", included: false },
+          { method: "POST", path: "/admin/consultations/:id/complete_treatment", controller: "admin/consultations#complete_treatment", included: false },
+          { method: "POST", path: "/admin/prescription_items/:id/complete", controller: "admin/prescription_items#complete", included: false },
+          { method: "GET", path: "/admin/consultations/:consultation_id/prescriptions", controller: "admin/prescriptions#index", included: false },
+          { method: "POST", path: "/admin/consultations/:consultation_id/prescriptions", controller: "admin/prescriptions#create", included: false },
+          { method: "GET", path: "/admin/consultations/:consultation_id/prescriptions/:id", controller: "admin/prescriptions#show", included: false },
+          { method: "PATCH", path: "/admin/consultations/:consultation_id/prescriptions/:id", controller: "admin/prescriptions#update", included: false },
+          { method: "PUT", path: "/admin/consultations/:consultation_id/prescriptions/:id", controller: "admin/prescriptions#update", included: false },
+          { method: "DELETE", path: "/admin/consultations/:consultation_id/prescriptions/:id", controller: "admin/prescriptions#destroy", included: false },
+          { method: "GET", path: "/admin/consultations/:consultation_id/lab_exams", controller: "admin/lab_exams#index", included: false },
+          { method: "POST", path: "/admin/consultations/:consultation_id/lab_exams", controller: "admin/lab_exams#create", included: false },
+          { method: "GET", path: "/admin/consultations/:consultation_id/lab_exams/:id", controller: "admin/lab_exams#show", included: false },
+          { method: "PATCH", path: "/admin/consultations/:consultation_id/lab_exams/:id", controller: "admin/lab_exams#update", included: false },
+          { method: "PUT", path: "/admin/consultations/:consultation_id/lab_exams/:id", controller: "admin/lab_exams#update", included: false },
+          { method: "DELETE", path: "/admin/consultations/:consultation_id/lab_exams/:id", controller: "admin/lab_exams#destroy", included: false },
+          { method: "POST", path: "/admin/consultations/:consultation_id/lab_exams/:id/files", controller: "admin/lab_exams#upload_files", included: false },
+          { method: "DELETE", path: "/admin/consultations/:consultation_id/lab_exams/:id/files/:file_id", controller: "admin/lab_exams#delete_file", included: false },
+        ]
+      },
+      {
+        id: "admin_vaccinations", name: "Admin: Vacunaciones",
+        description: "CRUD vacunaciones",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/vaccinations-list", controller: "admin/vaccinations#index", included: false },
+          { method: "POST", path: "/admin/vaccinations", controller: "admin/vaccinations#create", included: false },
+          { method: "GET", path: "/admin/vaccinations/:id", controller: "admin/vaccinations#show", included: false },
+          { method: "PATCH", path: "/admin/vaccinations/:id", controller: "admin/vaccinations#update", included: false },
+          { method: "PUT", path: "/admin/vaccinations/:id", controller: "admin/vaccinations#update", included: false },
+          { method: "DELETE", path: "/admin/vaccinations/:id", controller: "admin/vaccinations#destroy", included: false },
+        ]
+      },
+      {
+        id: "admin_dewormings", name: "Admin: Desparasitaciones",
+        description: "CRUD desparasitaciones",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/dewormings-list", controller: "admin/dewormings#index", included: false },
+          { method: "POST", path: "/admin/dewormings", controller: "admin/dewormings#create", included: false },
+          { method: "GET", path: "/admin/dewormings/:id", controller: "admin/dewormings#show", included: false },
+          { method: "PATCH", path: "/admin/dewormings/:id", controller: "admin/dewormings#update", included: false },
+          { method: "PUT", path: "/admin/dewormings/:id", controller: "admin/dewormings#update", included: false },
+          { method: "DELETE", path: "/admin/dewormings/:id", controller: "admin/dewormings#destroy", included: false },
+        ]
+      },
+      {
+        id: "admin_vaccination_schedules", name: "Admin: Calendario de Vacunacion",
+        description: "CRUD calendarios, completar items",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/vaccination-schedules-list", controller: "admin/vaccination_schedules#index", included: false },
+          { method: "POST", path: "/admin/vaccination_schedules", controller: "admin/vaccination_schedules#create", included: false },
+          { method: "GET", path: "/admin/vaccination_schedules/:id", controller: "admin/vaccination_schedules#show", included: false },
+          { method: "PATCH", path: "/admin/vaccination_schedules/:id", controller: "admin/vaccination_schedules#update", included: false },
+          { method: "PUT", path: "/admin/vaccination_schedules/:id", controller: "admin/vaccination_schedules#update", included: false },
+          { method: "DELETE", path: "/admin/vaccination_schedules/:id", controller: "admin/vaccination_schedules#destroy", included: false },
+          { method: "POST", path: "/admin/vaccination_schedules/:id/complete_item", controller: "admin/vaccination_schedules#complete_item", included: false },
+        ]
+      },
+      {
+        id: "admin_medical_reports", name: "Admin: Reportes Medicos",
+        description: "CRUD reportes, exportar JSON/CSV/PDF, email, importar",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/medical_reports", controller: "admin/medical_reports#index", included: false },
+          { method: "POST", path: "/admin/medical_reports", controller: "admin/medical_reports#create", included: false },
+          { method: "GET", path: "/admin/medical_reports/:id", controller: "admin/medical_reports#show", included: false },
+          { method: "GET", path: "/admin/medical_reports/generate_pdf", controller: "admin/medical_reports#generate_pdf", included: false },
+          { method: "POST", path: "/admin/medical_reports/import", controller: "admin/medical_reports#import", included: false },
+          { method: "GET", path: "/admin/medical_reports/:id/export_json", controller: "admin/medical_reports#export_json", included: false },
+          { method: "GET", path: "/admin/medical_reports/:id/export_csv", controller: "admin/medical_reports#export_csv", included: false },
+          { method: "GET", path: "/admin/medical_reports/:id/export_pdf", controller: "admin/medical_reports#export_pdf", included: false },
+          { method: "POST", path: "/admin/medical_reports/:id/email", controller: "admin/medical_reports#email", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Admin - Adopcion y Apadrinamiento",
+    scope: "admin",
+    modules: [
+      {
+        id: "admin_adoptions", name: "Admin: Adopciones",
+        description: "Gestionar adopciones",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/adoptions-list", controller: "admin/adoptions#index", included: false },
+          { method: "POST", path: "/admin/adoptions", controller: "admin/adoptions#create", included: false },
+          { method: "GET", path: "/admin/adoptions/:id", controller: "admin/adoptions#show", included: false },
+        ]
+      },
+      {
+        id: "admin_sponsorships", name: "Admin: Apadrinamientos",
+        description: "Gestionar apadrinamientos",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/sponsorships-list", controller: "admin/sponsorships#index", included: false },
+          { method: "GET", path: "/admin/sponsorships/:id", controller: "admin/sponsorships#show", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Admin - Metricas",
+    scope: "admin",
+    modules: [
+      {
+        id: "admin_metrics", name: "Admin: Metricas y Dashboard",
+        description: "Dashboard, consultas, pacientes, revenue, citas, etc.",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/metrics/dashboard", controller: "admin/metrics#dashboard", included: false },
+          { method: "GET", path: "/admin/metrics/consultations", controller: "admin/metrics#consultations", included: false },
+          { method: "GET", path: "/admin/metrics/patients", controller: "admin/metrics#patients", included: false },
+          { method: "GET", path: "/admin/metrics/revenue", controller: "admin/metrics#revenue", included: false },
+          { method: "GET", path: "/admin/metrics/appointments", controller: "admin/metrics#appointments", included: false },
+          { method: "GET", path: "/admin/metrics/vaccinations", controller: "admin/metrics#vaccinations", included: false },
+          { method: "GET", path: "/admin/metrics/adoptions", controller: "admin/metrics#adoptions", included: false },
+          { method: "GET", path: "/admin/metrics/sponsorships", controller: "admin/metrics#sponsorships", included: false },
+          { method: "GET", path: "/admin/metrics/financial", controller: "admin/metrics#financial", included: false },
+          { method: "POST", path: "/admin/metrics/refresh", controller: "admin/metrics#refresh", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Admin - Contenido",
+    scope: "admin",
+    modules: [
+      {
+        id: "admin_promotions", name: "Admin: Promociones",
+        description: "CRUD promociones, reordenar",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/content/promotions", controller: "admin/content/promotions#index", included: false },
+          { method: "POST", path: "/admin/content/promotions", controller: "admin/content/promotions#create", included: false },
+          { method: "GET", path: "/admin/content/promotions/new", controller: "admin/content/promotions#new", included: false },
+          { method: "GET", path: "/admin/content/promotions/:id/edit", controller: "admin/content/promotions#edit", included: false },
+          { method: "GET", path: "/admin/content/promotions/:id", controller: "admin/content/promotions#show", included: false },
+          { method: "PATCH", path: "/admin/content/promotions/:id", controller: "admin/content/promotions#update", included: false },
+          { method: "PUT", path: "/admin/content/promotions/:id", controller: "admin/content/promotions#update", included: false },
+          { method: "DELETE", path: "/admin/content/promotions/:id", controller: "admin/content/promotions#destroy", included: false },
+          { method: "PATCH", path: "/admin/content/promotions/reorder", controller: "admin/content/promotions#reorder", included: false },
+        ]
+      },
+      {
+        id: "admin_announcements", name: "Admin: Anuncios",
+        description: "CRUD anuncios",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/content/announcements", controller: "admin/content/announcements#index", included: false },
+          { method: "POST", path: "/admin/content/announcements", controller: "admin/content/announcements#create", included: false },
+          { method: "GET", path: "/admin/content/announcements/new", controller: "admin/content/announcements#new", included: false },
+          { method: "GET", path: "/admin/content/announcements/:id/edit", controller: "admin/content/announcements#edit", included: false },
+          { method: "GET", path: "/admin/content/announcements/:id", controller: "admin/content/announcements#show", included: false },
+          { method: "PATCH", path: "/admin/content/announcements/:id", controller: "admin/content/announcements#update", included: false },
+          { method: "PUT", path: "/admin/content/announcements/:id", controller: "admin/content/announcements#update", included: false },
+          { method: "DELETE", path: "/admin/content/announcements/:id", controller: "admin/content/announcements#destroy", included: false },
+        ]
+      },
+      {
+        id: "admin_landing_config", name: "Admin: Config Landing",
+        description: "Configuracion de la landing page",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/content/landing_config", controller: "admin/content/landing_configs#show", included: false },
+          { method: "PATCH", path: "/admin/content/landing_config", controller: "admin/content/landing_configs#update", included: false },
+          { method: "PUT", path: "/admin/content/landing_config", controller: "admin/content/landing_configs#update", included: false },
+        ]
+      },
+      {
+        id: "admin_email_campaigns", name: "Admin: Campanas de Email",
+        description: "CRUD campanas, enviar, cancelar, clonar",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/content/email_campaigns", controller: "admin/content/email_campaigns#index", included: false },
+          { method: "POST", path: "/admin/content/email_campaigns", controller: "admin/content/email_campaigns#create", included: false },
+          { method: "GET", path: "/admin/content/email_campaigns/new", controller: "admin/content/email_campaigns#new", included: false },
+          { method: "GET", path: "/admin/content/email_campaigns/:id/edit", controller: "admin/content/email_campaigns#edit", included: false },
+          { method: "GET", path: "/admin/content/email_campaigns/:id", controller: "admin/content/email_campaigns#show", included: false },
+          { method: "PATCH", path: "/admin/content/email_campaigns/:id", controller: "admin/content/email_campaigns#update", included: false },
+          { method: "PUT", path: "/admin/content/email_campaigns/:id", controller: "admin/content/email_campaigns#update", included: false },
+          { method: "DELETE", path: "/admin/content/email_campaigns/:id", controller: "admin/content/email_campaigns#destroy", included: false },
+          { method: "POST", path: "/admin/content/email_campaigns/:id/send_campaign", controller: "admin/content/email_campaigns#send_campaign", included: false },
+          { method: "POST", path: "/admin/content/email_campaigns/:id/cancel", controller: "admin/content/email_campaigns#cancel", included: false },
+          { method: "POST", path: "/admin/content/email_campaigns/:id/clone", controller: "admin/content/email_campaigns#clone", included: false },
+          { method: "POST", path: "/admin/content/email_campaigns/preview_recipients", controller: "admin/content/email_campaigns#preview_recipients", included: false },
+        ]
+      },
+      {
+        id: "admin_testimonials", name: "Admin: Testimoniales",
+        description: "CRUD testimoniales, reordenar",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/content/testimonials", controller: "admin/content/testimonials#index", included: false },
+          { method: "POST", path: "/admin/content/testimonials", controller: "admin/content/testimonials#create", included: false },
+          { method: "GET", path: "/admin/content/testimonials/new", controller: "admin/content/testimonials#new", included: false },
+          { method: "GET", path: "/admin/content/testimonials/:id/edit", controller: "admin/content/testimonials#edit", included: false },
+          { method: "GET", path: "/admin/content/testimonials/:id", controller: "admin/content/testimonials#show", included: false },
+          { method: "PATCH", path: "/admin/content/testimonials/:id", controller: "admin/content/testimonials#update", included: false },
+          { method: "PUT", path: "/admin/content/testimonials/:id", controller: "admin/content/testimonials#update", included: false },
+          { method: "DELETE", path: "/admin/content/testimonials/:id", controller: "admin/content/testimonials#destroy", included: false },
+          { method: "PATCH", path: "/admin/content/testimonials/reorder", controller: "admin/content/testimonials#reorder", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Admin - Configuracion",
+    scope: "admin",
+    modules: [
+      {
+        id: "admin_settings", name: "Admin: Configuracion",
+        description: "Email, SMTP, moneda, configuracion general",
+        priority: "wont", notes: "",
+        routes: [
+          { method: "GET", path: "/admin/settings/email-config", controller: "admin/settings#email", included: false },
+          { method: "GET", path: "/admin/settings/smtp-config", controller: "admin/settings#smtp", included: false },
+          { method: "GET", path: "/admin/settings/smtp-status", controller: "admin/settings#smtp_status", included: false },
+        ]
+      },
+    ]
+  },
+  {
+    group: "Admin - Paginas (server-rendered)",
+    scope: "admin",
+    modules: [
+      {
+        id: "admin_pages", name: "Admin: Paginas del Panel",
+        description: "Todas las vistas HTML del panel admin (no API)",
+        priority: "wont", notes: "Server-rendered HTML, no relevante para app mobile",
+        routes: [
+          { method: "GET", path: "/admin/pets", controller: "admin_pages#pets", included: false },
+          { method: "GET", path: "/admin/adoptions", controller: "admin_pages#adoptions", included: false },
+          { method: "GET", path: "/admin/sponsorships", controller: "admin_pages#sponsorships", included: false },
+          { method: "GET", path: "/admin/appointments", controller: "admin_pages#appointments", included: false },
+          { method: "GET", path: "/admin/owners", controller: "admin_pages#owners", included: false },
+          { method: "GET", path: "/admin/medical-history", controller: "admin_pages#medical_records", included: false },
+          { method: "GET", path: "/admin/new-consultation", controller: "admin_pages#consultations", included: false },
+          { method: "GET", path: "/admin/medical-reports", controller: "admin_pages#reports", included: false },
+          { method: "GET", path: "/admin/payments", controller: "admin_pages#payments", included: false },
+          { method: "GET", path: "/admin/staff", controller: "admin_pages#staff", included: false },
+          { method: "GET", path: "/admin/metrics", controller: "admin_pages#metrics", included: false },
+          { method: "GET", path: "/admin/shifts", controller: "admin_pages#shifts", included: false },
+          { method: "GET", path: "/admin/financial", controller: "admin_pages#financial", included: false },
+          { method: "GET", path: "/admin/content", controller: "admin_pages#content", included: false },
+          { method: "GET", path: "/admin/products-services", controller: "admin_pages#products_services", included: false },
+          { method: "GET", path: "/admin/user-manual", controller: "admin_pages#user_manual", included: false },
+          { method: "GET", path: "/admin/user-manual-files", controller: "admin_pages#user_manual_files", included: false },
+          { method: "GET", path: "/admin/user-manual-content", controller: "admin_pages#user_manual_content", included: false },
+          { method: "GET", path: "/admin/settings/email", controller: "admin_pages#email_settings", included: false },
+          { method: "GET", path: "/admin/settings/smtp", controller: "admin_pages#smtp_settings", included: false },
+          { method: "GET", path: "/admin/settings/currency", controller: "admin_pages#currency_settings", included: false },
+          { method: "GET", path: "/admin/settings/general", controller: "admin_pages#general_settings", included: false },
+        ]
+      },
+    ]
+  },
+  // === SISTEMA ===
+  {
+    group: "Sistema / Rails Internals",
+    scope: "system",
+    modules: [
+      {
+        id: "health", name: "Health Checks",
+        description: "Endpoints de salud del servidor",
+        priority: "could", notes: "Util para verificar conectividad",
+        routes: [
+          { method: "GET", path: "/up", controller: "rails/health#show", included: false },
+          { method: "GET", path: "/health", controller: "pages#health", included: false },
+        ]
+      },
+      {
+        id: "active_storage", name: "Active Storage",
+        description: "Blobs, representaciones, uploads directos",
+        priority: "could", notes: "Necesario si se usan imagenes/archivos",
+        routes: [
+          { method: "GET", path: "/rails/active_storage/blobs/redirect/:signed_id/*filename", controller: "active_storage/blobs/redirect#show", included: false },
+          { method: "GET", path: "/rails/active_storage/blobs/proxy/:signed_id/*filename", controller: "active_storage/blobs/proxy#show", included: false },
+          { method: "GET", path: "/rails/active_storage/representations/redirect/:signed_blob_id/:variation_key/*filename", controller: "active_storage/representations/redirect#show", included: false },
+          { method: "GET", path: "/rails/active_storage/representations/proxy/:signed_blob_id/:variation_key/*filename", controller: "active_storage/representations/proxy#show", included: false },
+          { method: "POST", path: "/rails/active_storage/direct_uploads", controller: "active_storage/direct_uploads#create", included: false },
+        ]
+      },
+    ]
+  },
+];
+
+let routesExpanded = false;
+
+function getModuleState(mod) {
+  const total = mod.routes.length;
+  const included = mod.routes.filter(r => r.included).length;
+  if (included === 0) return 'none';
+  if (included === total) return 'all';
+  return 'partial';
+}
+
+function render() {
+  const app = document.getElementById('app');
+  let html = '';
+
+  MODULES.forEach((group, gi) => {
+    const totalRoutes = group.modules.reduce((s, m) => s + m.routes.length, 0);
+    const activeRoutes = group.modules.reduce((s, m) => s + m.routes.filter(r => r.included).length, 0);
+    const scopeLabels = { admin: 'ADMIN', public: 'PUBLICO', owner: 'OWNER', web: 'WEB', system: 'SISTEMA' };
+    const scopeLabel = scopeLabels[group.scope] || group.scope.toUpperCase();
+
+    html += `<div class="group">`;
+    html += `<div class="group-header" onclick="toggleGroup(${gi})">
+      <span class="group-title">${group.group} <span class="module-scope">[${scopeLabel}]</span></span>
+      <span class="group-badge">${activeRoutes}/${totalRoutes} rutas</span>
+    </div>`;
+
+    group.modules.forEach((mod, mi) => {
+      const state = getModuleState(mod);
+      const cls = state === 'none' ? 'excluded' : '';
+      const collapsed = routesExpanded ? '' : 'collapsed';
+      const checked = state === 'all' ? 'checked' : '';
+      const indeterminate = state === 'partial' ? 'indeterminate' : '';
+      const activeCount = mod.routes.filter(r => r.included).length;
+
+      html += `<div class="module ${cls}">
+        <input type="checkbox" class="cb cb-module ${indeterminate}" ${checked}
+               onchange="toggleModule(${gi}, ${mi}, this.checked)"
+               title="Seleccionar/deseleccionar todo el modulo">
+        <div class="module-info">
+          <div class="module-name">${mod.name}</div>
+          <div class="module-meta">
+            <span class="module-scope">${mod.description}</span>
+          </div>
+          <div class="module-meta" style="margin-top:0.25rem">
+            <label style="font-size:0.6875rem;color:var(--color-muted-foreground)">Prioridad:</label>
+            <select class="priority-select" onchange="setPriority(${gi}, ${mi}, this.value)">
+              <option value="must" ${mod.priority === 'must' ? 'selected' : ''}>Must have</option>
+              <option value="should" ${mod.priority === 'should' ? 'selected' : ''}>Should have</option>
+              <option value="could" ${mod.priority === 'could' ? 'selected' : ''}>Could have</option>
+              <option value="wont" ${mod.priority === 'wont' ? 'selected' : ''}>Won't have</option>
+            </select>
+            <button class="routes-toggle" onclick="toggleRoutes(this, event)">${activeCount}/${mod.routes.length} rutas - ver detalle</button>
+          </div>
+          <ul class="module-routes ${collapsed}">
+            <li class="route-select-actions" style="font-family:system-ui;border-bottom:1px solid var(--color-border);padding-bottom:0.25rem;margin-bottom:0.125rem">
+              <button onclick="selectModuleRoutes(${gi},${mi},true,event)">todas</button>
+              <button onclick="selectModuleRoutes(${gi},${mi},false,event)">ninguna</button>
+              <button onclick="selectModuleRoutesGET(${gi},${mi},event)">solo GET</button>
+            </li>
+            ${mod.routes.map((r, ri) => {
+              const excl = r.included ? '' : 'route-excluded';
+              return `<li class="${excl}">
+                <input type="checkbox" class="cb" ${r.included ? 'checked' : ''}
+                       onchange="toggleRoute(${gi},${mi},${ri},this.checked)">
+                <span class="method ${r.method.toLowerCase()}">${r.method}</span>
+                <span class="route-path">${r.path}</span>
+                <span class="route-controller">${r.controller}</span>
+              </li>`;
+            }).join('')}
+          </ul>
+          <div class="module-notes">
+            <textarea placeholder="Notas..." oninput="setNotes(${gi},${mi},this.value)">${mod.notes}</textarea>
+          </div>
+        </div>
+      </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  app.innerHTML = html;
+  updateStats();
+}
+
+function toggleRoute(gi, mi, ri, val) {
+  MODULES[gi].modules[mi].routes[ri].included = val;
+  render();
+}
+
+function toggleModule(gi, mi, val) {
+  MODULES[gi].modules[mi].routes.forEach(r => r.included = val);
+  render();
+}
+
+function selectModuleRoutes(gi, mi, val, e) {
+  e && e.stopPropagation();
+  MODULES[gi].modules[mi].routes.forEach(r => r.included = val);
+  render();
+}
+
+function selectModuleRoutesGET(gi, mi, e) {
+  e && e.stopPropagation();
+  MODULES[gi].modules[mi].routes.forEach(r => r.included = r.method === 'GET');
+  render();
+}
+
+function setPriority(gi, mi, val) {
+  MODULES[gi].modules[mi].priority = val;
+}
+
+function setNotes(gi, mi, val) {
+  MODULES[gi].modules[mi].notes = val;
+}
+
+function toggleGroup(gi) {
+  const allActive = MODULES[gi].modules.every(m => m.routes.every(r => r.included));
+  MODULES[gi].modules.forEach(m => m.routes.forEach(r => r.included = !allActive));
+  render();
+}
+
+function toggleRoutes(btn, e) {
+  e && e.stopPropagation();
+  const ul = btn.closest('.module-info').querySelector('.module-routes');
+  ul.classList.toggle('collapsed');
+}
+
+function toggleAllRoutes() {
+  routesExpanded = !routesExpanded;
+  render();
+}
+
+function selectAll(val) {
+  MODULES.forEach(g => g.modules.forEach(m => m.routes.forEach(r => r.included = val)));
+  render();
+}
+
+function updateStats() {
+  let totalMod = 0, includedMod = 0, excludedMod = 0, activeRoutes = 0, totalRoutes = 0;
+  MODULES.forEach(g => g.modules.forEach(m => {
+    totalMod++;
+    const active = m.routes.filter(r => r.included).length;
+    totalRoutes += m.routes.length;
+    activeRoutes += active;
+    if (active > 0) includedMod++; else excludedMod++;
+  }));
+  document.getElementById('stat-total').textContent = totalMod;
+  document.getElementById('stat-included').textContent = includedMod;
+  document.getElementById('stat-excluded').textContent = excludedMod;
+  document.getElementById('stat-routes').textContent = activeRoutes;
+  document.getElementById('stat-routes-total').textContent = totalRoutes;
+}
+
+function buildJSON() {
+  const result = {
+    app: "pawcare-mobile",
+    exported_at: new Date().toISOString(),
+    summary: {
+      total_modules: 0,
+      modules_with_routes: 0,
+      modules_empty: 0,
+      total_routes: 0,
+      routes_included: 0,
+      routes_excluded: 0,
+    },
+    modules: []
+  };
+
+  MODULES.forEach(group => {
+    group.modules.forEach(mod => {
+      const includedRoutes = mod.routes.filter(r => r.included);
+      const excludedRoutes = mod.routes.filter(r => !r.included);
+
+      result.summary.total_modules++;
+      result.summary.total_routes += mod.routes.length;
+      result.summary.routes_included += includedRoutes.length;
+      result.summary.routes_excluded += excludedRoutes.length;
+      if (includedRoutes.length > 0) result.summary.modules_with_routes++;
+      else result.summary.modules_empty++;
+
+      result.modules.push({
+        id: mod.id,
+        name: mod.name,
+        group: group.group,
+        scope: group.scope,
+        priority: mod.priority,
+        notes: mod.notes || null,
+        included_routes: includedRoutes.map(r => ({
+          method: r.method,
+          path: r.path,
+          controller: r.controller,
+        })),
+        excluded_routes: excludedRoutes.map(r => ({
+          method: r.method,
+          path: r.path,
+          controller: r.controller,
+        })),
+      });
+    });
+  });
+
+  return result;
+}
+
+function copyJSON() {
+  const json = JSON.stringify(buildJSON(), null, 2);
+  navigator.clipboard.writeText(json).then(() => {
+    showToast('JSON copiado al portapapeles');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = json;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('JSON copiado al portapapeles');
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+render();
+</script>
+</body>
+</html>

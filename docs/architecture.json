@@ -1,0 +1,221 @@
+{
+  "project": "PawCare",
+  "description": "Sistema de gestión veterinaria - Rails 8 + React 19 + Inertia.js",
+  "version": "1.0.0",
+  "stack": {
+    "backend": {
+      "framework": "Ruby on Rails 8",
+      "mode": "API + Inertia.js",
+      "database": "MySQL 8.0 / MariaDB",
+      "auth": "JWT via httpOnly cookies",
+      "storage": "ActiveStorage",
+      "soft_delete": "Discard gem",
+      "pattern": "Action Pattern (Result)",
+      "queue": "ActiveJob"
+    },
+    "frontend": {
+      "framework": "React 19",
+      "language": "TypeScript",
+      "styling": "Tailwind CSS",
+      "state": "Redux Toolkit",
+      "routing": "Inertia.js",
+      "ui_library": "shadcn/ui"
+    }
+  },
+  "layers": {
+    "database": {
+      "total_tables": 45,
+      "tables": {
+        "identity": [
+          { "name": "users", "description": "Staff (admin, vet, vet_assistant, assistant, finances, hr)", "key_fields": ["id", "email", "role", "first_name", "last_name", "password_digest"] },
+          { "name": "owners", "description": "Pet owners (separate from staff users)", "key_fields": ["id", "email", "first_name", "last_name"] },
+          { "name": "refresh_tokens", "description": "JWT refresh tokens (polymorphic: Owner/User)", "key_fields": ["id", "token", "tokenable_id", "tokenable_type", "expires_at"] },
+          { "name": "password_reset_tokens", "description": "Password reset tokens (polymorphic)", "key_fields": ["id", "token", "resettable_id", "resettable_type", "expires_at"] }
+        ],
+        "pets": [
+          { "name": "pets", "description": "Mascotas con propietario polimórfico", "key_fields": ["id", "name", "species", "breed", "sex", "birth_date", "proprietary_id", "proprietary_type", "adoption_status"] },
+          { "name": "pet_medical_profiles", "description": "Perfil médico (enfermedades crónicas, alergias)", "key_fields": ["id", "pet_id", "blood_type", "chronic_diseases", "allergies"] }
+        ],
+        "medical": [
+          { "name": "consultations", "description": "Consultas veterinarias", "key_fields": ["id", "pet_id", "user_id", "diagnosis", "treatment", "date"] },
+          { "name": "prescriptions", "description": "Recetas médicas", "key_fields": ["id", "consultation_id", "issued_date"] },
+          { "name": "prescription_items", "description": "Items de receta (medicamentos)", "key_fields": ["id", "prescription_id", "medication", "dose", "frequency", "duration", "completed"] },
+          { "name": "vaccinations", "description": "Historial de vacunas", "key_fields": ["id", "pet_id", "administered_by_id", "vaccine_name", "administered_at", "next_dose_at"] },
+          { "name": "vaccination_schedules", "description": "Esquemas de vacunación programados", "key_fields": ["id", "pet_id", "name", "status"] },
+          { "name": "vaccination_schedule_items", "description": "Items de esquema de vacunación", "key_fields": ["id", "vaccination_schedule_id", "vaccine_name", "scheduled_at", "completed"] },
+          { "name": "dewormings", "description": "Desparasitaciones", "key_fields": ["id", "pet_id", "administered_by_id", "product", "administered_at", "next_dose_at"] },
+          { "name": "lab_exams", "description": "Exámenes de laboratorio", "key_fields": ["id", "consultation_id", "exam_type", "status", "results"] },
+          { "name": "medical_reports", "description": "Reportes médicos generados", "key_fields": ["id", "pet_id", "content", "generated_by_id"] },
+          { "name": "medical_attachments", "description": "Adjuntos médicos polimórficos", "key_fields": ["id", "attachable_id", "attachable_type", "description"] }
+        ],
+        "appointments": [
+          { "name": "appointments", "description": "Citas programadas", "key_fields": ["id", "pet_id", "owner_id", "service_id", "user_id", "scheduled_at", "status", "payment_status"] },
+          { "name": "services", "description": "Servicios veterinarios", "key_fields": ["id", "name", "price", "duration_minutes", "category_id", "species_applicable"] },
+          { "name": "service_categories", "description": "Categorías de servicios (jerárquicas)", "key_fields": ["id", "name", "parent_id"] },
+          { "name": "clinic_schedules", "description": "Horarios de la clínica", "key_fields": ["id", "day_of_week", "open_time", "close_time", "is_open"] },
+          { "name": "staff_schedules", "description": "Disponibilidad del personal", "key_fields": ["id", "user_id", "service_id", "day_of_week", "start_time", "end_time"] },
+          { "name": "schedule_exceptions", "description": "Excepciones/festivos (polimórfico)", "key_fields": ["id", "exceptionable_id", "exceptionable_type", "date", "reason"] }
+        ],
+        "financial": [
+          { "name": "payments", "description": "Pagos vinculados a citas", "key_fields": ["id", "appointment_id", "owner_id", "amount", "status", "due_date"] },
+          { "name": "payment_items", "description": "Líneas de pago (servicio/producto)", "key_fields": ["id", "payment_id", "description", "amount", "quantity"] },
+          { "name": "refunds", "description": "Reembolsos de pagos", "key_fields": ["id", "payment_id", "amount", "reason", "processed_by_id"] },
+          { "name": "expenses", "description": "Gastos de la clínica", "key_fields": ["id", "category", "amount", "vendor", "date"] },
+          { "name": "products", "description": "Productos para venta", "key_fields": ["id", "name", "price", "stock", "expiration_date", "species_applicable"] },
+          { "name": "product_orders", "description": "Pedidos de productos", "key_fields": ["id", "owner_id", "total", "status"] },
+          { "name": "product_order_items", "description": "Productos en pedido", "key_fields": ["id", "order_id", "product_id", "quantity", "price"] },
+          { "name": "stock_movements", "description": "Movimientos de stock", "key_fields": ["id", "product_id", "quantity", "movement_type", "reason"] }
+        ],
+        "adoption_sponsorship": [
+          { "name": "adoption_records", "description": "Historial de adopciones", "key_fields": ["id", "pet_id", "adopter_id", "processed_by_id", "adoption_date"] },
+          { "name": "sponsorships", "description": "Apadrinamientos de mascotas", "key_fields": ["id", "pet_id", "owner_id", "amount", "status", "start_date"] }
+        ],
+        "content": [
+          { "name": "announcements", "description": "Anuncios del sistema", "key_fields": ["id", "title", "content", "type", "severity", "starts_at", "ends_at"] },
+          { "name": "promotions", "description": "Promociones de marketing", "key_fields": ["id", "title", "discount_percentage", "starts_at", "ends_at", "position"] },
+          { "name": "testimonials", "description": "Testimonios de clientes", "key_fields": ["id", "author", "content", "rating", "position"] },
+          { "name": "landing_configs", "description": "Configuración de landing page (JSON)", "key_fields": ["id", "key", "value"] },
+          { "name": "email_credentials", "description": "Configuración SMTP", "key_fields": ["id", "smtp_host", "smtp_port", "username"] },
+          { "name": "email_campaigns", "description": "Campañas de email", "key_fields": ["id", "title", "body", "status", "filters", "sent_at"] },
+          { "name": "contact_messages", "description": "Mensajes del formulario de contacto", "key_fields": ["id", "name", "email", "message", "status"] }
+        ],
+        "metrics_auth": [
+          { "name": "metrics_snapshots", "description": "Caché de métricas calculadas", "key_fields": ["id", "metric_type", "period_type", "data", "calculated_at"] }
+        ]
+      }
+    },
+    "backend": {
+      "controllers": {
+        "total": 60,
+        "groups": {
+          "root": ["ApplicationController", "AuthController", "ProfileController", "DashboardController", "PagesController", "PetsController", "SponsorshipsController"],
+          "owner_portal": ["OwnerPagesController", "OwnerAppointmentsController", "OwnerAvailabilityController", "OwnerServicesController", "OwnerPaymentsController", "OwnerMedicalSummaryController", "OwnerConsultationsController", "OwnerMedicalProfilesController", "OwnerMedicalReportsController", "OwnerVaccinationsController", "OwnerDewormingsController", "OwnerLabExamsController", "OwnerPrescriptionItemsController"],
+          "admin": ["AdminPagesController", "Admin::PetsController", "Admin::OwnersController", "Admin::OwnerPetsController", "Admin::AppointmentsController", "Admin::ConsultationsController", "Admin::PrescriptionsController", "Admin::LabExamsController", "Admin::VaccinationsController", "Admin::DewormingsController", "Admin::VaccinationSchedulesController", "Admin::StaffController", "Admin::StaffSchedulesController", "Admin::ServicesController", "Admin::ServiceCategoriesController", "Admin::ProductsController", "Admin::StockMovementsController", "Admin::PaymentsController", "Admin::AdoptionsController", "Admin::SponsorshipsController", "Admin::MedicalReportsController", "Admin::MedicalProfilesController", "Admin::MetricsController", "Admin::ShiftsController", "Admin::FinancialController", "Admin::PrescriptionItemsController"],
+          "admin_content": ["Admin::Content::PromotionsController", "Admin::Content::AnnouncementsController", "Admin::Content::TestimonialsController", "Admin::Content::EmailCampaignsController", "Admin::Content::LandingConfigController"],
+          "admin_settings": ["Admin::SettingsController"],
+          "public": ["Public::ContactMessagesController", "Public::ProductsController", "Public::ProductOrdersController", "Public::LandingController"]
+        }
+      },
+      "actions": {
+        "total": 138,
+        "groups": {
+          "auth": ["Auth::Login", "Auth::RegisterOwner", "Auth::Logout", "Auth::RefreshToken", "Auth::ForgotPassword", "Auth::ResetPassword"],
+          "admin_adoptions": ["Admin::Adoptions::CreateAdoption", "Admin::Adoptions::FilterAdoptions"],
+          "admin_appointments": ["Admin::Appointments::CreateAppointment", "Admin::Appointments::UpdateAppointment", "Admin::Appointments::CancelAppointment", "Admin::Appointments::ConfirmAppointment", "Admin::Appointments::CompleteAppointment", "Admin::Appointments::DestroyAppointment", "Admin::Appointments::FilterAppointments", "Admin::Appointments::GetAvailableTimeSlots"],
+          "admin_content": ["Admin::Content::CreateAnnouncement", "Admin::Content::UpdateAnnouncement", "Admin::Content::DeleteAnnouncement", "Admin::Content::ListAnnouncements", "Admin::Content::CreatePromotion", "Admin::Content::UpdatePromotion", "Admin::Content::DeletePromotion", "Admin::Content::ListPromotions", "Admin::Content::ReorderPromotions", "Admin::Content::CreateTestimonial", "Admin::Content::UpdateTestimonial", "Admin::Content::DeleteTestimonial", "Admin::Content::ListTestimonials", "Admin::Content::ReorderTestimonials", "Admin::Content::CreateEmailCampaign", "Admin::Content::UpdateEmailCampaign", "Admin::Content::ListEmailCampaigns", "Admin::Content::PreviewCampaignRecipients", "Admin::Content::SendEmailCampaign", "Admin::Content::CancelEmailCampaign", "Admin::Content::CloneEmailCampaign", "Admin::Content::GetLandingConfig", "Admin::Content::UpdateLandingConfig"],
+          "admin_financial": ["Admin::Financial::CreateExpense", "Admin::Financial::ListExpenses", "Admin::Financial::GetBalance"],
+          "admin_medical": ["Admin::Medical::CreateConsultation", "Admin::Medical::UpdateConsultation", "Admin::Medical::CreatePrescription", "Admin::Medical::CreateLabExam", "Admin::Medical::UpdateLabExamResults", "Admin::Medical::CreateVaccination", "Admin::Medical::CreateDeworming", "Admin::Medical::CreateVaccinationSchedule", "Admin::Medical::CompleteScheduleItem", "Admin::Medical::GenerateReport", "Admin::Medical::ExportReport", "Admin::Medical::ExportPdfReport", "Admin::Medical::EmailReport", "Admin::Medical::UploadAttachment", "Admin::Medical::ImportMedicalHistory"],
+          "admin_metrics": ["Admin::Metrics::CalculateDashboard", "Admin::Metrics::CalculateConsultations", "Admin::Metrics::CalculatePatients", "Admin::Metrics::CalculateRevenue", "Admin::Metrics::CalculateAppointments", "Admin::Metrics::CalculateVaccinations", "Admin::Metrics::CalculateAdoptions", "Admin::Metrics::CalculateSponsorships", "Admin::Metrics::CalculateFinancial", "Admin::Metrics::RefreshAllSnapshots"],
+          "admin_owners": ["Admin::Owners::Create", "Admin::Owners::Show", "Admin::Owners::Update", "Admin::Owners::Filter", "Admin::Owners::Search", "Admin::Owners::CreatePet", "Admin::Owners::UpdatePet"],
+          "admin_pets": ["Admin::Pets::CreatePet", "Admin::Pets::UpdatePet", "Admin::Pets::DestroyPet", "Admin::Pets::UploadPhoto", "Admin::Pets::DeletePhoto"],
+          "admin_shifts": ["Admin::Shifts::GetClinicSchedule", "Admin::Shifts::UpdateClinicSchedule", "Admin::Shifts::GetStaffSchedules", "Admin::Shifts::CreateException", "Admin::Shifts::DeleteException", "Admin::Shifts::GetWeeklyOverview"],
+          "admin_sponsorships": ["Admin::Sponsorships::FilterSponsorships", "Admin::Sponsorships::CompleteSponsorships"],
+          "owner_portal": ["OwnerPortal::Appointments::CreateAppointment", "OwnerPortal::Appointments::UpdateAppointment", "OwnerPortal::Appointments::CancelAppointment", "OwnerPortal::Appointments::ConfirmAppointment", "OwnerPortal::Appointments::GetAvailableVets", "OwnerPortal::Appointments::GetAvailableDays"],
+          "payments": ["Payments::CreateDraft", "Payments::UpdateDraft", "Payments::RegisterPayment", "Payments::ExtendPayment", "Payments::CancelPayment", "Payments::FilterPayments"],
+          "sponsorships": ["Sponsorships::CreateSponsorship", "Sponsorships::CancelSponsorship", "Sponsorships::FilterSponsorships"],
+          "medical_owner": ["Medical::CompletePrescriptionItem", "Medical::CompleteTreatment", "Medical::ExportPdfRecipe"],
+          "dashboard": ["Dashboard::UpcomingAppointments", "Dashboard::ActiveSponsorships", "Dashboard::PetsWithTreatments", "Dashboard::PendingLabExams"],
+          "pets": ["Pets::CreatePet", "Pets::UpdatePet", "Pets::DestroyPet", "Pets::FilterPets", "Pets::UploadPhoto", "Pets::DeletePhoto"],
+          "profile": ["Profile::Update", "Profile::ChangePassword", "Profile::DeleteAccount"],
+          "users": ["Users::CreateUser", "Users::UpdateUser", "Users::DestroyUser", "Users::FilterUsers"],
+          "products": ["Products::Create", "Products::Update", "Products::AddStock", "Products::RemoveStock", "Products::AdjustStock"],
+          "public": ["Public::CreateContactMessage"]
+        }
+      },
+      "models": {
+        "total": 42,
+        "list": ["ApplicationRecord", "User", "Owner", "Pet", "PetMedicalProfile", "Consultation", "Prescription", "PrescriptionItem", "Vaccination", "VaccinationSchedule", "VaccinationScheduleItem", "Deworming", "LabExam", "MedicalReport", "MedicalAttachment", "Appointment", "Service", "ServiceCategory", "ClinicSchedule", "StaffSchedule", "ScheduleException", "Payment", "PaymentItem", "Refund", "Expense", "Product", "ProductOrder", "ProductOrderItem", "StockMovement", "AdoptionRecord", "Sponsorship", "Announcement", "Promotion", "Testimonial", "LandingConfig", "EmailCredential", "EmailCampaign", "ContactMessage", "RefreshToken", "PasswordResetToken", "MetricsSnapshot"]
+      },
+      "concerns": ["Authenticatable", "Paginatable", "PetJsonable", "TokenManageable"]
+    },
+    "frontend": {
+      "pages": {
+        "total_approximate": 110,
+        "public": ["Home", "About", "Contact", "Services", "Products", "Privacy", "Terms", "Adoption", "Auth", "Pawcare", "UserManual", "NotFound", "Unauthorized"],
+        "owner_portal": ["Dashboard", "PetsIndex", "MedicalHistoryIndex", "owner/appointments/AppointmentsIndex", "owner/medical-history/MedicalHistoryIndex", "owner/payments/PaymentsIndex", "sponsorships/SponsorshipsIndex", "profile/ProfileIndex"],
+        "admin": {
+          "layout": ["AdminLayout", "AdminSidebar", "AdminHeader"],
+          "pages": ["admin/adoptions/AdoptionsIndex", "admin/appointments/AppointmentsIndex", "admin/consultations/ConsultationsIndex", "admin/medical-records/MedicalRecordsIndex", "admin/owners/OwnersIndex", "admin/payments/PaymentsIndex", "admin/pets/PetsIndex", "admin/staff/StaffIndex", "admin/services/ServicesIndex", "admin/shifts/ShiftsIndex", "admin/sponsorships/SponsorshipsIndex", "admin/metrics/MetricsIndex", "admin/financial/FinancialIndex", "admin/reports/ReportsIndex", "admin/content/ContentIndex", "admin/settings/EmailSettingsIndex", "admin/settings/SmtpSettingsIndex", "admin/settings/CurrencySettingsIndex", "admin/settings/GeneralSettingsIndex", "admin/user-manual/UserManualIndex"]
+        }
+      },
+      "components": {
+        "ui": "50+ shadcn/ui components (button, card, input, dialog, table, form...)",
+        "landing": ["Navbar", "Hero", "Footer", "AnnouncementsBanner", "PromotionsBanner", "Services", "About", "Contact", "Products", "Testimonials"],
+        "auth": ["LoginForm", "RegisterForm", "ForgotPasswordForm", "ResetPasswordForm"],
+        "pets": ["PetsList", "PetCard", "PetForm", "PetDetail"],
+        "dashboard": ["StatsCard", "PatientCard", "AppointmentList", "AppointmentDialog"]
+      },
+      "hooks": {
+        "total": 31,
+        "list": ["useAuth", "useLogin", "useRegisterOwner", "useForgotPassword", "useResetPassword", "usePets", "useAdoptions", "useAppointments", "useMyAppointments", "usePayments", "useMyPayments", "useSponsorships", "useServices", "useOwnerServices", "useServiceCategories", "useProducts", "useAdminStaff", "useAdminOwners", "useStaffSchedules", "useFinancial", "useMetrics", "useShifts", "useStockMovements", "useOwnerMedicalSummary", "useContent", "usePublicAdoption", "useTheme", "useBookmarks", "useInPageSearch", "useMarkdownNavigation", "useRefetchOnNavigation"]
+      },
+      "store": {
+        "slices": ["authSlice", "petsSlice", "appointmentsSlice", "ownerAppointmentsSlice", "paymentsSlice", "ownerPaymentsSlice", "sponsorshipsSlice", "servicesSlice", "serviceCategoriesSlice", "productsSlice", "staffSchedulesSlice", "metricsSlice", "shiftsSlice", "financialSlice", "stockMovementsSlice", "adoptionsSlice", "adminStaffSlice", "adminOwnersSlice", "cartSlice"]
+      },
+      "api_clients": {
+        "total": 27,
+        "list": ["Auth", "Pets", "Appointments", "OwnerAppointments", "Payments", "OwnerPayments", "Sponsorships", "Services", "OwnerServices", "Products", "ServiceCategories", "StaffSchedules", "Metrics", "Shifts", "Financial", "StockMovements", "AdminOwners", "AdminStaff", "Profile", "Dashboard", "MedicalRecords", "Content", "Adoptions", "PublicAdoption", "UserManual", "Settings"]
+      },
+      "types": {
+        "total": 18,
+        "list": ["Pet", "Owner", "Staff", "Appointment", "Service", "ServiceCategory", "Product", "Payment", "Sponsorship", "MedicalRecords", "Content", "Financial", "Metrics", "Shifts", "StaffSchedule", "Settings", "Sidebar", "Pagination", "UserManual"]
+      }
+    }
+  },
+  "flows": {
+    "authentication": {
+      "steps": ["User submits credentials", "Auth::Login action validates", "JWT access + refresh tokens set as httpOnly cookies", "Inertia middleware decodes JWT on each request", "currentUser shared to all React components", "useAuth hook manages frontend state via authSlice"]
+    },
+    "pet_management": {
+      "steps": ["Owner creates pet via PetForm", "usePets hook calls Pets API client", "Pets::CreatePet action validates and saves", "Result.success(pet:) returned to controller", "Controller renders JSON", "petsSlice updated in Redux store", "UI re-renders with new pet"]
+    },
+    "appointment_booking": {
+      "steps": ["Owner selects service and date", "OwnerAvailabilityController fetches available vets/days", "OwnerPortal::Appointments::CreateAppointment action validates slot", "Appointment created with linked Payment (pending)", "Owner/admin can cancel, confirm, or complete", "useMyAppointments hook keeps frontend in sync"]
+    },
+    "medical_record": {
+      "steps": ["Vet creates consultation", "Admin::Medical::CreateConsultation action saves consultation", "Consultation has prescriptions, lab exams, vaccinations", "Prescription items marked complete by owner/vet", "Medical report generated via Admin::Medical::GenerateReport", "Export as PDF available via Admin::Medical::ExportPdfReport"]
+    },
+    "payment": {
+      "steps": ["Payment auto-created on appointment", "Payment has line items (service/products)", "Status: pending → paid (register) or cancelled or extended", "Refunds linked back to payment", "Owner views via OwnerPayments API", "Admin manages via Admin::Payments actions"]
+    },
+    "metrics": {
+      "steps": ["Admin triggers refresh", "Admin::Metrics::RefreshAllSnapshots recalculates all", "Results cached in metrics_snapshots table", "Frontend Metrics API client fetches snapshots", "MetricsIndex page displays charts and cards"]
+    }
+  },
+  "patterns": {
+    "action_pattern": {
+      "description": "All business logic in Action classes, returns Result",
+      "location": "app/actions/{domain}/{action_name}.rb",
+      "return": "Result.success(...) or Result.failure(error:)",
+      "controllers": "Thin - only orchestrate actions and render"
+    },
+    "api_convention": {
+      "data": "JSON with model wrapper: { pet: { name: 'Max' } }",
+      "auth_profile": "Flat params (exception): { login: '', password: '' }",
+      "files": "FormData in separate endpoint: POST /pets/:id/photo",
+      "authentication": "httpOnly cookies, no localStorage"
+    },
+    "frontend_state": {
+      "global": "Redux slices per domain",
+      "local": "useState for internal views (list/detail/edit within domain)",
+      "api": "Hooks compose API clients + Redux dispatch"
+    },
+    "routing": {
+      "spa": "One route per domain (admin/pets), multiple views with useState",
+      "pages": "GET /admin/pets → AdminPagesController#pets → AdminPets page",
+      "api": "Separate API endpoints with -list suffix for listing"
+    },
+    "soft_delete": "All major models use Discard gem (deleted_at column)",
+    "polymorphism": {
+      "pet_proprietary": "Pet.proprietary → Owner or User",
+      "tokens": "RefreshToken.tokenable → Owner or User",
+      "medical_attachments": "MedicalAttachment.attachable → Consultation, LabExam, etc.",
+      "schedule_exceptions": "ScheduleException.exceptionable → User or other"
+    }
+  },
+  "roles": {
+    "user_roles": ["admin", "vet", "vet_assistant", "assistant", "finances", "hr"],
+    "owner": "Separate model, authenticated via Owner table",
+    "public": "Unauthenticated access to landing, adoption portal, products"
+  }
+}

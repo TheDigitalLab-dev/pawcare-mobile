@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PawCare Mobile — Arquitectura</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --border: #2a2a4a;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --teal: #14b8a6;
+      --teal-glow: rgba(20,184,166,0.25);
+      --blue: #3b82f6;
+      --blue-glow: rgba(59,130,246,0.25);
+      --purple: #8b5cf6;
+      --purple-glow: rgba(139,92,246,0.25);
+      --green: #10b981;
+      --green-glow: rgba(16,185,129,0.25);
+      --orange: #f59e0b;
+      --orange-glow: rgba(245,158,11,0.25);
+      --pink: #ec4899;
+      --pink-glow: rgba(236,72,153,0.25);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6,182,212,0.25);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,10,15,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .header .paw { font-size: 24px; }
+    .header .badge {
+      font-size: 10px;
+      background: var(--teal);
+      color: #fff;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+
+    /* ── SECTIONS ── */
+    .section {
+      margin-bottom: 48px;
+    }
+    .section-title {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── STACK TABLE ── */
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .stack-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .stack-item:hover {
+      border-color: var(--teal);
+      box-shadow: 0 0 20px var(--teal-glow);
+    }
+    .stack-item .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    .stack-item .value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ── DIRECTORY TREE ── */
+    .tree {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 13px;
+      line-height: 1.9;
+      overflow-x: auto;
+      color: var(--text-muted);
+    }
+    .tree .dir { color: var(--blue); font-weight: 600; }
+    .tree .file { color: var(--text-muted); }
+    .tree .comment { color: var(--text-dim); font-style: italic; }
+    .tree .highlight { color: var(--teal); font-weight: 600; }
+
+    /* ── ARCHITECTURE DIAGRAM ── */
+    .diagram {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      align-items: center;
+    }
+    .layer {
+      width: 100%;
+      max-width: 700px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      text-align: center;
+      position: relative;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .layer:hover {
+      box-shadow: 0 0 24px var(--teal-glow);
+      border-color: var(--teal);
+    }
+    .layer .layer-num {
+      position: absolute;
+      top: -10px;
+      left: 20px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+    }
+    .layer .layer-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .layer .layer-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .layer .layer-path {
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--teal);
+      margin-top: 6px;
+    }
+    .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      color: var(--text-dim);
+      font-size: 20px;
+    }
+
+    .c-teal .layer-title { color: var(--teal); }
+    .c-blue .layer-title { color: var(--blue); }
+    .c-purple .layer-title { color: var(--purple); }
+    .c-green .layer-title { color: var(--green); }
+    .c-orange .layer-title { color: var(--orange); }
+    .c-pink .layer-title { color: var(--pink); }
+    .c-cyan .layer-title { color: var(--cyan); }
+
+    .c-teal:hover { border-color: var(--teal); box-shadow: 0 0 24px var(--teal-glow); }
+    .c-blue:hover { border-color: var(--blue); box-shadow: 0 0 24px var(--blue-glow); }
+    .c-purple:hover { border-color: var(--purple); box-shadow: 0 0 24px var(--purple-glow); }
+    .c-green:hover { border-color: var(--green); box-shadow: 0 0 24px var(--green-glow); }
+    .c-orange:hover { border-color: var(--orange); box-shadow: 0 0 24px var(--orange-glow); }
+    .c-pink:hover { border-color: var(--pink); box-shadow: 0 0 24px var(--pink-glow); }
+    .c-cyan:hover { border-color: var(--cyan); box-shadow: 0 0 24px var(--cyan-glow); }
+
+    /* ── NAVIGATION TREE ── */
+    .nav-tree {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 700px) {
+      .nav-tree { grid-template-columns: 1fr; }
+    }
+    .nav-branch {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .nav-branch:hover {
+      border-color: var(--purple);
+      box-shadow: 0 0 20px var(--purple-glow);
+    }
+    .nav-branch h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--purple);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-branch ul {
+      list-style: none;
+      padding-left: 16px;
+    }
+    .nav-branch li {
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 3px 0;
+      position: relative;
+    }
+    .nav-branch li::before {
+      content: '├─';
+      font-family: monospace;
+      color: var(--text-dim);
+      margin-right: 8px;
+    }
+    .nav-branch li:last-child::before {
+      content: '└─';
+    }
+
+    /* ── TOKENS PREVIEW ── */
+    .tokens-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .token-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .token-card:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 20px var(--green-glow);
+    }
+    .token-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .token-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 0;
+      font-size: 13px;
+    }
+    .token-row .swatch {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.1);
+      flex-shrink: 0;
+    }
+    .token-row .name { color: var(--text-muted); flex: 1; }
+    .token-row .val { color: var(--text-dim); font-family: monospace; font-size: 11px; }
+
+    /* ── FLOW ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      padding: 8px 0;
+    }
+    .flow-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+      white-space: nowrap;
+    }
+    .flow-arrow {
+      color: var(--text-dim);
+      font-size: 18px;
+      padding: 0 8px;
+    }
+
+    /* ── CONVENTIONS ── */
+    .conventions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .convention {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .convention .conv-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .convention .conv-value {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .convention code {
+      background: var(--bg);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--teal);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <span class="paw">🐾</span>
+    <h1>PawCare Mobile</h1>
+    <span class="badge">Arquitectura</span>
+  </div>
+
+  <div class="container">
+
+    <!-- STACK -->
+    <div class="section">
+      <div class="section-title">Stack Tecnologico</div>
+      <div class="stack-grid">
+        <div class="stack-item">
+          <div class="label">Framework</div>
+          <div class="value">React Native</div>
+        </div>
+        <div class="stack-item">
+          <div class="label">Plataforma</div>
+          <div class="value">Expo SDK 56</div>
+        </div>
+        <div class="stack-item">
+          <div class="label">Lenguaje</div>
+          <div class="value">TypeScript</div>
+        </div>
+        <div class="stack-item">
+          <div class="label">Package Manager</div>
+          <div class="value">Yarn Berry 4.x</div>
+        </div>
+        <div class="stack-item">
+          <div class="label">Navegacion</div>
+          <div class="value">React Navigation</div>
+        </div>
+        <div class="stack-item">
+          <div class="label">Backend</div>
+          <div class="value">Rails API</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIRECTORY STRUCTURE -->
+    <div class="section">
+      <div class="section-title">Estructura de Directorios</div>
+      <div class="tree">
+<span class="dir">pawcare-mobile/</span>
+├── <span class="highlight">App.tsx</span>               <span class="comment">← Entry point</span>
+├── <span class="file">index.ts</span>              <span class="comment">← Registro del componente raiz</span>
+├── <span class="file">app.json</span>              <span class="comment">← Configuracion Expo</span>
+├── <span class="file">tsconfig.json</span>         <span class="comment">← Config TypeScript</span>
+├── <span class="dir">src/</span>
+│   ├── <span class="dir">theme/</span>            <span class="comment">← Design tokens y theming</span>
+│   │   ├── <span class="file">index.ts</span>
+│   │   └── <span class="highlight">tokens.ts</span>    <span class="comment">← Colores, spacing, tipografia, sombras</span>
+│   ├── <span class="dir">components/</span>       <span class="comment">← Componentes reutilizables (UI)</span>
+│   │   ├── <span class="file">Button.tsx</span>
+│   │   ├── <span class="file">Card.tsx</span>
+│   │   ├── <span class="file">Input.tsx</span>
+│   │   └── <span class="file">...</span>
+│   ├── <span class="dir">screens/</span>          <span class="comment">← Pantallas completas</span>
+│   │   ├── <span class="dir">auth/</span>         <span class="comment">← Login, Register, ForgotPassword</span>
+│   │   ├── <span class="dir">home/</span>         <span class="comment">← Dashboard principal</span>
+│   │   ├── <span class="dir">pets/</span>         <span class="comment">← Mascotas</span>
+│   │   ├── <span class="dir">appointments/</span> <span class="comment">← Citas veterinarias</span>
+│   │   └── <span class="dir">profile/</span>      <span class="comment">← Perfil del usuario</span>
+│   ├── <span class="dir">navigation/</span>       <span class="comment">← React Navigation config</span>
+│   │   ├── <span class="file">RootNavigator.tsx</span>
+│   │   ├── <span class="file">AuthStack.tsx</span>
+│   │   └── <span class="file">MainTabs.tsx</span>
+│   ├── <span class="dir">services/</span>         <span class="comment">← Comunicacion con el API</span>
+│   │   ├── <span class="file">api.ts</span>       <span class="comment">← Cliente HTTP base</span>
+│   │   ├── <span class="file">auth.ts</span>
+│   │   ├── <span class="file">pets.ts</span>
+│   │   └── <span class="file">appointments.ts</span>
+│   ├── <span class="dir">hooks/</span>            <span class="comment">← Custom hooks</span>
+│   ├── <span class="dir">types/</span>            <span class="comment">← Tipos TypeScript compartidos</span>
+│   └── <span class="dir">utils/</span>            <span class="comment">← Funciones utilitarias</span>
+├── <span class="dir">assets/</span>               <span class="comment">← Imagenes, iconos, fuentes</span>
+└── <span class="dir">docs/</span>                 <span class="comment">← Documentacion</span>
+      </div>
+    </div>
+
+    <!-- ARCHITECTURE LAYERS -->
+    <div class="section">
+      <div class="section-title">Capas de Arquitectura</div>
+      <div class="diagram">
+
+        <div class="layer c-purple">
+          <span class="layer-num">1</span>
+          <div class="layer-title">Navegacion</div>
+          <div class="layer-desc">React Navigation — decide que pantalla mostrar. RootNavigator bifurca entre AuthStack y MainTabs segun el estado de autenticacion.</div>
+          <div class="layer-path">src/navigation/</div>
+        </div>
+        <div class="arrow">↕</div>
+
+        <div class="layer c-blue">
+          <span class="layer-num">2</span>
+          <div class="layer-title">Screens</div>
+          <div class="layer-desc">Pantallas completas. Cada una orquesta la logica de la vista: fetching, estado local e interacciones del usuario.</div>
+          <div class="layer-path">src/screens/</div>
+        </div>
+        <div class="arrow">↕</div>
+
+        <div class="layer c-teal">
+          <span class="layer-num">3</span>
+          <div class="layer-title">Components</div>
+          <div class="layer-desc">Piezas reutilizables de UI: Button, Card, Input, Badge, Avatar. Consumen tokens del theme para mantener consistencia visual.</div>
+          <div class="layer-path">src/components/</div>
+        </div>
+        <div class="arrow">↕</div>
+
+        <div class="layer c-green">
+          <span class="layer-num">4</span>
+          <div class="layer-title">Theme</div>
+          <div class="layer-desc">Design tokens: paletas light/dark, tipografia, spacing, radios, sombras y constantes de layout. Fuente unica de verdad visual.</div>
+          <div class="layer-path">src/theme/tokens.ts</div>
+        </div>
+        <div class="arrow">↕</div>
+
+        <div class="layer c-orange">
+          <span class="layer-num">5</span>
+          <div class="layer-title">Services</div>
+          <div class="layer-desc">Capa de comunicacion HTTP con el backend Rails. Cliente base + modulos por dominio (auth, pets, appointments).</div>
+          <div class="layer-path">src/services/</div>
+        </div>
+        <div class="arrow">↕</div>
+
+        <div class="layer c-pink">
+          <span class="layer-num">6</span>
+          <div class="layer-title">Hooks &amp; Utils</div>
+          <div class="layer-desc">Custom hooks (useAuth, useTheme) y funciones utilitarias (storage, formateo). Logica reutilizable desacoplada de la UI.</div>
+          <div class="layer-path">src/hooks/ · src/utils/</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- NAVIGATION TREE -->
+    <div class="section">
+      <div class="section-title">Arbol de Navegacion</div>
+      <div class="nav-tree">
+        <div class="nav-branch">
+          <h3>🔒 AuthStack</h3>
+          <ul>
+            <li>LoginScreen</li>
+            <li>RegisterScreen</li>
+            <li>ForgotPasswordScreen</li>
+          </ul>
+        </div>
+        <div class="nav-branch">
+          <h3>🏠 HomeStack</h3>
+          <ul>
+            <li>HomeScreen (Dashboard)</li>
+          </ul>
+        </div>
+        <div class="nav-branch">
+          <h3>🐾 PetsStack</h3>
+          <ul>
+            <li>PetsListScreen</li>
+            <li>PetDetailScreen</li>
+          </ul>
+        </div>
+        <div class="nav-branch">
+          <h3>📅 AppointmentsStack</h3>
+          <ul>
+            <li>AppointmentsListScreen</li>
+            <li>AppointmentDetailScreen</li>
+          </ul>
+        </div>
+        <div class="nav-branch">
+          <h3>👤 ProfileStack</h3>
+          <ul>
+            <li>ProfileScreen</li>
+          </ul>
+        </div>
+        <div class="nav-branch" style="border-color: var(--purple); background: rgba(139,92,246,0.05);">
+          <h3>🧭 RootNavigator</h3>
+          <ul>
+            <li>AuthStack (no autenticado)</li>
+            <li>MainTabs (autenticado)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOKENS PREVIEW -->
+    <div class="section">
+      <div class="section-title">Design Tokens (Preview)</div>
+      <div class="tokens-grid">
+
+        <div class="token-card">
+          <h3>Colores Principales</h3>
+          <div class="token-row">
+            <div class="swatch" style="background: hsl(174,55%,47%)"></div>
+            <span class="name">primary</span>
+            <span class="val">hsl(174, 55%, 47%)</span>
+          </div>
+          <div class="token-row">
+            <div class="swatch" style="background: hsl(174,20%,95%)"></div>
+            <span class="name">secondary</span>
+            <span class="val">hsl(174, 20%, 95%)</span>
+          </div>
+          <div class="token-row">
+            <div class="swatch" style="background: hsl(174,35%,85%)"></div>
+            <span class="name">accent</span>
+            <span class="val">hsl(174, 35%, 85%)</span>
+          </div>
+          <div class="token-row">
+            <div class="swatch" style="background: hsl(43,44%,97%)"></div>
+            <span class="name">background</span>
+            <span class="val">hsl(43, 44%, 97%)</span>
+          </div>
+          <div class="token-row">
+            <div class="swatch" style="background: hsl(210,24%,16%)"></div>
+            <span class="name">foreground</span>
+            <span class="val">hsl(210, 24%, 16%)</span>
+          </div>
+        </div>
+
+        <div class="token-card">
+          <h3>Semanticos</h3>
+          <div class="token-row">
+            <div class="swatch" style="background: hsl(142,76%,36%)"></div>
+            <span class="name">success</span>
+            <span class="val">hsl(142, 76%, 36%)</span>
+          </div>
+          <div class="token-row">
+            <div class="swatch" style="background: hsl(38,92%,50%)"></div>
+            <span class="name">warning</span>
+            <span class="val">hsl(38, 92%, 50%)</span>
+          </div>
+          <div class="token-row">
+            <div class="swatch" style="background: hsl(0,84%,60%)"></div>
+            <span class="name">destructive</span>
+            <span class="val">hsl(0, 84%, 60%)</span>
+          </div>
+          <div class="token-row">
+            <div class="swatch" style="background: hsl(199,89%,48%)"></div>
+            <span class="name">info</span>
+            <span class="val">hsl(199, 89%, 48%)</span>
+          </div>
+        </div>
+
+        <div class="token-card">
+          <h3>Spacing (escala 4px)</h3>
+          <div class="token-row"><span class="name">spacing-1</span><span class="val">4px</span></div>
+          <div class="token-row"><span class="name">spacing-2</span><span class="val">8px</span></div>
+          <div class="token-row"><span class="name">spacing-3</span><span class="val">12px</span></div>
+          <div class="token-row"><span class="name">spacing-4</span><span class="val">16px</span></div>
+          <div class="token-row"><span class="name">spacing-6</span><span class="val">24px</span></div>
+          <div class="token-row"><span class="name">spacing-8</span><span class="val">32px</span></div>
+        </div>
+
+        <div class="token-card">
+          <h3>Tipografia</h3>
+          <div class="token-row"><span class="name">xs</span><span class="val">12px</span></div>
+          <div class="token-row"><span class="name">sm</span><span class="val">14px</span></div>
+          <div class="token-row"><span class="name">base</span><span class="val">16px</span></div>
+          <div class="token-row"><span class="name">lg</span><span class="val">18px</span></div>
+          <div class="token-row"><span class="name">xl</span><span class="val">20px</span></div>
+          <div class="token-row"><span class="name">2xl</span><span class="val">24px</span></div>
+          <div class="token-row"><span class="name">3xl</span><span class="val">30px</span></div>
+        </div>
+
+        <div class="token-card">
+          <h3>Border Radius</h3>
+          <div class="token-row">
+            <div class="swatch" style="background: var(--surface2); border-radius: 4px;"></div>
+            <span class="name">sm</span><span class="val">4px</span>
+          </div>
+          <div class="token-row">
+            <div class="swatch" style="background: var(--surface2); border-radius: 6px;"></div>
+            <span class="name">md</span><span class="val">6px</span>
+          </div>
+          <div class="token-row">
+            <div class="swatch" style="background: var(--surface2); border-radius: 8px;"></div>
+            <span class="name">lg</span><span class="val">8px</span>
+          </div>
+          <div class="token-row">
+            <div class="swatch" style="background: var(--surface2); border-radius: 12px;"></div>
+            <span class="name">xl</span><span class="val">12px</span>
+          </div>
+          <div class="token-row">
+            <div class="swatch" style="background: var(--surface2); border-radius: 50%;"></div>
+            <span class="name">full</span><span class="val">9999px</span>
+          </div>
+        </div>
+
+        <div class="token-card">
+          <h3>Layout</h3>
+          <div class="token-row"><span class="name">containerPadding</span><span class="val">16px</span></div>
+          <div class="token-row"><span class="name">headerHeight</span><span class="val">56px</span></div>
+          <div class="token-row"><span class="name">bottomNavHeight</span><span class="val">64px</span></div>
+          <div class="token-row"><span class="name">minTouchTarget</span><span class="val">44px</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DATA FLOW -->
+    <div class="section">
+      <div class="section-title">Flujo de Datos</div>
+      <div class="flow">
+        <div class="flow-step">👆 Usuario</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">📱 Screen</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">🌐 Service</div>
+        <span class="flow-arrow">↔</span>
+        <div class="flow-step">🛤️ Rails API</div>
+      </div>
+      <div class="flow" style="margin-top: 8px;">
+        <div class="flow-step">🛤️ Response</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">📦 State</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">🎨 Components</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">🖌️ Theme Tokens</div>
+      </div>
+    </div>
+
+    <!-- CONVENTIONS -->
+    <div class="section">
+      <div class="section-title">Convenciones</div>
+      <div class="conventions">
+        <div class="convention">
+          <div class="conv-label">Archivos</div>
+          <div class="conv-value">PascalCase para componentes (<code>Button.tsx</code>), camelCase para utilidades (<code>format.ts</code>)</div>
+        </div>
+        <div class="convention">
+          <div class="conv-label">Exports</div>
+          <div class="conv-value">Named exports preferidos. Default export solo para screens (lazy loading).</div>
+        </div>
+        <div class="convention">
+          <div class="conv-label">Estilos</div>
+          <div class="conv-value"><code>StyleSheet.create()</code> al final del archivo, consumiendo tokens del theme.</div>
+        </div>
+        <div class="convention">
+          <div class="conv-label">Tipos</div>
+          <div class="conv-value">Interfaces para objetos, types para unions y utilidades.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,2075 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PawCare — Mapa de Arquitectura 3D</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #0f0f1a;
+      --bg3: #141428;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --border: #2a2a4a;
+      --border2: #3a3a6a;
+
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --blue: #3b82f6;
+      --blue-glow: rgba(59,130,246,0.3);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6,182,212,0.3);
+      --purple: #8b5cf6;
+      --purple-glow: rgba(139,92,246,0.3);
+      --green: #10b981;
+      --green-glow: rgba(16,185,129,0.3);
+      --orange: #f59e0b;
+      --orange-glow: rgba(245,158,11,0.3);
+      --pink: #ec4899;
+      --pink-glow: rgba(236,72,153,0.3);
+      --red: #ef4444;
+      --red-glow: rgba(239,68,68,0.3);
+      --teal: #14b8a6;
+      --teal-glow: rgba(20,184,166,0.3);
+      --indigo: #6366f1;
+      --indigo-glow: rgba(99,102,241,0.3);
+      --lime: #84cc16;
+      --lime-glow: rgba(132,204,22,0.3);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .paw-icon { font-size: 22px; }
+    .badge {
+      font-size: 10px;
+      background: var(--purple);
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+    }
+    .nav-tab {
+      padding: 6px 14px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .nav-tab:hover { color: var(--text); background: var(--border); }
+    .nav-tab.active { background: var(--blue); color: white; }
+
+    .stats-bar {
+      display: flex;
+      gap: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .stat { display: flex; align-items: center; gap: 5px; }
+    .stat-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* ─── MAIN CANVAS AREA ─── */
+    .canvas-container {
+      position: relative;
+      margin-top: 60px;
+      width: 100%;
+      min-height: calc(100vh - 60px);
+      overflow: hidden;
+    }
+
+    /* ─── VIEWS ─── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ═══════════════════════════════════════════════
+       VIEW 1: OVERVIEW 3D (Three.js canvas)
+    ═══════════════════════════════════════════════ */
+    #view-overview {
+      position: relative;
+    }
+
+    /* ═══════════════════════════════════════════════
+       VIEW 2: DATABASE
+    ═══════════════════════════════════════════════ */
+    #view-database {
+      padding: 30px;
+    }
+    .db-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .db-groups {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .db-group {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      transition: all 0.3s;
+    }
+    .db-group:hover {
+      border-color: var(--accent, var(--blue));
+      box-shadow: 0 0 20px var(--glow, var(--blue-glow));
+      transform: translateY(-2px);
+    }
+    .db-group-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent, var(--blue));
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .db-table {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .db-table:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: var(--accent, var(--blue));
+    }
+    .db-table-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .db-table-desc {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .db-fields {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+    }
+    .db-field {
+      font-size: 9.5px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .db-field.pk { color: var(--orange); border-color: rgba(245,158,11,0.3); }
+    .db-field.fk { color: var(--cyan); border-color: rgba(6,182,212,0.3); }
+
+    /* ═══════════════════════════════════════════════
+       VIEW 3: BACKEND
+    ═══════════════════════════════════════════════ */
+    #view-backend {
+      padding: 30px;
+    }
+    .be-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      .be-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .be-section {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      transition: all 0.3s;
+    }
+    .be-section:hover {
+      border-color: var(--accent, var(--blue));
+      box-shadow: 0 0 20px var(--glow, var(--blue-glow));
+      transform: translateY(-2px);
+    }
+    .be-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent, var(--blue));
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .be-item {
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 3px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .be-item::before { content: '›'; color: var(--accent, var(--blue)); font-weight: bold; }
+    .be-item:last-child { border-bottom: none; }
+    .be-count-badge {
+      margin-left: auto;
+      font-size: 9px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 10px;
+      color: var(--text-dim);
+    }
+    .be-section-full { grid-column: 1 / -1; }
+
+    /* ═══════════════════════════════════════════════
+       VIEW 4: FRONTEND
+    ═══════════════════════════════════════════════ */
+    #view-frontend {
+      padding: 30px;
+    }
+    .fe-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 1100px) {
+      .fe-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .fe-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      transition: all 0.3s;
+    }
+    .fe-card:hover {
+      border-color: var(--accent, var(--blue));
+      box-shadow: 0 0 20px var(--glow, var(--blue-glow));
+      transform: translateY(-2px);
+    }
+    .fe-card-header {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .fe-card-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .fe-card-title { font-size: 13px; font-weight: 700; }
+    .fe-card-count { font-size: 11px; color: var(--text-dim); }
+    .fe-list {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .fe-item {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      padding: 3px 6px;
+      border-radius: 5px;
+      transition: all 0.2s;
+    }
+    .fe-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+    /* Pages tree */
+    .pages-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 900px) {
+      .pages-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .page-group {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      transition: all 0.3s;
+    }
+    .page-group:hover {
+      border-color: var(--accent, var(--blue));
+      box-shadow: 0 0 15px var(--glow, var(--blue-glow));
+    }
+    .page-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      color: var(--accent, var(--blue));
+    }
+    .page-item {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      padding: 2px 0;
+    }
+
+    /* ═══════════════════════════════════════════════
+       VIEW 5: FLOWS
+    ═══════════════════════════════════════════════ */
+    #view-flows {
+      padding: 30px;
+    }
+    .flows-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 800px) {
+      .flows-grid { grid-template-columns: 1fr; }
+    }
+    .flow-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+    .flow-card:hover {
+      border-color: var(--accent, var(--blue));
+      box-shadow: 0 0 20px var(--glow, var(--blue-glow));
+    }
+    .flow-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 8px 0;
+      position: relative;
+    }
+    .flow-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 14px; top: 34px;
+      width: 2px;
+      height: calc(100% - 10px);
+      background: linear-gradient(to bottom, var(--accent, var(--blue)), transparent);
+      opacity: 0.3;
+    }
+    .flow-step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--accent, var(--blue));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent, var(--blue));
+      flex-shrink: 0;
+    }
+    .flow-step-text {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      padding-top: 5px;
+      line-height: 1.5;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SCROLL TO TOP & SEARCH
+    ═══════════════════════════════════════════════ */
+    .fab {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      width: 44px; height: 44px;
+      background: var(--blue);
+      border-radius: 50%;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px var(--blue-glow);
+      transition: all 0.3s;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200;
+    }
+    .fab:hover { transform: scale(1.1); box-shadow: 0 8px 30px var(--blue-glow); }
+
+    /* ─── SEARCH ─── */
+    .search-bar {
+      position: fixed;
+      top: 60px; left: 0; right: 0;
+      background: rgba(10,10,20,0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      z-index: 99;
+    }
+    .search-bar.open { display: flex; }
+    .search-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--blue); }
+    .search-close {
+      background: none; border: none; color: var(--text-muted);
+      cursor: pointer; font-size: 18px; padding: 4px;
+    }
+
+    /* ─── TOOLTIP ─── */
+    .tooltip {
+      position: fixed;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      max-width: 280px;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.2s;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .tooltip.show { opacity: 1; }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--blue); }
+
+    /* ─── ACCENT COLORS per layer ─── */
+    .accent-blue    { --accent: var(--blue);   --glow: var(--blue-glow); }
+    .accent-cyan    { --accent: var(--cyan);    --glow: var(--cyan-glow); }
+    .accent-purple  { --accent: var(--purple);  --glow: var(--purple-glow); }
+    .accent-green   { --accent: var(--green);   --glow: var(--green-glow); }
+    .accent-orange  { --accent: var(--orange);  --glow: var(--orange-glow); }
+    .accent-pink    { --accent: var(--pink);    --glow: var(--pink-glow); }
+    .accent-red     { --accent: var(--red);     --glow: var(--red-glow); }
+    .accent-teal    { --accent: var(--teal);    --glow: var(--teal-glow); }
+    .accent-indigo  { --accent: var(--indigo);  --glow: var(--indigo-glow); }
+    .accent-lime    { --accent: var(--lime);    --glow: var(--lime-glow); }
+
+    /* ─── BG GRID ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .canvas-container { position: relative; z-index: 1; }
+
+    /* Section title */
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.5px;
+    }
+    .section-title .icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+
+    /* glow dot on view indicator */
+    .glow-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+      50% { opacity: 0.8; box-shadow: 0 0 0 4px transparent; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       FLAT ARCHITECTURE DIAGRAM
+    ═══════════════════════════════════════════════ */
+    .legend-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .legend-dot::before {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--c, #fff);
+      flex-shrink: 0;
+    }
+
+    .arch-flat {
+      padding: 16px 24px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* Each row: label on left + cells on right */
+    .af-row {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .af-label {
+      width: 72px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+    }
+
+    .af-cells {
+      flex: 1;
+      display: grid;
+      gap: 6px;
+    }
+
+    .af-cell {
+      background: color-mix(in srgb, var(--c, #3b82f6) 8%, var(--surface2));
+      border: 1px solid color-mix(in srgb, var(--c, #3b82f6) 35%, transparent);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      position: relative;
+    }
+    .af-cell:hover {
+      background: color-mix(in srgb, var(--c, #3b82f6) 16%, var(--surface2));
+      border-color: var(--c, #3b82f6);
+      box-shadow: 0 0 16px color-mix(in srgb, var(--c, #3b82f6) 25%, transparent);
+      transform: translateY(-1px);
+    }
+    .af-cell::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--c, #3b82f6);
+      border-radius: 10px 0 0 10px;
+      opacity: 0.7;
+    }
+
+    .af-single {
+      border-radius: 10px;
+    }
+
+    .af-cell-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: color-mix(in srgb, var(--c, #3b82f6) 80%, var(--text));
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+
+    .af-cell-sub {
+      font-size: 9.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .af-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .af-chips span {
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Connector: full-width vertical center line between single-wide rows */
+    .af-connector-full {
+      height: 16px;
+      position: relative;
+      margin-left: 72px;
+    }
+    .af-connector-full::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: repeating-linear-gradient(
+        to bottom,
+        var(--border2) 0,
+        var(--border2) 4px,
+        transparent 4px,
+        transparent 8px
+      );
+    }
+
+    /* Grid of connectors (one per column) */
+    .af-connectors {
+      margin-left: 72px;
+      display: grid;
+      gap: 6px;
+      height: 14px;
+    }
+
+    .af-conn {
+      position: relative;
+    }
+    .af-conn::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: repeating-linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--c, #3b82f6) 55%, transparent) 0,
+        color-mix(in srgb, var(--c, #3b82f6) 55%, transparent) 4px,
+        transparent 4px,
+        transparent 8px
+      );
+    }
+    /* legacy af-conn direct border (fallback) */
+    .af-conn:empty {
+      border-left: 2px dashed color-mix(in srgb, var(--c, #3b82f6) 50%, transparent);
+      margin-left: auto;
+      margin-right: auto;
+      width: 2px;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-title">
+    <span class="paw-icon">🐾</span>
+    <span>PawCare</span>
+    <span class="badge">Architecture</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showView('overview')">Vista General</button>
+    <button class="nav-tab" onclick="showView('database')">Base de Datos</button>
+    <button class="nav-tab" onclick="showView('backend')">Backend</button>
+    <button class="nav-tab" onclick="showView('frontend')">Frontend</button>
+    <button class="nav-tab" onclick="showView('flows')">Flujos</button>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><span class="stat-dot" style="background:var(--blue)"></span>45 tablas</div>
+    <div class="stat"><span class="stat-dot" style="background:var(--purple)"></span>138 actions</div>
+    <div class="stat"><span class="stat-dot" style="background:var(--cyan)"></span>27 API clients</div>
+    <div class="stat"><span class="stat-dot" style="background:var(--green)"></span>31 hooks</div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="canvas-container">
+
+  <!-- ══════════════════════════════════════
+       VIEW 1: OVERVIEW 3D
+  ══════════════════════════════════════ -->
+  <div id="view-overview" class="view active">
+    <!-- Domain legend -->
+    <div style="display:flex;gap:12px;padding:16px 24px 0;flex-wrap:wrap;">
+      <span style="font-size:10px;font-weight:700;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;align-self:center;">DOMINIO:</span>
+      <span class="legend-dot" style="--c:#8b5cf6">Auth / Identity</span>
+      <span class="legend-dot" style="--c:#10b981">Medical / Pets</span>
+      <span class="legend-dot" style="--c:#3b82f6">Appointments</span>
+      <span class="legend-dot" style="--c:#f59e0b">Financial</span>
+      <span class="legend-dot" style="--c:#ec4899">Admin Tools</span>
+    </div>
+
+    <div class="arch-flat">
+
+      <!-- ROW: REACT UI -->
+      <div class="af-row">
+        <div class="af-label">React UI</div>
+        <div class="af-cells" style="grid-template-columns:1fr;">
+          <div class="af-cell af-single" style="--c:#06b6d4;" onclick="showView('frontend')">
+            <div class="af-cell-title">🌐 React 19 — Páginas &amp; Componentes</div>
+            <div class="af-cell-sub">TypeScript · Tailwind CSS · shadcn/ui · 110+ páginas · SPA con Inertia.js · useState para vistas internas</div>
+            <div class="af-chips"><span>Landing · Auth</span><span>Owner Portal</span><span>Admin Panel</span><span>Metrics · Medical · Shifts · Financial · Content</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="af-connector-full"></div>
+
+      <!-- ROW: HOOKS -->
+      <div class="af-row">
+        <div class="af-label">Hooks</div>
+        <div class="af-cells" style="grid-template-columns:repeat(5,1fr);">
+          <div class="af-cell" style="--c:#8b5cf6;" onclick="showView('frontend')">
+            <div class="af-cell-title">⚡ Auth Hooks</div>
+            <div class="af-cell-sub">useAuth · useLogin · useRegisterOwner · useForgotPassword · useResetPassword</div>
+          </div>
+          <div class="af-cell" style="--c:#10b981;" onclick="showView('frontend')">
+            <div class="af-cell-title">⚡ Medical / Pet Hooks</div>
+            <div class="af-cell-sub">usePets · useAdoptions · useSponsorships · useOwnerMedicalSummary · usePublicAdoption · useContent</div>
+          </div>
+          <div class="af-cell" style="--c:#3b82f6;" onclick="showView('frontend')">
+            <div class="af-cell-title">⚡ Appointment Hooks</div>
+            <div class="af-cell-sub">useAppointments · useMyAppointments · useServices · useOwnerServices · useServiceCategories · useStaffSchedules</div>
+          </div>
+          <div class="af-cell" style="--c:#f59e0b;" onclick="showView('frontend')">
+            <div class="af-cell-title">⚡ Financial Hooks</div>
+            <div class="af-cell-sub">usePayments · useMyPayments · useFinancial · useProducts · useStockMovements · useRefetchOnNavigation</div>
+          </div>
+          <div class="af-cell" style="--c:#ec4899;" onclick="showView('frontend')">
+            <div class="af-cell-title">⚡ Admin / UI Hooks</div>
+            <div class="af-cell-sub">useMetrics · useShifts · useAdminStaff · useAdminOwners · useTheme · useBookmarks · useInPageSearch</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="af-connectors" style="grid-template-columns:repeat(5,1fr);">
+        <div class="af-conn" style="--c:#8b5cf6"></div>
+        <div class="af-conn" style="--c:#10b981"></div>
+        <div class="af-conn" style="--c:#3b82f6"></div>
+        <div class="af-conn" style="--c:#f59e0b"></div>
+        <div class="af-conn" style="--c:#ec4899"></div>
+      </div>
+
+      <!-- ROW: REDUX SLICES -->
+      <div class="af-row">
+        <div class="af-label">Redux</div>
+        <div class="af-cells" style="grid-template-columns:repeat(5,1fr);">
+          <div class="af-cell" style="--c:#8b5cf6;" onclick="showView('frontend')">
+            <div class="af-cell-title">🗃️ authSlice</div>
+            <div class="af-cell-sub">currentUser · isAuthenticated · loading · error</div>
+          </div>
+          <div class="af-cell" style="--c:#10b981;" onclick="showView('frontend')">
+            <div class="af-cell-title">🗃️ petsSlice · adoptionsSlice · sponsorshipsSlice</div>
+            <div class="af-cell-sub">pets list · selected · filters · adoptions · sponsorships</div>
+          </div>
+          <div class="af-cell" style="--c:#3b82f6;" onclick="showView('frontend')">
+            <div class="af-cell-title">🗃️ appointmentsSlice · ownerAppointmentsSlice · servicesSlice</div>
+            <div class="af-cell-sub">admin appts · owner appts · services · categories · staffSchedules</div>
+          </div>
+          <div class="af-cell" style="--c:#f59e0b;" onclick="showView('frontend')">
+            <div class="af-cell-title">🗃️ paymentsSlice · financialSlice · productsSlice · cartSlice</div>
+            <div class="af-cell-sub">payments · expenses · products · stock movements · cart</div>
+          </div>
+          <div class="af-cell" style="--c:#ec4899;" onclick="showView('frontend')">
+            <div class="af-cell-title">🗃️ metricsSlice · shiftsSlice · adminStaffSlice · adminOwnersSlice</div>
+            <div class="af-cell-sub">metrics · clinic/staff schedules · staff list · owners list</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="af-connectors" style="grid-template-columns:repeat(5,1fr);">
+        <div class="af-conn" style="--c:#8b5cf6"></div>
+        <div class="af-conn" style="--c:#10b981"></div>
+        <div class="af-conn" style="--c:#3b82f6"></div>
+        <div class="af-conn" style="--c:#f59e0b"></div>
+        <div class="af-conn" style="--c:#ec4899"></div>
+      </div>
+
+      <!-- ROW: API CLIENTS -->
+      <div class="af-row">
+        <div class="af-label">API Clients</div>
+        <div class="af-cells" style="grid-template-columns:repeat(5,1fr);">
+          <div class="af-cell" style="--c:#8b5cf6;" onclick="showView('frontend')">
+            <div class="af-cell-title">🔌 Auth.ts · Profile.ts · Dashboard.ts</div>
+            <div class="af-cell-sub">login · register · logout · refreshToken · profile update · dashboard summary</div>
+          </div>
+          <div class="af-cell" style="--c:#10b981;" onclick="showView('frontend')">
+            <div class="af-cell-title">🔌 Pets.ts · MedicalRecords.ts · Adoptions.ts</div>
+            <div class="af-cell-sub">pets CRUD + photos · consultations · vaccinations · labExams · adoptions</div>
+          </div>
+          <div class="af-cell" style="--c:#3b82f6;" onclick="showView('frontend')">
+            <div class="af-cell-title">🔌 Appointments.ts · OwnerAppointments.ts · Services.ts</div>
+            <div class="af-cell-sub">admin appts · owner appts · getAvailableVets/Days · services · categories</div>
+          </div>
+          <div class="af-cell" style="--c:#f59e0b;" onclick="showView('frontend')">
+            <div class="af-cell-title">🔌 Payments.ts · OwnerPayments.ts · Financial.ts · Products.ts</div>
+            <div class="af-cell-sub">register · extend · cancel · expenses · balance · products · stock ops</div>
+          </div>
+          <div class="af-cell" style="--c:#ec4899;" onclick="showView('frontend')">
+            <div class="af-cell-title">🔌 Metrics.ts · Content.ts · Shifts.ts · AdminStaff.ts · AdminOwners.ts</div>
+            <div class="af-cell-sub">dashboard metrics · email campaigns · schedules · staff CRUD · owners CRUD</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="af-connector-full"></div>
+
+      <!-- ROW: INERTIA BRIDGE -->
+      <div class="af-row">
+        <div class="af-label">Inertia</div>
+        <div class="af-cells" style="grid-template-columns:1fr;">
+          <div class="af-cell af-single" style="--c:#6366f1;">
+            <div class="af-cell-title">🔗 Inertia.js Bridge — render inertia: "PageName", props: &#123; user:, data: &#125;</div>
+            <div class="af-cell-sub">Rails controller → React component · Props como JSON · currentUser shared en ApplicationController · router.visit() · useForm() · Link</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="af-connectors" style="grid-template-columns:1fr 2.5fr 1.8fr 1fr;">
+        <div class="af-conn" style="--c:#8b5cf6"></div>
+        <div class="af-conn" style="--c:#ec4899"></div>
+        <div class="af-conn" style="--c:#3b82f6"></div>
+        <div class="af-conn" style="--c:#10b981"></div>
+      </div>
+
+      <!-- ROW: CONTROLLERS -->
+      <div class="af-row">
+        <div class="af-label">Controllers</div>
+        <div class="af-cells" style="grid-template-columns:1fr 2.5fr 1.8fr 1fr;">
+          <div class="af-cell" style="--c:#8b5cf6;" onclick="showView('backend')">
+            <div class="af-cell-title">🎮 Auth / Profile / Dashboard</div>
+            <div class="af-cell-sub">AuthController · ProfileController · DashboardController · PagesController · SponsorshipsController</div>
+          </div>
+          <div class="af-cell" style="--c:#ec4899;" onclick="showView('backend')">
+            <div class="af-cell-title">🎮 Admin Controllers (30+)</div>
+            <div class="af-cell-sub">AdminPagesController · Admin::Pets · Admin::Owners · Admin::Appointments · Admin::Consultations · Admin::LabExams · Admin::Vaccinations · Admin::Payments · Admin::Metrics · Admin::Content::* (5) · Admin::Shifts · Admin::Financial · Admin::Staff · Admin::Services · Admin::Products</div>
+          </div>
+          <div class="af-cell" style="--c:#3b82f6;" onclick="showView('backend')">
+            <div class="af-cell-title">🎮 Owner Portal (15+)</div>
+            <div class="af-cell-sub">OwnerPagesController · OwnerAppointmentsController · OwnerAvailabilityController · OwnerPaymentsController · OwnerMedicalSummaryController · OwnerConsultationsController · OwnerLabExamsController · OwnerVaccinationsController · OwnerDewormingsController · OwnerMedicalReportsController</div>
+          </div>
+          <div class="af-cell" style="--c:#10b981;" onclick="showView('backend')">
+            <div class="af-cell-title">🎮 Public API (4)</div>
+            <div class="af-cell-sub">Public::ProductsController · Public::ProductOrdersController · Public::ContactMessagesController · Public::LandingController</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="af-connectors" style="grid-template-columns:repeat(5,1fr);">
+        <div class="af-conn" style="--c:#8b5cf6"></div>
+        <div class="af-conn" style="--c:#10b981"></div>
+        <div class="af-conn" style="--c:#3b82f6"></div>
+        <div class="af-conn" style="--c:#f59e0b"></div>
+        <div class="af-conn" style="--c:#ec4899"></div>
+      </div>
+
+      <!-- ROW: ACTIONS -->
+      <div class="af-row">
+        <div class="af-label">Actions</div>
+        <div class="af-cells" style="grid-template-columns:repeat(5,1fr);">
+          <div class="af-cell" style="--c:#8b5cf6;" onclick="showView('backend')">
+            <div class="af-cell-title">⚙️ Auth Actions (6)</div>
+            <div class="af-cell-sub">Auth::Login · RegisterOwner · Logout · RefreshToken · ForgotPassword · ResetPassword</div>
+          </div>
+          <div class="af-cell" style="--c:#10b981;" onclick="showView('backend')">
+            <div class="af-cell-title">⚙️ Medical Actions (15)</div>
+            <div class="af-cell-sub">Admin::Medical::CreateConsultation · CreatePrescription · CreateLabExam · UpdateLabExamResults · CreateVaccination · CreateDeworming · GenerateReport · ExportPdfReport · EmailReport · UploadAttachment · ImportMedicalHistory</div>
+          </div>
+          <div class="af-cell" style="--c:#3b82f6;" onclick="showView('backend')">
+            <div class="af-cell-title">⚙️ Appointment Actions (14)</div>
+            <div class="af-cell-sub">Admin::Appointments::Create/Update/Cancel/Confirm/Complete/Destroy/Filter/GetTimeSlots + OwnerPortal::Appointments::Create/Cancel/Confirm/GetAvailableVets/GetAvailableDays</div>
+          </div>
+          <div class="af-cell" style="--c:#f59e0b;" onclick="showView('backend')">
+            <div class="af-cell-title">⚙️ Financial Actions (9)</div>
+            <div class="af-cell-sub">Payments::RegisterPayment · ExtendPayment · CancelPayment · Admin::Financial::CreateExpense · ListExpenses · GetBalance · Sponsorships::Create/Cancel</div>
+          </div>
+          <div class="af-cell" style="--c:#ec4899;" onclick="showView('backend')">
+            <div class="af-cell-title">⚙️ Admin Actions (33+)</div>
+            <div class="af-cell-sub">Admin::Metrics::Calculate*(10) · Admin::Content::*(23 — Promotions/Testimonials/Announcements/EmailCampaigns/LandingConfig) · Admin::Shifts::*(6) · Admin::Owners::*(7) · Admin::Pets::*(5)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="af-connectors" style="grid-template-columns:repeat(5,1fr);">
+        <div class="af-conn" style="--c:#8b5cf6"></div>
+        <div class="af-conn" style="--c:#10b981"></div>
+        <div class="af-conn" style="--c:#3b82f6"></div>
+        <div class="af-conn" style="--c:#f59e0b"></div>
+        <div class="af-conn" style="--c:#ec4899"></div>
+      </div>
+
+      <!-- ROW: MODELS -->
+      <div class="af-row">
+        <div class="af-label">Models</div>
+        <div class="af-cells" style="grid-template-columns:repeat(5,1fr);">
+          <div class="af-cell" style="--c:#8b5cf6;" onclick="showView('backend')">
+            <div class="af-cell-title">User / Owner</div>
+            <div class="af-cell-sub">User (roles: admin, vet, vet_assistant, assistant, finances, hr) · Owner · RefreshToken (poly) · PasswordResetToken (poly)</div>
+          </div>
+          <div class="af-cell" style="--c:#10b981;" onclick="showView('backend')">
+            <div class="af-cell-title">Pet + Medical</div>
+            <div class="af-cell-sub">Pet (proprietary: Owner|User) · PetMedicalProfile · Consultation → Prescription → PrescriptionItem · Vaccination · VaccinationSchedule · Deworming · LabExam · MedicalReport · MedicalAttachment (poly)</div>
+          </div>
+          <div class="af-cell" style="--c:#3b82f6;" onclick="showView('backend')">
+            <div class="af-cell-title">Appointment + Service</div>
+            <div class="af-cell-sub">Appointment (pet+owner+vet+service) · Service · ServiceCategory (parent_id) · ClinicSchedule · StaffSchedule · ScheduleException (poly) · AdoptionRecord</div>
+          </div>
+          <div class="af-cell" style="--c:#f59e0b;" onclick="showView('backend')">
+            <div class="af-cell-title">Payment + Product</div>
+            <div class="af-cell-sub">Payment → PaymentItem · Refund · Expense · Product → StockMovement · ProductOrder → ProductOrderItem · Sponsorship</div>
+          </div>
+          <div class="af-cell" style="--c:#ec4899;" onclick="showView('backend')">
+            <div class="af-cell-title">Content + Config</div>
+            <div class="af-cell-sub">Announcement · Promotion · Testimonial · LandingConfig (JSON) · EmailCredential · EmailCampaign (filters JSON) · ContactMessage · MetricsSnapshot</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="af-connector-full"></div>
+
+      <!-- ROW: DATABASE -->
+      <div class="af-row">
+        <div class="af-label">Database</div>
+        <div class="af-cells" style="grid-template-columns:1fr;">
+          <div class="af-cell af-single" style="--c:#f59e0b;" onclick="showView('database')">
+            <div class="af-cell-title">🗄️ MySQL 8.0 / MariaDB — 45 tablas — db/schema.rb (fuente de verdad)</div>
+            <div class="af-cell-sub">FK constraints · JSON columns · deleted_at (soft delete con Discard) · índices compuestos · ActiveRecord migrations</div>
+            <div class="af-chips"><span>users · owners</span><span>pets · pet_medical_profiles</span><span>consultations · prescriptions · vaccinations</span><span>appointments · services</span><span>payments · products · stock_movements</span><span>email_campaigns · metrics_snapshots</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="af-connector-full"></div>
+
+      <!-- ROW: INFRA -->
+      <div class="af-row">
+        <div class="af-label">Infra</div>
+        <div class="af-cells" style="grid-template-columns:1fr;">
+          <div class="af-cell af-single" style="--c:#14b8a6;">
+            <div class="af-cell-title">🏗️ Infraestructura — Coolify · Docker Compose · Puma · esbuild · ActiveStorage · ActionMailer · ActiveJob</div>
+            <div class="af-cell-sub">Deploy self-hosted en Coolify · httpOnly cookies JWT · ActiveStorage (fotos, documentos) · SMTP configurado por clínica</div>
+            <div class="af-chips"><span>Coolify (self-hosted)</span><span>Docker Compose</span><span>Rails Puma</span><span>esbuild bundler</span><span>ActiveStorage</span><span>JWT httpOnly cookies</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /arch-flat -->
+  </div><!-- /view-overview -->
+
+
+  <!-- ══════════════════════════════════════
+       VIEW 2: DATABASE
+  ══════════════════════════════════════ -->
+  <div id="view-database" class="view">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(245,158,11,0.15)">🗄️</div>
+      Base de Datos — 45 Tablas
+    </div>
+    <div class="db-groups">
+
+      <div class="db-group accent-purple">
+        <div class="db-group-title">👤 Identidad & Auth</div>
+        <div class="db-table" title="Staff: admin, vet, vet_assistant, assistant, finances, hr">
+          <div class="db-table-name">🟣 users</div>
+          <div class="db-table-desc">Personal de la clínica (roles múltiples)</div>
+          <div class="db-fields">
+            <span class="db-field pk">id</span>
+            <span class="db-field">email</span>
+            <span class="db-field">role</span>
+            <span class="db-field">first_name</span>
+            <span class="db-field">password_digest</span>
+            <span class="db-field">deleted_at</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">🟣 owners</div>
+          <div class="db-table-desc">Dueños de mascotas (separados de staff)</div>
+          <div class="db-fields">
+            <span class="db-field pk">id</span>
+            <span class="db-field">email</span>
+            <span class="db-field">first_name</span>
+            <span class="db-field">phone</span>
+            <span class="db-field">deleted_at</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">🔑 refresh_tokens</div>
+          <div class="db-table-desc">JWT refresh (polimórfico: Owner/User)</div>
+          <div class="db-fields">
+            <span class="db-field pk">id</span>
+            <span class="db-field">token</span>
+            <span class="db-field fk">tokenable_id</span>
+            <span class="db-field">tokenable_type</span>
+            <span class="db-field">expires_at</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">🔐 password_reset_tokens</div>
+          <div class="db-table-desc">Tokens de reset de contraseña</div>
+          <div class="db-fields">
+            <span class="db-field pk">id</span>
+            <span class="db-field">token</span>
+            <span class="db-field fk">resettable_id</span>
+            <span class="db-field">resettable_type</span>
+            <span class="db-field">expires_at</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="db-group accent-green">
+        <div class="db-group-title">🐾 Mascotas</div>
+        <div class="db-table">
+          <div class="db-table-name">🟢 pets</div>
+          <div class="db-table-desc">Mascotas con propietario polimórfico (Owner o User)</div>
+          <div class="db-fields">
+            <span class="db-field pk">id</span>
+            <span class="db-field">name</span>
+            <span class="db-field">species</span>
+            <span class="db-field">breed</span>
+            <span class="db-field">sex</span>
+            <span class="db-field fk">proprietary_id</span>
+            <span class="db-field">proprietary_type</span>
+            <span class="db-field">adoption_status</span>
+            <span class="db-field">deleted_at</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">🩺 pet_medical_profiles</div>
+          <div class="db-table-desc">Perfil médico: enfermedades, alergias, tipo de sangre</div>
+          <div class="db-fields">
+            <span class="db-field pk">id</span>
+            <span class="db-field fk">pet_id</span>
+            <span class="db-field">blood_type</span>
+            <span class="db-field">chronic_diseases</span>
+            <span class="db-field">allergies</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">🏠 adoption_records</div>
+          <div class="db-table-desc">Historial de adopciones</div>
+          <div class="db-fields">
+            <span class="db-field pk">id</span>
+            <span class="db-field fk">pet_id</span>
+            <span class="db-field fk">adopter_id</span>
+            <span class="db-field fk">processed_by_id</span>
+            <span class="db-field">adoption_date</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">❤️ sponsorships</div>
+          <div class="db-table-desc">Apadrinamientos de mascotas</div>
+          <div class="db-fields">
+            <span class="db-field pk">id</span>
+            <span class="db-field fk">pet_id</span>
+            <span class="db-field fk">owner_id</span>
+            <span class="db-field">amount</span>
+            <span class="db-field">status</span>
+            <span class="db-field">start_date</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="db-group accent-cyan">
+        <div class="db-group-title">⚕️ Registros Médicos</div>
+        <div class="db-table">
+          <div class="db-table-name">📋 consultations</div>
+          <div class="db-table-desc">Consultas veterinarias</div>
+          <div class="db-fields">
+            <span class="db-field pk">id</span>
+            <span class="db-field fk">pet_id</span>
+            <span class="db-field fk">user_id</span>
+            <span class="db-field">diagnosis</span>
+            <span class="db-field">treatment</span>
+            <span class="db-field">date</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">💊 prescriptions → prescription_items</div>
+          <div class="db-table-desc">Recetas médicas con medicamentos</div>
+          <div class="db-fields">
+            <span class="db-field fk">consultation_id</span>
+            <span class="db-field">medication</span>
+            <span class="db-field">dose</span>
+            <span class="db-field">frequency</span>
+            <span class="db-field">completed</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">💉 vaccinations</div>
+          <div class="db-table-desc">Historial de vacunas administradas</div>
+          <div class="db-fields">
+            <span class="db-field fk">pet_id</span>
+            <span class="db-field fk">administered_by_id</span>
+            <span class="db-field">vaccine_name</span>
+            <span class="db-field">administered_at</span>
+            <span class="db-field">next_dose_at</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">🔬 lab_exams</div>
+          <div class="db-table-desc">Exámenes de laboratorio con resultados JSON</div>
+          <div class="db-fields">
+            <span class="db-field fk">consultation_id</span>
+            <span class="db-field">exam_type</span>
+            <span class="db-field">status</span>
+            <span class="db-field">results</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">🐛 dewormings · 📄 medical_reports · 📎 medical_attachments</div>
+          <div class="db-table-desc">Desparasitaciones, reportes y adjuntos (polimórfico)</div>
+          <div class="db-fields">
+            <span class="db-field">pet_id / consultation_id</span>
+            <span class="db-field">attachable_type</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">💉 vaccination_schedules + items</div>
+          <div class="db-table-desc">Esquemas de vacunación programados</div>
+          <div class="db-fields">
+            <span class="db-field fk">pet_id</span>
+            <span class="db-field">name</span>
+            <span class="db-field">scheduled_at</span>
+            <span class="db-field">completed</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="db-group accent-blue">
+        <div class="db-group-title">📅 Citas & Servicios</div>
+        <div class="db-table">
+          <div class="db-table-name">📅 appointments</div>
+          <div class="db-table-desc">Citas programadas entre pets, owners y vets</div>
+          <div class="db-fields">
+            <span class="db-field pk">id</span>
+            <span class="db-field fk">pet_id</span>
+            <span class="db-field fk">owner_id</span>
+            <span class="db-field fk">service_id</span>
+            <span class="db-field fk">user_id</span>
+            <span class="db-field">scheduled_at</span>
+            <span class="db-field">status</span>
+            <span class="db-field">payment_status</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">🩹 services + service_categories</div>
+          <div class="db-table-desc">Servicios veterinarios (jerarquía con parent_id)</div>
+          <div class="db-fields">
+            <span class="db-field">name</span>
+            <span class="db-field">price</span>
+            <span class="db-field">duration_minutes</span>
+            <span class="db-field fk">category_id</span>
+            <span class="db-field">species_applicable</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">🕐 clinic_schedules · staff_schedules · schedule_exceptions</div>
+          <div class="db-table-desc">Horarios clínica, disponibilidad staff y excepciones</div>
+          <div class="db-fields">
+            <span class="db-field">day_of_week</span>
+            <span class="db-field">open_time</span>
+            <span class="db-field">close_time</span>
+            <span class="db-field">exceptionable_type</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="db-group accent-orange">
+        <div class="db-group-title">💰 Finanzas & Productos</div>
+        <div class="db-table">
+          <div class="db-table-name">💳 payments → payment_items</div>
+          <div class="db-table-desc">Pagos vinculados a citas con líneas detalladas</div>
+          <div class="db-fields">
+            <span class="db-field fk">appointment_id</span>
+            <span class="db-field fk">owner_id</span>
+            <span class="db-field">amount</span>
+            <span class="db-field">status</span>
+            <span class="db-field">due_date</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">↩️ refunds · 📊 expenses</div>
+          <div class="db-table-desc">Reembolsos y gastos de la clínica</div>
+          <div class="db-fields">
+            <span class="db-field fk">payment_id</span>
+            <span class="db-field">amount</span>
+            <span class="db-field">reason</span>
+            <span class="db-field">category</span>
+            <span class="db-field">vendor</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">🛒 products → stock_movements</div>
+          <div class="db-table-desc">Inventario con historial de movimientos</div>
+          <div class="db-fields">
+            <span class="db-field">name</span>
+            <span class="db-field">price</span>
+            <span class="db-field">stock</span>
+            <span class="db-field">movement_type</span>
+            <span class="db-field">quantity</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">📦 product_orders → product_order_items</div>
+          <div class="db-table-desc">Pedidos públicos de productos</div>
+          <div class="db-fields">
+            <span class="db-field fk">owner_id</span>
+            <span class="db-field">total</span>
+            <span class="db-field">status</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="db-group accent-pink">
+        <div class="db-group-title">📣 Contenido & Config</div>
+        <div class="db-table">
+          <div class="db-table-name">📢 announcements</div>
+          <div class="db-table-desc">Anuncios del sistema con vigencia</div>
+          <div class="db-fields">
+            <span class="db-field">title</span>
+            <span class="db-field">content</span>
+            <span class="db-field">severity</span>
+            <span class="db-field">starts_at</span>
+            <span class="db-field">ends_at</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">🎁 promotions · ⭐ testimonials</div>
+          <div class="db-table-desc">Promociones y testimonios con posición</div>
+          <div class="db-fields">
+            <span class="db-field">title</span>
+            <span class="db-field">discount_percentage</span>
+            <span class="db-field">position</span>
+            <span class="db-field">rating</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">📧 email_credentials · email_campaigns</div>
+          <div class="db-table-desc">SMTP y campañas de email con filtros JSON</div>
+          <div class="db-fields">
+            <span class="db-field">smtp_host</span>
+            <span class="db-field">status</span>
+            <span class="db-field">filters</span>
+            <span class="db-field">sent_at</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">⚙️ landing_configs · metrics_snapshots</div>
+          <div class="db-table-desc">Config de landing (JSON) y caché de métricas</div>
+          <div class="db-fields">
+            <span class="db-field">key</span>
+            <span class="db-field">value (JSON)</span>
+            <span class="db-field">metric_type</span>
+            <span class="db-field">data (JSON)</span>
+          </div>
+        </div>
+        <div class="db-table">
+          <div class="db-table-name">✉️ contact_messages</div>
+          <div class="db-table-desc">Mensajes del formulario de contacto</div>
+          <div class="db-fields">
+            <span class="db-field">name</span>
+            <span class="db-field">email</span>
+            <span class="db-field">message</span>
+            <span class="db-field">status</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /view-database -->
+
+
+  <!-- ══════════════════════════════════════
+       VIEW 3: BACKEND
+  ══════════════════════════════════════ -->
+  <div id="view-backend" class="view">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(139,92,246,0.15)">⚙️</div>
+      Backend — Rails 8 · Action Pattern
+    </div>
+    <div class="be-grid">
+
+      <div class="be-section accent-purple">
+        <div class="be-section-title">🎮 Controladores Raíz</div>
+        <div class="be-item">ApplicationController <span class="be-count-badge">base</span></div>
+        <div class="be-item">AuthController <span class="be-count-badge">login/register/refresh</span></div>
+        <div class="be-item">ProfileController <span class="be-count-badge">show/update/destroy</span></div>
+        <div class="be-item">DashboardController <span class="be-count-badge">summary</span></div>
+        <div class="be-item">PagesController <span class="be-count-badge">home/about/contact</span></div>
+        <div class="be-item">PetsController <span class="be-count-badge">owner CRUD + photos</span></div>
+        <div class="be-item">SponsorshipsController <span class="be-count-badge">create/cancel</span></div>
+      </div>
+
+      <div class="be-section accent-blue">
+        <div class="be-section-title">🏠 Owner Portal (15+ controllers)</div>
+        <div class="be-item">OwnerPagesController <span class="be-count-badge">pages</span></div>
+        <div class="be-item">OwnerAppointmentsController <span class="be-count-badge">CRUD</span></div>
+        <div class="be-item">OwnerAvailabilityController <span class="be-count-badge">vets/days</span></div>
+        <div class="be-item">OwnerServicesController <span class="be-count-badge">list</span></div>
+        <div class="be-item">OwnerPaymentsController <span class="be-count-badge">list/register</span></div>
+        <div class="be-item">OwnerMedicalSummaryController <span class="be-count-badge">summary</span></div>
+        <div class="be-item">OwnerConsultationsController <span class="be-count-badge">view/export</span></div>
+        <div class="be-item">OwnerLabExamsController <span class="be-count-badge">files/results</span></div>
+        <div class="be-item">OwnerVaccinationsController <span class="be-count-badge">view</span></div>
+        <div class="be-item">OwnerDewormingsController <span class="be-count-badge">view</span></div>
+        <div class="be-item">OwnerMedicalReportsController <span class="be-count-badge">PDF</span></div>
+        <div class="be-item">OwnerPrescriptionItemsController <span class="be-count-badge">complete</span></div>
+      </div>
+
+      <div class="be-section accent-pink">
+        <div class="be-section-title">👑 Admin Controllers (30+)</div>
+        <div class="be-item">AdminPagesController <span class="be-count-badge">Inertia pages</span></div>
+        <div class="be-item">Admin::PetsController <span class="be-count-badge">CRUD</span></div>
+        <div class="be-item">Admin::OwnersController <span class="be-count-badge">CRUD + pets</span></div>
+        <div class="be-item">Admin::AppointmentsController <span class="be-count-badge">full CRUD</span></div>
+        <div class="be-item">Admin::ConsultationsController <span class="be-count-badge">CRUD + PDF</span></div>
+        <div class="be-item">Admin::PrescriptionsController <span class="be-count-badge">nested</span></div>
+        <div class="be-item">Admin::LabExamsController <span class="be-count-badge">files</span></div>
+        <div class="be-item">Admin::VaccinationsController <span class="be-count-badge">CRUD</span></div>
+        <div class="be-item">Admin::StaffController <span class="be-count-badge">CRUD</span></div>
+        <div class="be-item">Admin::ServicesController <span class="be-count-badge">CRUD</span></div>
+        <div class="be-item">Admin::ProductsController <span class="be-count-badge">+ stock ops</span></div>
+        <div class="be-item">Admin::PaymentsController <span class="be-count-badge">CRUD + ops</span></div>
+        <div class="be-item">Admin::MetricsController <span class="be-count-badge">10 endpoints</span></div>
+        <div class="be-item">Admin::ShiftsController <span class="be-count-badge">schedules</span></div>
+        <div class="be-item">Admin::FinancialController <span class="be-count-badge">expenses/refunds</span></div>
+        <div class="be-item">Admin::Content::* <span class="be-count-badge">5 controllers</span></div>
+        <div class="be-item">Admin::SettingsController <span class="be-count-badge">SMTP/email</span></div>
+      </div>
+
+      <div class="be-section accent-green">
+        <div class="be-section-title">🌐 Public API</div>
+        <div class="be-item">Public::ContactMessagesController</div>
+        <div class="be-item">Public::ProductsController</div>
+        <div class="be-item">Public::ProductOrdersController</div>
+        <div class="be-item">Public::LandingController</div>
+      </div>
+
+      <div class="be-section accent-teal">
+        <div class="be-section-title">🔒 Concerns</div>
+        <div class="be-item">Authenticatable <span class="be-count-badge">JWT cookies</span></div>
+        <div class="be-item">Paginatable <span class="be-count-badge">pagination helper</span></div>
+        <div class="be-item">PetJsonable <span class="be-count-badge">pet serializer</span></div>
+        <div class="be-item">TokenManageable <span class="be-count-badge">action concern</span></div>
+      </div>
+
+      <div class="be-section accent-orange">
+        <div class="be-section-title">🗂️ Modelos (42)</div>
+        <div class="be-item">User, Owner <span class="be-count-badge">identity</span></div>
+        <div class="be-item">Pet, PetMedicalProfile <span class="be-count-badge">+ polymorphic</span></div>
+        <div class="be-item">Consultation, Prescription, PrescriptionItem</div>
+        <div class="be-item">Vaccination, VaccinationSchedule, Deworming</div>
+        <div class="be-item">LabExam, MedicalReport, MedicalAttachment</div>
+        <div class="be-item">Appointment, Service, ServiceCategory</div>
+        <div class="be-item">ClinicSchedule, StaffSchedule, ScheduleException</div>
+        <div class="be-item">Payment, PaymentItem, Refund, Expense</div>
+        <div class="be-item">Product, ProductOrder, StockMovement</div>
+        <div class="be-item">AdoptionRecord, Sponsorship</div>
+        <div class="be-item">Announcement, Promotion, Testimonial</div>
+        <div class="be-item">LandingConfig, EmailCredential, EmailCampaign</div>
+        <div class="be-item">RefreshToken, PasswordResetToken, MetricsSnapshot</div>
+      </div>
+
+      <!-- ACTIONS full width -->
+      <div class="be-section be-section-full accent-pink">
+        <div class="be-section-title">⚙️ Actions (138 total) — Result.success() / Result.failure()</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:8px;">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--pink);margin-bottom:4px;">🔐 Auth (6)</div>
+            <div class="be-item">Auth::Login</div>
+            <div class="be-item">Auth::RegisterOwner</div>
+            <div class="be-item">Auth::Logout</div>
+            <div class="be-item">Auth::RefreshToken</div>
+            <div class="be-item">Auth::ForgotPassword</div>
+            <div class="be-item">Auth::ResetPassword</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--cyan);margin-bottom:4px;">📅 Appointments (8)</div>
+            <div class="be-item">Admin::Appointments::Create</div>
+            <div class="be-item">Admin::Appointments::Update</div>
+            <div class="be-item">Admin::Appointments::Cancel</div>
+            <div class="be-item">Admin::Appointments::Confirm</div>
+            <div class="be-item">Admin::Appointments::Complete</div>
+            <div class="be-item">Admin::Appointments::Destroy</div>
+            <div class="be-item">Admin::Appointments::Filter</div>
+            <div class="be-item">Admin::Appointments::GetTimeSlots</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--green);margin-bottom:4px;">⚕️ Medical (15)</div>
+            <div class="be-item">Admin::Medical::CreateConsultation</div>
+            <div class="be-item">Admin::Medical::CreatePrescription</div>
+            <div class="be-item">Admin::Medical::CreateLabExam</div>
+            <div class="be-item">Admin::Medical::UpdateLabExamResults</div>
+            <div class="be-item">Admin::Medical::CreateVaccination</div>
+            <div class="be-item">Admin::Medical::CreateDeworming</div>
+            <div class="be-item">Admin::Medical::GenerateReport</div>
+            <div class="be-item">Admin::Medical::ExportPdfReport</div>
+            <div class="be-item">Admin::Medical::UploadAttachment</div>
+            <div class="be-item">Admin::Medical::ImportMedicalHistory</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--orange);margin-bottom:4px;">📊 Metrics (10)</div>
+            <div class="be-item">Admin::Metrics::CalculateDashboard</div>
+            <div class="be-item">Admin::Metrics::CalculateConsultations</div>
+            <div class="be-item">Admin::Metrics::CalculatePatients</div>
+            <div class="be-item">Admin::Metrics::CalculateRevenue</div>
+            <div class="be-item">Admin::Metrics::CalculateAppointments</div>
+            <div class="be-item">Admin::Metrics::CalculateVaccinations</div>
+            <div class="be-item">Admin::Metrics::CalculateAdoptions</div>
+            <div class="be-item">Admin::Metrics::CalculateSponsorships</div>
+            <div class="be-item">Admin::Metrics::CalculateFinancial</div>
+            <div class="be-item">Admin::Metrics::RefreshAllSnapshots</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--purple);margin-bottom:4px;">📣 Content (23)</div>
+            <div class="be-item">Admin::Content::Create/Update/Delete Announcement</div>
+            <div class="be-item">Admin::Content::Create/Update/Delete Promotion</div>
+            <div class="be-item">Admin::Content::ReorderPromotions</div>
+            <div class="be-item">Admin::Content::Create/Update/Delete Testimonial</div>
+            <div class="be-item">Admin::Content::ReorderTestimonials</div>
+            <div class="be-item">Admin::Content::Create/Update/List EmailCampaign</div>
+            <div class="be-item">Admin::Content::SendEmailCampaign</div>
+            <div class="be-item">Admin::Content::PreviewCampaignRecipients</div>
+            <div class="be-item">Admin::Content::GetLandingConfig</div>
+            <div class="be-item">Admin::Content::UpdateLandingConfig</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--blue);margin-bottom:4px;">🏠 Owner Portal (25)</div>
+            <div class="be-item">OwnerPortal::Appointments::Create</div>
+            <div class="be-item">OwnerPortal::Appointments::Cancel</div>
+            <div class="be-item">OwnerPortal::Appointments::Confirm</div>
+            <div class="be-item">OwnerPortal::Appointments::GetAvailableVets</div>
+            <div class="be-item">OwnerPortal::Appointments::GetAvailableDays</div>
+            <div class="be-item">Payments::RegisterPayment</div>
+            <div class="be-item">Payments::ExtendPayment</div>
+            <div class="be-item">Payments::CancelPayment</div>
+            <div class="be-item">Sponsorships::CreateSponsorship</div>
+            <div class="be-item">Medical::CompletePrescriptionItem</div>
+            <div class="be-item">Medical::ExportPdfRecipe</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /view-backend -->
+
+
+  <!-- ══════════════════════════════════════
+       VIEW 4: FRONTEND
+  ══════════════════════════════════════ -->
+  <div id="view-frontend" class="view">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(6,182,212,0.15)">⚛️</div>
+      Frontend — React 19 + TypeScript + Redux Toolkit
+    </div>
+
+    <!-- Top cards -->
+    <div class="fe-grid">
+      <div class="fe-card accent-cyan">
+        <div class="fe-card-header">
+          <div class="fe-card-icon" style="background:rgba(6,182,212,0.15)">⚡</div>
+          <div>
+            <div class="fe-card-title" style="color:var(--cyan)">Hooks Custom</div>
+            <div class="fe-card-count">31 hooks</div>
+          </div>
+        </div>
+        <div class="fe-list">
+          <div class="fe-item">useAuth, useLogin, useRegisterOwner</div>
+          <div class="fe-item">usePets, useAdoptions, useAppointments</div>
+          <div class="fe-item">useMyAppointments, usePayments, useMyPayments</div>
+          <div class="fe-item">useSponsorships, useServices, useOwnerServices</div>
+          <div class="fe-item">useProducts, useAdminStaff, useAdminOwners</div>
+          <div class="fe-item">useStaffSchedules, useFinancial, useMetrics</div>
+          <div class="fe-item">useShifts, useStockMovements, useContent</div>
+          <div class="fe-item">useTheme, useBookmarks, useInPageSearch</div>
+          <div class="fe-item">useMarkdownNavigation, useRefetchOnNavigation</div>
+        </div>
+      </div>
+
+      <div class="fe-card accent-blue">
+        <div class="fe-card-header">
+          <div class="fe-card-icon" style="background:rgba(59,130,246,0.15)">🔌</div>
+          <div>
+            <div class="fe-card-title" style="color:var(--blue)">API Clients</div>
+            <div class="fe-card-count">27 clientes TypeScript</div>
+          </div>
+        </div>
+        <div class="fe-list">
+          <div class="fe-item">Auth, Pets, Profile, Dashboard</div>
+          <div class="fe-item">Appointments, OwnerAppointments</div>
+          <div class="fe-item">Payments, OwnerPayments, Sponsorships</div>
+          <div class="fe-item">Services, OwnerServices, ServiceCategories</div>
+          <div class="fe-item">Products, StockMovements, Financial</div>
+          <div class="fe-item">AdminOwners, AdminStaff, StaffSchedules</div>
+          <div class="fe-item">Metrics, Shifts, MedicalRecords</div>
+          <div class="fe-item">Content, Adoptions, PublicAdoption</div>
+          <div class="fe-item">UserManual, Settings</div>
+        </div>
+      </div>
+
+      <div class="fe-card accent-purple">
+        <div class="fe-card-header">
+          <div class="fe-card-icon" style="background:rgba(139,92,246,0.15)">🗃️</div>
+          <div>
+            <div class="fe-card-title" style="color:var(--purple)">Redux Slices</div>
+            <div class="fe-card-count">19 slices</div>
+          </div>
+        </div>
+        <div class="fe-list">
+          <div class="fe-item">authSlice, petsSlice</div>
+          <div class="fe-item">appointmentsSlice, ownerAppointmentsSlice</div>
+          <div class="fe-item">paymentsSlice, ownerPaymentsSlice</div>
+          <div class="fe-item">sponsorshipsSlice, servicesSlice</div>
+          <div class="fe-item">serviceCategoriesSlice, productsSlice</div>
+          <div class="fe-item">staffSchedulesSlice, metricsSlice</div>
+          <div class="fe-item">shiftsSlice, financialSlice</div>
+          <div class="fe-item">stockMovementsSlice, adoptionsSlice</div>
+          <div class="fe-item">adminStaffSlice, adminOwnersSlice</div>
+          <div class="fe-item">cartSlice</div>
+        </div>
+      </div>
+
+      <div class="fe-card accent-teal">
+        <div class="fe-card-header">
+          <div class="fe-card-icon" style="background:rgba(20,184,166,0.15)">📐</div>
+          <div>
+            <div class="fe-card-title" style="color:var(--teal)">Types</div>
+            <div class="fe-card-count">18 tipos TypeScript</div>
+          </div>
+        </div>
+        <div class="fe-list">
+          <div class="fe-item">Pet, Owner, Staff, Appointment</div>
+          <div class="fe-item">Service, ServiceCategory, Product</div>
+          <div class="fe-item">Payment, Sponsorship, MedicalRecords</div>
+          <div class="fe-item">Content, Financial, Metrics, Shifts</div>
+          <div class="fe-item">StaffSchedule, Settings, Sidebar</div>
+          <div class="fe-item">Pagination, UserManual</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pages tree -->
+    <div class="section-title" style="font-size:15px;margin-top:8px;margin-bottom:16px;">
+      <div class="icon" style="background:rgba(236,72,153,0.15);width:28px;height:28px;font-size:14px;">📄</div>
+      Páginas (110+)
+    </div>
+    <div class="pages-grid">
+      <div class="page-group accent-green">
+        <div class="page-group-title">🌍 Páginas Públicas</div>
+        <div class="page-item">Home — Landing hero</div>
+        <div class="page-item">About — Sobre nosotros</div>
+        <div class="page-item">Contact — Formulario contacto</div>
+        <div class="page-item">Services — Catálogo servicios</div>
+        <div class="page-item">Products — Catálogo productos</div>
+        <div class="page-item">Adoption — Portal adopciones</div>
+        <div class="page-item">Auth — Login/Register/Forgot/Reset</div>
+        <div class="page-item">Privacy, Terms — Legal</div>
+        <div class="page-item">Pawcare — Info producto</div>
+        <div class="page-item">UserManual — Manual usuario</div>
+      </div>
+
+      <div class="page-group accent-blue">
+        <div class="page-group-title">🏠 Owner Portal</div>
+        <div class="page-item">Dashboard — Panel dueño</div>
+        <div class="page-item">PetsIndex — Mis mascotas</div>
+        <div class="page-item">MedicalHistoryIndex — Historial médico</div>
+        <div class="page-item">owner/appointments/AppointmentsIndex</div>
+        <div class="page-item">  └ OwnerAppointmentForm</div>
+        <div class="page-item">  └ CancelAppointmentDialog</div>
+        <div class="page-item">  └ OwnerAppointmentsTable</div>
+        <div class="page-item">owner/payments/PaymentsIndex</div>
+        <div class="page-item">  └ RegisterPaymentDialog</div>
+        <div class="page-item">sponsorships/SponsorshipsIndex</div>
+        <div class="page-item">profile/ProfileIndex</div>
+      </div>
+
+      <div class="page-group accent-pink">
+        <div class="page-group-title">👑 Admin Panel</div>
+        <div class="page-item">AdminLayout + AdminSidebar + AdminHeader</div>
+        <div class="page-item">admin/pets/PetsIndex — Gestión mascotas</div>
+        <div class="page-item">admin/owners/OwnersIndex — Gestión dueños</div>
+        <div class="page-item">admin/appointments/AppointmentsIndex</div>
+        <div class="page-item">admin/consultations/ConsultationsIndex</div>
+        <div class="page-item">admin/medical-records/MedicalRecordsIndex</div>
+        <div class="page-item">admin/payments/PaymentsIndex</div>
+        <div class="page-item">admin/staff/StaffIndex</div>
+        <div class="page-item">admin/services/ServicesIndex</div>
+        <div class="page-item">admin/metrics/MetricsIndex — Analytics</div>
+        <div class="page-item">admin/shifts/ShiftsIndex — Horarios</div>
+        <div class="page-item">admin/financial/FinancialIndex</div>
+        <div class="page-item">admin/content/ContentIndex — Contenido</div>
+        <div class="page-item">admin/adoptions/AdoptionsIndex</div>
+        <div class="page-item">admin/sponsorships/SponsorshipsIndex</div>
+        <div class="page-item">admin/reports/ReportsIndex</div>
+        <div class="page-item">admin/settings/* — 4 settings pages</div>
+        <div class="page-item">admin/user-manual/UserManualIndex</div>
+      </div>
+
+      <div class="page-group accent-orange">
+        <div class="page-group-title">🧩 Componentes Compartidos</div>
+        <div class="page-item">ui/ — 50+ shadcn/ui components</div>
+        <div class="page-item">landing/ — Navbar, Hero, Footer</div>
+        <div class="page-item">landing/ — AnnouncementsBanner</div>
+        <div class="page-item">landing/ — PromotionsBanner</div>
+        <div class="page-item">landing/ — Services, About, Contact</div>
+        <div class="page-item">landing/ — Products, Testimonials</div>
+        <div class="page-item">auth/ — LoginForm, RegisterForm</div>
+        <div class="page-item">auth/ — ForgotPasswordForm, ResetPasswordForm</div>
+        <div class="page-item">pets/ — PetsList, PetCard, PetForm, PetDetail</div>
+        <div class="page-item">dashboard/ — StatsCard, PatientCard</div>
+        <div class="page-item">dashboard/ — AppointmentList, AppointmentDialog</div>
+      </div>
+
+      <div class="page-group accent-cyan">
+        <div class="page-group-title">📊 Admin — Métricas & Content</div>
+        <div class="page-item">MetricsChart, MetricCard</div>
+        <div class="page-item">BalanceCard, ExpenseCard, RefundCard</div>
+        <div class="page-item">ContentIndex tabs:</div>
+        <div class="page-item">  └ AnnouncementsTab</div>
+        <div class="page-item">  └ PromotionsTab</div>
+        <div class="page-item">  └ TestimonialsTab</div>
+        <div class="page-item">  └ EmailCampaignsTab</div>
+        <div class="page-item">  └ LandingConfigTab</div>
+        <div class="page-item">  └ LandingServicesTab</div>
+        <div class="page-item">  └ AboutTab</div>
+      </div>
+
+      <div class="page-group accent-purple">
+        <div class="page-group-title">🔐 Roles de Acceso</div>
+        <div class="page-item" style="color:var(--purple);font-size:11px;font-weight:600;">Staff Roles:</div>
+        <div class="page-item">admin — Acceso total</div>
+        <div class="page-item">vet — Consultas, médico, citas</div>
+        <div class="page-item">vet_assistant — Soporte médico</div>
+        <div class="page-item">assistant — Citas, recepción</div>
+        <div class="page-item">finances — Pagos, gastos</div>
+        <div class="page-item">hr — Personal, turnos</div>
+        <div class="page-item" style="color:var(--blue);font-size:11px;font-weight:600;margin-top:8px;">Owner:</div>
+        <div class="page-item">owner — Portal propio, mascotas</div>
+        <div class="page-item" style="color:var(--green);font-size:11px;font-weight:600;margin-top:8px;">Public:</div>
+        <div class="page-item">Sin auth — Landing, adopción, productos</div>
+      </div>
+    </div>
+  </div><!-- /view-frontend -->
+
+
+  <!-- ══════════════════════════════════════
+       VIEW 5: FLOWS
+  ══════════════════════════════════════ -->
+  <div id="view-flows" class="view">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(59,130,246,0.15)">🔄</div>
+      Flujos de Datos Principales
+    </div>
+    <div class="flows-grid">
+
+      <div class="flow-card accent-purple">
+        <div class="flow-title" style="color:var(--purple)">🔐 Flujo de Autenticación</div>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--purple);color:var(--purple)">1</div>
+            <div class="flow-step-text">Usuario envía credenciales desde <strong>LoginForm</strong> → <strong>Auth API client</strong></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--purple);color:var(--purple)">2</div>
+            <div class="flow-step-text"><strong>AuthController#login</strong> llama <strong>Auth::Login</strong> action → valida email/password</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--purple);color:var(--purple)">3</div>
+            <div class="flow-step-text"><strong>Result.success(user:)</strong> → tokens JWT guardados como <strong>httpOnly cookies</strong></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--purple);color:var(--purple)">4</div>
+            <div class="flow-step-text">Middleware de Inertia decodifica JWT en cada request → establece <strong>@current_user</strong></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--purple);color:var(--purple)">5</div>
+            <div class="flow-step-text"><strong>currentUser</strong> compartido como prop de Inertia a todos los componentes React</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--purple);color:var(--purple)">6</div>
+            <div class="flow-step-text"><strong>useAuth hook</strong> → dispatcha a <strong>authSlice</strong> → redirect al dashboard</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-card accent-green">
+        <div class="flow-title" style="color:var(--green)">🐾 Flujo: Gestión de Mascotas</div>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--green);color:var(--green)">1</div>
+            <div class="flow-step-text">Owner completa <strong>PetForm</strong> con datos de la mascota</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--green);color:var(--green)">2</div>
+            <div class="flow-step-text"><strong>usePets hook</strong> llama <strong>Pets API client</strong> → POST /pets con wrapper <code>{ pet: {...} }</code></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--green);color:var(--green)">3</div>
+            <div class="flow-step-text"><strong>PetsController</strong> llama <strong>Pets::CreatePet</strong> action → valida y guarda</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--green);color:var(--green)">4</div>
+            <div class="flow-step-text"><strong>Result.success(pet:)</strong> → controller responde con JSON <code>{ pet: {...} }</code></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--green);color:var(--green)">5</div>
+            <div class="flow-step-text"><strong>petsSlice</strong> actualizado en Redux → UI re-renderiza con nueva mascota</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--green);color:var(--green)">6</div>
+            <div class="flow-step-text">Foto: endpoint separado <strong>POST /pets/:id/photo</strong> con <strong>FormData</strong> → <strong>ActiveStorage</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-card accent-blue">
+        <div class="flow-title" style="color:var(--blue)">📅 Flujo: Reserva de Cita</div>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--blue);color:var(--blue)">1</div>
+            <div class="flow-step-text">Owner selecciona servicio → <strong>useMyAppointments</strong> consulta vets disponibles</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--blue);color:var(--blue)">2</div>
+            <div class="flow-step-text"><strong>OwnerAvailabilityController</strong> → <strong>OwnerPortal::Appointments::GetAvailableVets + Days</strong></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--blue);color:var(--blue)">3</div>
+            <div class="flow-step-text">Owner selecciona fecha/hora y confirma el <strong>OwnerAppointmentForm</strong></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--blue);color:var(--blue)">4</div>
+            <div class="flow-step-text"><strong>OwnerPortal::Appointments::CreateAppointment</strong> valida slot → crea Appointment</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--blue);color:var(--blue)">5</div>
+            <div class="flow-step-text">Se genera automáticamente un <strong>Payment</strong> en estado "pending"</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--blue);color:var(--blue)">6</div>
+            <div class="flow-step-text">Admin puede confirmar/cancelar/completar desde <strong>admin/appointments</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-card accent-cyan">
+        <div class="flow-title" style="color:var(--cyan)">⚕️ Flujo: Historia Clínica</div>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--cyan);color:var(--cyan)">1</div>
+            <div class="flow-step-text">Vet crea consulta desde <strong>admin/consultations</strong> usando <strong>ConsultationViewer</strong></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--cyan);color:var(--cyan)">2</div>
+            <div class="flow-step-text"><strong>Admin::Medical::CreateConsultation</strong> guarda con diagnóstico y tratamiento</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--cyan);color:var(--cyan)">3</div>
+            <div class="flow-step-text">Desde consulta se agregan: <strong>Prescriptions</strong>, <strong>LabExams</strong>, <strong>Vaccinations</strong></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--cyan);color:var(--cyan)">4</div>
+            <div class="flow-step-text">Owner puede ver y completar items de prescripción desde su portal</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--cyan);color:var(--cyan)">5</div>
+            <div class="flow-step-text">Reporte médico generado por <strong>Admin::Medical::GenerateReport</strong> → cachea en DB</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--cyan);color:var(--cyan)">6</div>
+            <div class="flow-step-text"><strong>Admin::Medical::ExportPdfReport</strong> genera PDF descargable o envío por email</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-card accent-orange">
+        <div class="flow-title" style="color:var(--orange)">💳 Flujo: Gestión de Pagos</div>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--orange);color:var(--orange)">1</div>
+            <div class="flow-step-text">Payment se crea automáticamente al confirmar una <strong>cita</strong></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--orange);color:var(--orange)">2</div>
+            <div class="flow-step-text">Payment tiene <strong>PaymentItems</strong> con servicios y productos detallados</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--orange);color:var(--orange)">3</div>
+            <div class="flow-step-text">Estado: <strong>pending → paid</strong> (register) o <strong>cancelled</strong> o <strong>extended</strong> (due_date)</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--orange);color:var(--orange)">4</div>
+            <div class="flow-step-text">Owner registra pago desde portal → <strong>Payments::RegisterPayment</strong> action</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--orange);color:var(--orange)">5</div>
+            <div class="flow-step-text">Admin puede crear <strong>Refunds</strong> vinculados al pago original</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--orange);color:var(--orange)">6</div>
+            <div class="flow-step-text">Balance calculado por <strong>Admin::Financial::GetBalance</strong> → cacheado en <strong>MetricsSnapshot</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-card accent-pink">
+        <div class="flow-title" style="color:var(--pink)">📊 Flujo: Métricas & Analytics</div>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--pink);color:var(--pink)">1</div>
+            <div class="flow-step-text">Admin abre <strong>admin/metrics</strong> → <strong>useMetrics hook</strong> solicita datos</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--pink);color:var(--pink)">2</div>
+            <div class="flow-step-text"><strong>Metrics API client</strong> → GET /admin/metrics/dashboard</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--pink);color:var(--pink)">3</div>
+            <div class="flow-step-text"><strong>Admin::MetricsController</strong> busca en <strong>metrics_snapshots</strong> (caché)</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--pink);color:var(--pink)">4</div>
+            <div class="flow-step-text">Si no hay caché → <strong>Admin::Metrics::CalculateDashboard</strong> agrega datos</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--pink);color:var(--pink)">5</div>
+            <div class="flow-step-text">Resultado guardado en <strong>metrics_snapshots</strong> con timestamp</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num" style="border-color:var(--pink);color:var(--pink)">6</div>
+            <div class="flow-step-text"><strong>metricsSlice</strong> actualizado → <strong>MetricCard + MetricsChart</strong> muestran datos</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /view-flows -->
+
+</div><!-- /canvas-container -->
+
+<!-- FAB scroll-to-top -->
+<button class="fab" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Ir arriba">↑</button>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+  // ─── VIEW SWITCHING ─────────────────────────────────────────
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+    const viewEl = document.getElementById('view-' + name);
+    if (viewEl) viewEl.classList.add('active');
+
+    const tabs = document.querySelectorAll('.nav-tab');
+    const map = { overview: 0, database: 1, backend: 2, frontend: 3, flows: 4 };
+    if (tabs[map[name]]) tabs[map[name]].classList.add('active');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+
+  // ─── SCROLL ANIMATIONS ──────────────────────────────────────
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = entry.target.dataset.transform || 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.layer-card, .db-group, .be-section, .fe-card, .flow-card, .page-group').forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = `opacity 0.5s ease ${i * 0.04}s, transform 0.5s ease ${i * 0.04}s, border-color 0.3s, box-shadow 0.3s`;
+    observer.observe(el);
+  });
+
+  // Re-trigger animations on view switch
+  const origShowView = window.showView;
+  window.showView = function(name) {
+    origShowView(name);
+    setTimeout(() => {
+      document.querySelectorAll('.layer-card, .db-group, .be-section, .fe-card, .flow-card, .page-group').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+      });
+      setTimeout(() => {
+        document.querySelectorAll('.layer-card, .db-group, .be-section, .fe-card, .flow-card, .page-group').forEach((el, i) => {
+          setTimeout(() => {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+          }, i * 40);
+        });
+      }, 50);
+    }, 0);
+  };
+
+  // ─── TOOLTIP on db-table / be-item hover ────────────────────
+  const tooltip = document.getElementById('tooltip');
+  const tips = {
+    'users': 'Staff con roles: admin, vet, vet_assistant, assistant, finances, hr. Soft delete con deleted_at.',
+    'owners': 'Dueños de mascotas. Separados de User. Pueden autenticarse en Owner Portal.',
+    'refresh_tokens': 'Polimórfico: tokenable_type = "Owner" o "User". JWT refresh tokens.',
+    'pets': 'Propietario polimórfico: proprietary_type = "Owner" o "User". Soft delete.',
+    'consultations': 'Consultas veterinarias. Puede tener múltiples prescriptions, lab_exams, vaccinations.',
+    'appointments': 'Cita entre pet, owner (dueño), service y user (veterinario). Genera Payment automático.',
+    'payments': 'Vinculado a appointment. Status: pending → paid/cancelled. Puede tener Refunds.',
+    'metrics_snapshots': 'Caché de métricas calculadas. Se invalida con Admin::Metrics::RefreshAllSnapshots.',
+  };
+
+  document.querySelectorAll('.db-table').forEach(el => {
+    el.addEventListener('mouseenter', e => {
+      const name = el.querySelector('.db-table-name')?.textContent.trim().split(' ').pop();
+      const msg = tips[name] || 'Click para ver detalles en la documentación';
+      tooltip.textContent = msg;
+      tooltip.classList.add('show');
+    });
+    el.addEventListener('mousemove', e => {
+      tooltip.style.left = (e.clientX + 14) + 'px';
+      tooltip.style.top = (e.clientY - 10) + 'px';
+    });
+    el.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+  });
+
+  // ─── KEYBOARD ───────────────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    const views = ['overview', 'database', 'backend', 'frontend', 'flows'];
+    const keys = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4 };
+    if (keys[e.key] !== undefined) showView(views[keys[e.key]]);
+  });
+
+  // ─── PARTICLE BG ────────────────────────────────────────────
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;top:0;left:0;pointer-events:none;z-index:0;opacity:0.15';
+  document.body.prepend(canvas);
+  const ctx2d = canvas.getContext('2d');
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  const particles = Array.from({ length: 60 }, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    r: Math.random() * 1.5 + 0.5,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    color: ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981'][Math.floor(Math.random() * 4)]
+  }));
+
+  function animParticles() {
+    ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+      ctx2d.beginPath();
+      ctx2d.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx2d.fillStyle = p.color;
+      ctx2d.fill();
+    });
+
+    // Draw connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx2d.beginPath();
+          ctx2d.moveTo(particles[i].x, particles[i].y);
+          ctx2d.lineTo(particles[j].x, particles[j].y);
+          ctx2d.strokeStyle = `rgba(59,130,246,${(1 - dist / 120) * 0.3})`;
+          ctx2d.lineWidth = 0.5;
+          ctx2d.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(animParticles);
+  }
+  animParticles();
+
+  // Initial animation trigger
+  setTimeout(() => {
+    document.querySelectorAll('.layer-card, .db-group, .be-section, .fe-card, .flow-card, .page-group').forEach((el, i) => {
+      setTimeout(() => {
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }, i * 50);
+    });
+  }, 100);
+</script>
+</body>
+</html>

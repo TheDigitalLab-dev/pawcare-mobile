@@ -1,0 +1,342 @@
+                                          Prefix Verb   URI Pattern                                                                                       Controller#Action
+                               letter_opener_web        /letter_opener                                                                                    LetterOpenerWeb::Engine
+                              rails_health_check GET    /up(.:format)                                                                                     rails/health#show
+                                          health GET    /health(.:format)                                                                                 pages#health
+                                            root GET    /                                                                                                 pages#home
+                                    unauthorized GET    /unauthorized(.:format)                                                                           pages#unauthorized
+                                       not_found GET    /not-found(.:format)                                                                              pages#not_found
+                                         landing GET    /landing(.:format)                                                                                public/landing#index
+                         public_contact_messages POST   /public/contact_messages(.:format)                                                                public/contact_messages#create
+                                 public_products GET    /public/products(.:format)                                                                        public/products#index
+                                  public_product GET    /public/products/:id(.:format)                                                                    public/products#show
+               upload_proof_public_product_order POST   /public/product_orders/:id/upload_proof(.:format)                                                 public/product_orders#upload_proof
+                           public_product_orders POST   /public/product_orders(.:format)                                                                  public/product_orders#create
+                                        products GET    /products(.:format)                                                                               pages#products
+                                        checkout GET    /checkout(.:format)                                                                               pages#checkout
+                                        services GET    /services(.:format)                                                                               pages#services
+                                           about GET    /about(.:format)                                                                                  pages#about
+                                         contact GET    /contact(.:format)                                                                                pages#contact
+                                           terms GET    /terms(.:format)                                                                                  pages#terms
+                                         privacy GET    /privacy(.:format)                                                                                pages#privacy
+                                         pawcare GET    /pawcare(.:format)                                                                                pages#pawcare
+                                     user_manual GET    /user_manual(.:format)                                                                            pages#user_manual
+                                        adoption GET    /adoption(.:format)                                                                               adoption#index
+                                   adoption_pets GET    /adoption/pets(.:format)                                                                          adoption#pets
+                                    adoption_pet GET    /adoption/pets/:id(.:format)                                                                      adoption#show
+                                            auth GET    /auth(.:format)                                                                                   auth#index
+                                  register_owner POST   /auth/register_owner(.:format)                                                                    auth#register_owner
+                                           login POST   /auth/login(.:format)                                                                             auth#login
+                                          logout DELETE /auth/logout(.:format)                                                                            auth#logout
+                                         refresh POST   /auth/refresh(.:format)                                                                           auth#refresh
+                                    current_user GET    /auth/current_user(.:format)                                                                      auth#current_user
+                                           debug GET    /auth/debug(.:format)                                                                             auth#debug
+                                 forgot_password POST   /auth/forgot_password(.:format)                                                                   auth#forgot_password
+                                  reset_password POST   /auth/reset_password(.:format)                                                                    auth#reset_password
+                             edit_password_reset GET    /auth/reset_password/:token(.:format)                                                             auth#edit_password_reset
+                                         profile GET    /profile(.:format)                                                                                profile#show
+                                                 PATCH  /profile(.:format)                                                                                profile#update
+                                profile_password PATCH  /profile/password(.:format)                                                                       profile#change_password
+                                                 DELETE /profile(.:format)                                                                                profile#destroy
+                                       dashboard GET    /dashboard(.:format)                                                                              dashboard#index
+                               dashboard_summary GET    /dashboard-summary(.:format)                                                                      dashboard#summary
+                                         my_pets GET    /my-pets(.:format)                                                                                owner_pages#pets
+                           owner_medical_history GET    /my-pets/:pet_id/medical-history(.:format)                                                        owner_pages#medical_history
+                                 my_sponsorships GET    /my-sponsorships(.:format)                                                                        owner_pages#sponsorships
+                                 my_appointments GET    /my-appointments(.:format)                                                                        owner_pages#appointments
+                                     my_payments GET    /my-payments(.:format)                                                                            owner_pages#payments
+                              my_medical_history GET    /my-medical-history(.:format)                                                                     owner_pages#medical_history_index
+                         owner_appointments_list GET    /owner-appointments-list(.:format)                                                                owner_appointments#index
+                               owner_appointment GET    /owner-appointments/:id(.:format)                                                                 owner_appointments#show
+                              owner_appointments POST   /owner-appointments(.:format)                                                                     owner_appointments#create
+                                                 PATCH  /owner-appointments/:id(.:format)                                                                 owner_appointments#update
+                        owner_appointment_cancel POST   /owner-appointments/:id/cancel(.:format)                                                          owner_appointments#cancel
+                       owner_appointment_confirm POST   /owner-appointments/:id/confirm(.:format)                                                         owner_appointments#confirm
+                            owner_available_vets GET    /owner-available-vets(.:format)                                                                   owner_availability#index
+                            owner_available_days GET    /owner-available-days(.:format)                                                                   owner_availability#days
+                             owner_services_list GET    /owner-services-list(.:format)                                                                    owner_services#index
+                             owner_payments_list GET    /owner-payments-list(.:format)                                                                    owner_payments#index
+                                   owner_payment GET    /owner-payments/:id(.:format)                                                                     owner_payments#show
+                          owner_payment_register POST   /owner-payments/:id/register(.:format)                                                            owner_payments#register
+                           owner_medical_summary GET    /owner-medical-summary(.:format)                                                                  owner_medical_summary#index
+                owner_consultation_export_recipe GET    /owner/consultations/:id/export_recipe(.:format)                                                  owner_consultations#export_recipe
+           owner_consultation_complete_treatment POST   /owner/consultations/:id/complete_treatment(.:format)                                             owner_consultations#complete_treatment
+                owner_prescription_item_complete POST   /owner/prescription_items/:id/complete(.:format)                                                  owner_prescription_items#complete
+                            owner_lab_exam_files POST   /owner/lab_exams/:id/files(.:format)                                                              owner_lab_exams#upload_files
+                          owner_lab_exam_results PATCH  /owner/lab_exams/:id/results(.:format)                                                            owner_lab_exams#update_results
+                                       photo_pet POST   /pets/:id/photo(.:format)                                                                         pets#photo
+                                                 DELETE /pets/:id/photo(.:format)                                                                         pets#delete_photo
+                             pet_medical_profile GET    /pets/:pet_id/medical_profile(.:format)                                                           owner_medical_profiles#show
+                               pet_consultations GET    /pets/:pet_id/consultations(.:format)                                                             owner_consultations#index
+                                pet_vaccinations GET    /pets/:pet_id/vaccinations(.:format)                                                              owner_vaccinations#index
+                                  pet_dewormings GET    /pets/:pet_id/dewormings(.:format)                                                                owner_dewormings#index
+                 download_pdf_pet_medical_report GET    /pets/:pet_id/medical_reports/:id/download_pdf(.:format)                                          owner_medical_reports#download_pdf
+                             pet_medical_reports GET    /pets/:pet_id/medical_reports(.:format)                                                           owner_medical_reports#index
+                              pet_medical_report GET    /pets/:pet_id/medical_reports/:id(.:format)                                                       owner_medical_reports#show
+                                            pets GET    /pets(.:format)                                                                                   pets#index
+                                                 POST   /pets(.:format)                                                                                   pets#create
+                                         new_pet GET    /pets/new(.:format)                                                                               pets#new
+                                        edit_pet GET    /pets/:id/edit(.:format)                                                                          pets#edit
+                                             pet GET    /pets/:id(.:format)                                                                               pets#show
+                                                 PATCH  /pets/:id(.:format)                                                                               pets#update
+                                                 PUT    /pets/:id(.:format)                                                                               pets#update
+                                                 DELETE /pets/:id(.:format)                                                                               pets#destroy
+                             expense_sponsorship GET    /sponsorships/:id/expenses/:expense_id(.:format)                                                  sponsorships#expense
+                                    sponsorships GET    /sponsorships(.:format)                                                                           sponsorships#index
+                                                 POST   /sponsorships(.:format)                                                                           sponsorships#create
+                                     sponsorship GET    /sponsorships/:id(.:format)                                                                       sponsorships#show
+                                                 PATCH  /sponsorships/:id(.:format)                                                                       sponsorships#update
+                                                 PUT    /sponsorships/:id(.:format)                                                                       sponsorships#update
+                                 admin_pets_page GET    /admin/pets(.:format)                                                                             admin_pages#pets
+                            admin_adoptions_page GET    /admin/adoptions(.:format)                                                                        admin_pages#adoptions
+                         admin_sponsorships_page GET    /admin/sponsorships(.:format)                                                                     admin_pages#sponsorships
+                         admin_appointments_page GET    /admin/appointments(.:format)                                                                     admin_pages#appointments
+                               admin_owners_page GET    /admin/owners(.:format)                                                                           admin_pages#owners
+                      admin_medical_history_page GET    /admin/medical-history(.:format)                                                                  admin_pages#medical_records
+                     admin_new_consultation_page GET    /admin/new-consultation(.:format)                                                                 admin_pages#consultations
+                      admin_medical_reports_page GET    /admin/medical-reports(.:format)                                                                  admin_pages#reports
+                             admin_payments_page GET    /admin/payments(.:format)                                                                         admin_pages#payments
+                                admin_staff_page GET    /admin/staff(.:format)                                                                            admin_pages#staff
+                              admin_metrics_page GET    /admin/metrics(.:format)                                                                          admin_pages#metrics
+                               admin_shifts_page GET    /admin/shifts(.:format)                                                                           admin_pages#shifts
+                            admin_financial_page GET    /admin/financial(.:format)                                                                        admin_pages#financial
+                              admin_content_page GET    /admin/content(.:format)                                                                          admin_pages#content
+                    admin_products_services_page GET    /admin/products-services(.:format)                                                                admin_pages#products_services
+                          admin_user_manual_page GET    /admin/user-manual(.:format)                                                                      admin_pages#user_manual
+                         admin_user_manual_files GET    /admin/user-manual-files(.:format)                                                                admin_pages#user_manual_files
+                       admin_user_manual_content GET    /admin/user-manual-content(.:format)                                                              admin_pages#user_manual_content
+                       admin_email_settings_page GET    /admin/settings/email(.:format)                                                                   admin_pages#email_settings
+                        admin_smtp_settings_page GET    /admin/settings/smtp(.:format)                                                                    admin_pages#smtp_settings
+                    admin_currency_settings_page GET    /admin/settings/currency(.:format)                                                                admin_pages#currency_settings
+                     admin_general_settings_page GET    /admin/settings/general(.:format)                                                                 admin_pages#general_settings
+                reorder_admin_content_promotions PATCH  /admin/content/promotions/reorder(.:format)                                                       admin/content/promotions#reorder
+                        admin_content_promotions GET    /admin/content/promotions(.:format)                                                               admin/content/promotions#index
+                                                 POST   /admin/content/promotions(.:format)                                                               admin/content/promotions#create
+                     new_admin_content_promotion GET    /admin/content/promotions/new(.:format)                                                           admin/content/promotions#new
+                    edit_admin_content_promotion GET    /admin/content/promotions/:id/edit(.:format)                                                      admin/content/promotions#edit
+                         admin_content_promotion GET    /admin/content/promotions/:id(.:format)                                                           admin/content/promotions#show
+                                                 PATCH  /admin/content/promotions/:id(.:format)                                                           admin/content/promotions#update
+                                                 PUT    /admin/content/promotions/:id(.:format)                                                           admin/content/promotions#update
+                                                 DELETE /admin/content/promotions/:id(.:format)                                                           admin/content/promotions#destroy
+                     admin_content_announcements GET    /admin/content/announcements(.:format)                                                            admin/content/announcements#index
+                                                 POST   /admin/content/announcements(.:format)                                                            admin/content/announcements#create
+                  new_admin_content_announcement GET    /admin/content/announcements/new(.:format)                                                        admin/content/announcements#new
+                 edit_admin_content_announcement GET    /admin/content/announcements/:id/edit(.:format)                                                   admin/content/announcements#edit
+                      admin_content_announcement GET    /admin/content/announcements/:id(.:format)                                                        admin/content/announcements#show
+                                                 PATCH  /admin/content/announcements/:id(.:format)                                                        admin/content/announcements#update
+                                                 PUT    /admin/content/announcements/:id(.:format)                                                        admin/content/announcements#update
+                                                 DELETE /admin/content/announcements/:id(.:format)                                                        admin/content/announcements#destroy
+                    admin_content_landing_config GET    /admin/content/landing_config(.:format)                                                           admin/content/landing_configs#show
+                                                 PATCH  /admin/content/landing_config(.:format)                                                           admin/content/landing_configs#update
+                                                 PUT    /admin/content/landing_config(.:format)                                                           admin/content/landing_configs#update
+preview_recipients_admin_content_email_campaigns POST   /admin/content/email_campaigns/preview_recipients(.:format)                                       admin/content/email_campaigns#preview_recipients
+      send_campaign_admin_content_email_campaign POST   /admin/content/email_campaigns/:id/send_campaign(.:format)                                        admin/content/email_campaigns#send_campaign
+             cancel_admin_content_email_campaign POST   /admin/content/email_campaigns/:id/cancel(.:format)                                               admin/content/email_campaigns#cancel
+              clone_admin_content_email_campaign POST   /admin/content/email_campaigns/:id/clone(.:format)                                                admin/content/email_campaigns#clone
+                   admin_content_email_campaigns GET    /admin/content/email_campaigns(.:format)                                                          admin/content/email_campaigns#index
+                                                 POST   /admin/content/email_campaigns(.:format)                                                          admin/content/email_campaigns#create
+                new_admin_content_email_campaign GET    /admin/content/email_campaigns/new(.:format)                                                      admin/content/email_campaigns#new
+               edit_admin_content_email_campaign GET    /admin/content/email_campaigns/:id/edit(.:format)                                                 admin/content/email_campaigns#edit
+                    admin_content_email_campaign GET    /admin/content/email_campaigns/:id(.:format)                                                      admin/content/email_campaigns#show
+                                                 PATCH  /admin/content/email_campaigns/:id(.:format)                                                      admin/content/email_campaigns#update
+                                                 PUT    /admin/content/email_campaigns/:id(.:format)                                                      admin/content/email_campaigns#update
+                                                 DELETE /admin/content/email_campaigns/:id(.:format)                                                      admin/content/email_campaigns#destroy
+              reorder_admin_content_testimonials PATCH  /admin/content/testimonials/reorder(.:format)                                                     admin/content/testimonials#reorder
+                      admin_content_testimonials GET    /admin/content/testimonials(.:format)                                                             admin/content/testimonials#index
+                                                 POST   /admin/content/testimonials(.:format)                                                             admin/content/testimonials#create
+                   new_admin_content_testimonial GET    /admin/content/testimonials/new(.:format)                                                         admin/content/testimonials#new
+                  edit_admin_content_testimonial GET    /admin/content/testimonials/:id/edit(.:format)                                                    admin/content/testimonials#edit
+                       admin_content_testimonial GET    /admin/content/testimonials/:id(.:format)                                                         admin/content/testimonials#show
+                                                 PATCH  /admin/content/testimonials/:id(.:format)                                                         admin/content/testimonials#update
+                                                 PUT    /admin/content/testimonials/:id(.:format)                                                         admin/content/testimonials#update
+                                                 DELETE /admin/content/testimonials/:id(.:format)                                                         admin/content/testimonials#destroy
+                                 admin_pets_list GET    /admin/pets-list(.:format)                                                                        admin/pets#index
+                            admin_adoptions_list GET    /admin/adoptions-list(.:format)                                                                   admin/adoptions#index
+                               admin_owners_list GET    /admin/owners-list(.:format)                                                                      admin/owners#index
+                         admin_sponsorships_list GET    /admin/sponsorships-list(.:format)                                                                admin/sponsorships#index
+                        admin_consultations_list GET    /admin/consultations-list(.:format)                                                               admin/consultations#index
+                         admin_vaccinations_list GET    /admin/vaccinations-list(.:format)                                                                admin/vaccinations#index
+                           admin_dewormings_list GET    /admin/dewormings-list(.:format)                                                                  admin/dewormings#index
+                admin_vaccination_schedules_list GET    /admin/vaccination-schedules-list(.:format)                                                       admin/vaccination_schedules#index
+                                admin_staff_list GET    /admin/staff-list(.:format)                                                                       admin/staff#index
+                             admin_services_list GET    /admin/services-list(.:format)                                                                    admin/services#index
+                      admin_staff_schedules_list GET    /admin/staff-schedules-list(.:format)                                                             admin/staff_schedules#index
+                         admin_appointments_list GET    /admin/appointments-list(.:format)                                                                admin/appointments#index
+               admin_appointments_available_days GET    /admin/appointments/available-days(.:format)                                                      admin/appointments#available_days
+               admin_appointments_available_vets GET    /admin/appointments/available-vets(.:format)                                                      admin/appointments#available_vets
+                   admin_appointments_time_slots GET    /admin/appointments/time-slots(.:format)                                                          admin/appointments#time_slots
+                             admin_payments_list GET    /admin/payments-list(.:format)                                                                    admin/payments#index
+                             admin_products_list GET    /admin/products-list(.:format)                                                                    admin/products#index
+                      admin_stock_movements_list GET    /admin/stock-movements-list(.:format)                                                             admin/stock_movements#index
+                   admin_service_categories_list GET    /admin/service-categories-list(.:format)                                                          admin/service_categories#index
+                     admin_email_settings_config GET    /admin/settings/email-config(.:format)                                                            admin/settings#email
+                      admin_smtp_settings_config GET    /admin/settings/smtp-config(.:format)                                                             admin/settings#smtp
+                               admin_smtp_status GET    /admin/settings/smtp-status(.:format)                                                             admin/settings#smtp_status
+                           photo_admin_owner_pet POST   /admin/owners/:owner_id/pets/:id/photo(.:format)                                                  admin/owner_pets#photo
+                                                 DELETE /admin/owners/:owner_id/pets/:id/photo(.:format)                                                  admin/owner_pets#delete_photo
+                                admin_owner_pets POST   /admin/owners/:owner_id/pets(.:format)                                                            admin/owner_pets#create
+                                 admin_owner_pet GET    /admin/owners/:owner_id/pets/:id(.:format)                                                        admin/owner_pets#show
+                                                 PATCH  /admin/owners/:owner_id/pets/:id(.:format)                                                        admin/owner_pets#update
+                                                 PUT    /admin/owners/:owner_id/pets/:id(.:format)                                                        admin/owner_pets#update
+                                    admin_owners POST   /admin/owners(.:format)                                                                           admin/owners#create
+                                     admin_owner GET    /admin/owners/:id(.:format)                                                                       admin/owners#show
+                                                 PATCH  /admin/owners/:id(.:format)                                                                       admin/owners#update
+                                                 PUT    /admin/owners/:id(.:format)                                                                       admin/owners#update
+                               admin_staff_index POST   /admin/staff(.:format)                                                                            admin/staff#create
+                                     admin_staff GET    /admin/staff/:id(.:format)                                                                        admin/staff#show
+                                                 PATCH  /admin/staff/:id(.:format)                                                                        admin/staff#update
+                                                 PUT    /admin/staff/:id(.:format)                                                                        admin/staff#update
+                                                 DELETE /admin/staff/:id(.:format)                                                                        admin/staff#destroy
+                                  admin_services POST   /admin/services(.:format)                                                                         admin/services#create
+                                   admin_service GET    /admin/services/:id(.:format)                                                                     admin/services#show
+                                                 PATCH  /admin/services/:id(.:format)                                                                     admin/services#update
+                                                 PUT    /admin/services/:id(.:format)                                                                     admin/services#update
+                                                 DELETE /admin/services/:id(.:format)                                                                     admin/services#destroy
+                        admin_service_categories POST   /admin/service_categories(.:format)                                                               admin/service_categories#create
+                          admin_service_category GET    /admin/service_categories/:id(.:format)                                                           admin/service_categories#show
+                                                 PATCH  /admin/service_categories/:id(.:format)                                                           admin/service_categories#update
+                                                 PUT    /admin/service_categories/:id(.:format)                                                           admin/service_categories#update
+                                                 DELETE /admin/service_categories/:id(.:format)                                                           admin/service_categories#destroy
+                         add_stock_admin_product POST   /admin/products/:id/add_stock(.:format)                                                           admin/products#add_stock
+                      remove_stock_admin_product POST   /admin/products/:id/remove_stock(.:format)                                                        admin/products#remove_stock
+                      adjust_stock_admin_product POST   /admin/products/:id/adjust_stock(.:format)                                                        admin/products#adjust_stock
+                             image_admin_product POST   /admin/products/:id/image(.:format)                                                               admin/products#image
+                                                 DELETE /admin/products/:id/image(.:format)                                                               admin/products#delete_image
+                                  admin_products POST   /admin/products(.:format)                                                                         admin/products#create
+                                   admin_product GET    /admin/products/:id(.:format)                                                                     admin/products#show
+                                                 PATCH  /admin/products/:id(.:format)                                                                     admin/products#update
+                                                 PUT    /admin/products/:id(.:format)                                                                     admin/products#update
+                                                 DELETE /admin/products/:id(.:format)                                                                     admin/products#destroy
+                            admin_stock_movement GET    /admin/stock_movements/:id(.:format)                                                              admin/stock_movements#show
+                           admin_staff_schedules POST   /admin/staff_schedules(.:format)                                                                  admin/staff_schedules#create
+                            admin_staff_schedule GET    /admin/staff_schedules/:id(.:format)                                                              admin/staff_schedules#show
+                                                 PATCH  /admin/staff_schedules/:id(.:format)                                                              admin/staff_schedules#update
+                                                 PUT    /admin/staff_schedules/:id(.:format)                                                              admin/staff_schedules#update
+                                                 DELETE /admin/staff_schedules/:id(.:format)                                                              admin/staff_schedules#destroy
+                              admin_appointments POST   /admin/appointments(.:format)                                                                     admin/appointments#create
+                               admin_appointment GET    /admin/appointments/:id(.:format)                                                                 admin/appointments#show
+                                                 PATCH  /admin/appointments/:id(.:format)                                                                 admin/appointments#update
+                                                 PUT    /admin/appointments/:id(.:format)                                                                 admin/appointments#update
+                                                 DELETE /admin/appointments/:id(.:format)                                                                 admin/appointments#destroy
+                          register_admin_payment POST   /admin/payments/:id/register(.:format)                                                            admin/payments#register
+                            extend_admin_payment POST   /admin/payments/:id/extend(.:format)                                                              admin/payments#extend
+                            cancel_admin_payment POST   /admin/payments/:id/cancel(.:format)                                                              admin/payments#cancel
+                                  admin_payments POST   /admin/payments(.:format)                                                                         admin/payments#create
+                                   admin_payment GET    /admin/payments/:id(.:format)                                                                     admin/payments#show
+                                                 PATCH  /admin/payments/:id(.:format)                                                                     admin/payments#update
+                                                 PUT    /admin/payments/:id(.:format)                                                                     admin/payments#update
+                                 photo_admin_pet POST   /admin/pets/:id/photo(.:format)                                                                   admin/pets#photo
+                                                 DELETE /admin/pets/:id/photo(.:format)                                                                   admin/pets#delete_photo
+                       admin_pet_medical_profile GET    /admin/pets/:pet_id/medical_profile(.:format)                                                     admin/medical_profiles#show
+                                                 PATCH  /admin/pets/:pet_id/medical_profile(.:format)                                                     admin/medical_profiles#update
+                                                 PUT    /admin/pets/:pet_id/medical_profile(.:format)                                                     admin/medical_profiles#update
+                                      admin_pets POST   /admin/pets(.:format)                                                                             admin/pets#create
+                                       admin_pet GET    /admin/pets/:id(.:format)                                                                         admin/pets#show
+                                                 PATCH  /admin/pets/:id(.:format)                                                                         admin/pets#update
+                                                 PUT    /admin/pets/:id(.:format)                                                                         admin/pets#update
+                                                 DELETE /admin/pets/:id(.:format)                                                                         admin/pets#destroy
+                                 admin_adoptions POST   /admin/adoptions(.:format)                                                                        admin/adoptions#create
+                                  admin_adoption GET    /admin/adoptions/:id(.:format)                                                                    admin/adoptions#show
+                               admin_sponsorship GET    /admin/sponsorships/:id(.:format)                                                                 admin/sponsorships#show
+                admin_complete_prescription_item POST   /admin/prescription_items/:id/complete(.:format)                                                  admin/prescription_items#complete
+                export_recipe_admin_consultation GET    /admin/consultations/:id/export_recipe(.:format)                                                  admin/consultations#export_recipe
+           complete_treatment_admin_consultation POST   /admin/consultations/:id/complete_treatment(.:format)                                             admin/consultations#complete_treatment
+                admin_consultation_prescriptions GET    /admin/consultations/:consultation_id/prescriptions(.:format)                                     admin/prescriptions#index
+                                                 POST   /admin/consultations/:consultation_id/prescriptions(.:format)                                     admin/prescriptions#create
+                 admin_consultation_prescription GET    /admin/consultations/:consultation_id/prescriptions/:id(.:format)                                 admin/prescriptions#show
+                                                 PATCH  /admin/consultations/:consultation_id/prescriptions/:id(.:format)                                 admin/prescriptions#update
+                                                 PUT    /admin/consultations/:consultation_id/prescriptions/:id(.:format)                                 admin/prescriptions#update
+                                                 DELETE /admin/consultations/:consultation_id/prescriptions/:id(.:format)                                 admin/prescriptions#destroy
+               files_admin_consultation_lab_exam POST   /admin/consultations/:consultation_id/lab_exams/:id/files(.:format)                               admin/lab_exams#upload_files
+                                                 DELETE /admin/consultations/:consultation_id/lab_exams/:id/files/:file_id(.:format)                      admin/lab_exams#delete_file
+                    admin_consultation_lab_exams GET    /admin/consultations/:consultation_id/lab_exams(.:format)                                         admin/lab_exams#index
+                                                 POST   /admin/consultations/:consultation_id/lab_exams(.:format)                                         admin/lab_exams#create
+                     admin_consultation_lab_exam GET    /admin/consultations/:consultation_id/lab_exams/:id(.:format)                                     admin/lab_exams#show
+                                                 PATCH  /admin/consultations/:consultation_id/lab_exams/:id(.:format)                                     admin/lab_exams#update
+                                                 PUT    /admin/consultations/:consultation_id/lab_exams/:id(.:format)                                     admin/lab_exams#update
+                                                 DELETE /admin/consultations/:consultation_id/lab_exams/:id(.:format)                                     admin/lab_exams#destroy
+                             admin_consultations POST   /admin/consultations(.:format)                                                                    admin/consultations#create
+                              admin_consultation GET    /admin/consultations/:id(.:format)                                                                admin/consultations#show
+                                                 PATCH  /admin/consultations/:id(.:format)                                                                admin/consultations#update
+                                                 PUT    /admin/consultations/:id(.:format)                                                                admin/consultations#update
+                                                 DELETE /admin/consultations/:id(.:format)                                                                admin/consultations#destroy
+                              admin_vaccinations POST   /admin/vaccinations(.:format)                                                                     admin/vaccinations#create
+                               admin_vaccination GET    /admin/vaccinations/:id(.:format)                                                                 admin/vaccinations#show
+                                                 PATCH  /admin/vaccinations/:id(.:format)                                                                 admin/vaccinations#update
+                                                 PUT    /admin/vaccinations/:id(.:format)                                                                 admin/vaccinations#update
+                                                 DELETE /admin/vaccinations/:id(.:format)                                                                 admin/vaccinations#destroy
+                                admin_dewormings POST   /admin/dewormings(.:format)                                                                       admin/dewormings#create
+                                 admin_deworming GET    /admin/dewormings/:id(.:format)                                                                   admin/dewormings#show
+                                                 PATCH  /admin/dewormings/:id(.:format)                                                                   admin/dewormings#update
+                                                 PUT    /admin/dewormings/:id(.:format)                                                                   admin/dewormings#update
+                                                 DELETE /admin/dewormings/:id(.:format)                                                                   admin/dewormings#destroy
+        complete_item_admin_vaccination_schedule POST   /admin/vaccination_schedules/:id/complete_item(.:format)                                          admin/vaccination_schedules#complete_item
+                     admin_vaccination_schedules POST   /admin/vaccination_schedules(.:format)                                                            admin/vaccination_schedules#create
+                      admin_vaccination_schedule GET    /admin/vaccination_schedules/:id(.:format)                                                        admin/vaccination_schedules#show
+                                                 PATCH  /admin/vaccination_schedules/:id(.:format)                                                        admin/vaccination_schedules#update
+                                                 PUT    /admin/vaccination_schedules/:id(.:format)                                                        admin/vaccination_schedules#update
+                                                 DELETE /admin/vaccination_schedules/:id(.:format)                                                        admin/vaccination_schedules#destroy
+              generate_pdf_admin_medical_reports GET    /admin/medical_reports/generate_pdf(.:format)                                                     admin/medical_reports#generate_pdf
+                    import_admin_medical_reports POST   /admin/medical_reports/import(.:format)                                                           admin/medical_reports#import
+                export_json_admin_medical_report GET    /admin/medical_reports/:id/export_json(.:format)                                                  admin/medical_reports#export_json
+                 export_csv_admin_medical_report GET    /admin/medical_reports/:id/export_csv(.:format)                                                   admin/medical_reports#export_csv
+                 export_pdf_admin_medical_report GET    /admin/medical_reports/:id/export_pdf(.:format)                                                   admin/medical_reports#export_pdf
+                      email_admin_medical_report POST   /admin/medical_reports/:id/email(.:format)                                                        admin/medical_reports#email
+                           admin_medical_reports GET    /admin/medical_reports(.:format)                                                                  admin/medical_reports#index
+                                                 POST   /admin/medical_reports(.:format)                                                                  admin/medical_reports#create
+                            admin_medical_report GET    /admin/medical_reports/:id(.:format)                                                              admin/medical_reports#show
+                         admin_metrics_dashboard GET    /admin/metrics/dashboard(.:format)                                                                admin/metrics#dashboard
+                     admin_metrics_consultations GET    /admin/metrics/consultations(.:format)                                                            admin/metrics#consultations
+                          admin_metrics_patients GET    /admin/metrics/patients(.:format)                                                                 admin/metrics#patients
+                           admin_metrics_revenue GET    /admin/metrics/revenue(.:format)                                                                  admin/metrics#revenue
+                      admin_metrics_appointments GET    /admin/metrics/appointments(.:format)                                                             admin/metrics#appointments
+                      admin_metrics_vaccinations GET    /admin/metrics/vaccinations(.:format)                                                             admin/metrics#vaccinations
+                         admin_metrics_adoptions GET    /admin/metrics/adoptions(.:format)                                                                admin/metrics#adoptions
+                      admin_metrics_sponsorships GET    /admin/metrics/sponsorships(.:format)                                                             admin/metrics#sponsorships
+                         admin_metrics_financial GET    /admin/metrics/financial(.:format)                                                                admin/metrics#financial
+                           admin_metrics_refresh POST   /admin/metrics/refresh(.:format)                                                                  admin/metrics#refresh
+                    admin_shifts_clinic_schedule GET    /admin/shifts/clinic_schedule(.:format)                                                           admin/shifts#clinic_schedule
+                                                 PATCH  /admin/shifts/clinic_schedule(.:format)                                                           admin/shifts#update_clinic_schedule
+                    admin_shifts_staff_schedules GET    /admin/shifts/staff_schedules(.:format)                                                           admin/shifts#staff_schedules
+                                    admin_shifts PATCH  /admin/shifts/staff_schedules/:user_id(.:format)                                                  admin/shifts#update_staff_schedule
+                    admin_shifts_weekly_overview GET    /admin/shifts/weekly_overview(.:format)                                                           admin/shifts#weekly_overview
+                         admin_shifts_exceptions POST   /admin/shifts/exceptions(.:format)                                                                admin/shifts#create_exception
+                          admin_shifts_exception DELETE /admin/shifts/exceptions/:id(.:format)                                                            admin/shifts#destroy_exception
+                        admin_financial_expenses GET    /admin/financial/expenses(.:format)                                                               admin/financial#index
+                         admin_financial_expense GET    /admin/financial/expenses/:id(.:format)                                                           admin/financial#show
+                                  admin_expenses POST   /admin/financial/expenses(.:format)                                                               admin/financial#create
+                                           admin PATCH  /admin/financial/expenses/:id(.:format)                                                           admin/financial#update
+                                                 DELETE /admin/financial/expenses/:id(.:format)                                                           admin/financial#destroy
+                         admin_financial_balance GET    /admin/financial/balance(.:format)                                                                admin/financial#balance
+                         admin_financial_refunds GET    /admin/financial/refunds(.:format)                                                                admin/financial#refunds_index
+                                   admin_refunds POST   /admin/financial/refunds(.:format)                                                                admin/financial#refunds_create
+                                                        /*path(.:format)                                                                                  pages#not_found
+                   rails_postmark_inbound_emails POST   /rails/action_mailbox/postmark/inbound_emails(.:format)                                           action_mailbox/ingresses/postmark/inbound_emails#create
+                      rails_relay_inbound_emails POST   /rails/action_mailbox/relay/inbound_emails(.:format)                                              action_mailbox/ingresses/relay/inbound_emails#create
+                   rails_sendgrid_inbound_emails POST   /rails/action_mailbox/sendgrid/inbound_emails(.:format)                                           action_mailbox/ingresses/sendgrid/inbound_emails#create
+             rails_mandrill_inbound_health_check GET    /rails/action_mailbox/mandrill/inbound_emails(.:format)                                           action_mailbox/ingresses/mandrill/inbound_emails#health_check
+                   rails_mandrill_inbound_emails POST   /rails/action_mailbox/mandrill/inbound_emails(.:format)                                           action_mailbox/ingresses/mandrill/inbound_emails#create
+                    rails_mailgun_inbound_emails POST   /rails/action_mailbox/mailgun/inbound_emails/mime(.:format)                                       action_mailbox/ingresses/mailgun/inbound_emails#create
+                  rails_conductor_inbound_emails GET    /rails/conductor/action_mailbox/inbound_emails(.:format)                                          rails/conductor/action_mailbox/inbound_emails#index
+                                                 POST   /rails/conductor/action_mailbox/inbound_emails(.:format)                                          rails/conductor/action_mailbox/inbound_emails#create
+               new_rails_conductor_inbound_email GET    /rails/conductor/action_mailbox/inbound_emails/new(.:format)                                      rails/conductor/action_mailbox/inbound_emails#new
+                   rails_conductor_inbound_email GET    /rails/conductor/action_mailbox/inbound_emails/:id(.:format)                                      rails/conductor/action_mailbox/inbound_emails#show
+        new_rails_conductor_inbound_email_source GET    /rails/conductor/action_mailbox/inbound_emails/sources/new(.:format)                              rails/conductor/action_mailbox/inbound_emails/sources#new
+           rails_conductor_inbound_email_sources POST   /rails/conductor/action_mailbox/inbound_emails/sources(.:format)                                  rails/conductor/action_mailbox/inbound_emails/sources#create
+           rails_conductor_inbound_email_reroute POST   /rails/conductor/action_mailbox/:inbound_email_id/reroute(.:format)                               rails/conductor/action_mailbox/reroutes#create
+        rails_conductor_inbound_email_incinerate POST   /rails/conductor/action_mailbox/:inbound_email_id/incinerate(.:format)                            rails/conductor/action_mailbox/incinerates#create
+                              rails_service_blob GET    /rails/active_storage/blobs/redirect/:signed_id/*filename(.:format)                               active_storage/blobs/redirect#show
+                        rails_service_blob_proxy GET    /rails/active_storage/blobs/proxy/:signed_id/*filename(.:format)                                  active_storage/blobs/proxy#show
+                                                 GET    /rails/active_storage/blobs/:signed_id/*filename(.:format)                                        active_storage/blobs/redirect#show
+                       rails_blob_representation GET    /rails/active_storage/representations/redirect/:signed_blob_id/:variation_key/*filename(.:format) active_storage/representations/redirect#show
+                 rails_blob_representation_proxy GET    /rails/active_storage/representations/proxy/:signed_blob_id/:variation_key/*filename(.:format)    active_storage/representations/proxy#show
+                                                 GET    /rails/active_storage/representations/:signed_blob_id/:variation_key/*filename(.:format)          active_storage/representations/redirect#show
+                              rails_disk_service GET    /rails/active_storage/disk/:encoded_key/*filename(.:format)                                       active_storage/disk#show
+                       update_rails_disk_service PUT    /rails/active_storage/disk/:encoded_token(.:format)                                               active_storage/disk#update
+                            rails_direct_uploads POST   /rails/active_storage/direct_uploads(.:format)                                                    active_storage/direct_uploads#create
+
+Routes for LetterOpenerWeb::Engine:
+      letters GET  /                                letter_opener_web/letters#index
+clear_letters POST /clear(.:format)                 letter_opener_web/letters#clear
+       letter GET  /:id(/:style)(.:format)          letter_opener_web/letters#show
+delete_letter POST /:id/delete(.:format)            letter_opener_web/letters#destroy
+              GET  /:id/attachments/:file(.:format) letter_opener_web/letters#attachment {file: /[^\/]+/}
