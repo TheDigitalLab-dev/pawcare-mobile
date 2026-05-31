@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PawCare Mobile — Rutas API</title>
+<style>
+:root{--bg:hsl(43,44%,97%);--fg:hsl(210,24%,16%);--card:#fff;--primary:hsl(174,55%,47%);--primary-fg:#fff;--secondary:hsl(174,20%,95%);--secondary-fg:hsl(174,55%,25%);--muted:hsl(42,25%,92%);--muted-fg:hsl(215,16%,47%);--border:hsl(174,20%,88%);--success:hsl(142,76%,36%);--danger:hsl(0,84%,60%);--warning:hsl(38,92%,50%);--info:hsl(199,89%,48%);--r:.5rem}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg);line-height:1.5;padding:1.5rem;max-width:1060px;margin:0 auto}
+h1{font-size:1.5rem;font-weight:700;margin-bottom:.25rem}
+.sub{color:var(--muted-fg);font-size:.875rem;margin-bottom:1rem}
+.bar{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+.st{display:flex;align-items:center;gap:.3rem;font-size:.8rem;font-weight:600}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.dot-public{background:var(--info)}.dot-owner{background:var(--success)}.dot-admin{background:var(--danger)}
+.filters{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.fil{padding:.3rem .7rem;font-size:.75rem;font-weight:600;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;background:var(--card);color:var(--fg);transition:all .15s}
+.fil:hover,.fil.active{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.scope-section{margin-bottom:2rem}
+.scope-header{font-size:1.1rem;font-weight:700;padding:.6rem .75rem;margin-bottom:.75rem;border-left:4px solid var(--primary);background:var(--secondary);border-radius:0 var(--r) var(--r) 0;display:flex;align-items:center;justify-content:space-between}
+.scope-header .sh-badge{font-size:.75rem;background:var(--primary);color:var(--primary-fg);padding:.15rem .6rem;border-radius:9999px;font-weight:700}
+.scope-header.admin{border-left-color:var(--danger)}.scope-header.admin .sh-badge{background:var(--danger)}
+.scope-header.public{border-left-color:var(--info)}.scope-header.public .sh-badge{background:var(--info)}
+.scope-header.owner{border-left-color:var(--success)}.scope-header.owner .sh-badge{background:var(--success)}
+.cg{margin-bottom:1.25rem}
+.cg-head{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--secondary);border:1px solid var(--border);border-radius:var(--r) var(--r) 0 0}
+.cg-name{font-size:.875rem;font-weight:700;color:var(--secondary-fg);font-family:ui-monospace,monospace}
+.cg-badge{font-size:.65rem;background:var(--primary);color:var(--primary-fg);padding:.1rem .45rem;border-radius:9999px;font-weight:700}
+.rt{display:flex;align-items:center;gap:.5rem;padding:.35rem .75rem;border:1px solid var(--border);border-top:none;background:var(--card);font-size:.8rem}
+.rt:last-child{border-radius:0 0 var(--r) var(--r)}
+.vm{font-weight:700;min-width:3.2rem;text-align:right;font-family:ui-monospace,monospace;font-size:.75rem}
+.vm.get{color:var(--success)}.vm.post{color:var(--info)}.vm.patch,.vm.put{color:var(--warning)}.vm.delete{color:var(--danger)}
+.rp{font-family:ui-monospace,monospace;color:var(--fg);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem}
+.rc{font-size:.65rem;color:var(--muted-fg);white-space:nowrap;font-family:ui-monospace,monospace}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<h1>PawCare Mobile &mdash; Rutas API</h1>
+<p class="sub">App: <code>pawcare-mobile</code> &middot; Exportado: 2026-05-31T16:29:33.061Z &middot; <strong>157 rutas</strong> seleccionadas para la app movil</p>
+<div class="bar">
+  <span class="st"><span class="dot dot-public"></span>Public: 19</span>
+<span class="st"><span class="dot dot-owner"></span>Owner: 54</span>
+<span class="st"><span class="dot dot-admin"></span>Admin: 84</span>
+  <span class="st"><strong>Total: 157</strong></span>
+</div>
+<div class="filters" id="filters"></div>
+<div id="app">
+<section class="scope-section" data-scope="public"><div class="scope-header public"><span>Public (Sin autenticacion)</span><span class="sh-badge">19 rutas</span></div><div class="cg"><div class="cg-head"><span class="cg-name">pages</span><span class="cg-badge">6</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/checkout</span><span class="rc">pages#checkout</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/contact</span><span class="rc">pages#contact</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/privacy</span><span class="rc">pages#privacy</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/products</span><span class="rc">pages#products</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/services</span><span class="rc">pages#services</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/terms</span><span class="rc">pages#terms</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">public/products</span><span class="cg-badge">2</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/public/products</span><span class="rc">public/products#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/public/products/:id</span><span class="rc">public/products#show</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">public/product_orders</span><span class="cg-badge">2</span></div><div class="rt"><span class="vm post">POST</span><span class="rp">/public/product_orders</span><span class="rc">public/product_orders#create</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/public/product_orders/:id/upload_proof</span><span class="rc">public/product_orders#upload_proof</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">adoption</span><span class="cg-badge">3</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/adoption</span><span class="rc">adoption#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/adoption/pets</span><span class="rc">adoption#pets</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/adoption/pets/:id</span><span class="rc">adoption#show</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">sponsorships</span><span class="cg-badge">6</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/sponsorships</span><span class="rc">sponsorships#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/sponsorships/:id</span><span class="rc">sponsorships#show</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/sponsorships/:id/expenses/:expense_id</span><span class="rc">sponsorships#expense</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/sponsorships</span><span class="rc">sponsorships#create</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/sponsorships/:id</span><span class="rc">sponsorships#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/sponsorships/:id</span><span class="rc">sponsorships#update</span></div></div></section>
+<section class="scope-section" data-scope="owner"><div class="scope-header owner"><span>Owner (Dueno de mascota)</span><span class="sh-badge">54 rutas</span></div><div class="cg"><div class="cg-head"><span class="cg-name">auth</span><span class="cg-badge">10</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/auth</span><span class="rc">auth#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/auth/current_user</span><span class="rc">auth#current_user</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/auth/debug</span><span class="rc">auth#debug</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/auth/reset_password/:token</span><span class="rc">auth#edit_password_reset</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/auth/forgot_password</span><span class="rc">auth#forgot_password</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/auth/login</span><span class="rc">auth#login</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/auth/refresh</span><span class="rc">auth#refresh</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/auth/register_owner</span><span class="rc">auth#register_owner</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/auth/reset_password</span><span class="rc">auth#reset_password</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/auth/logout</span><span class="rc">auth#logout</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">profile</span><span class="cg-badge">4</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/profile</span><span class="rc">profile#show</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/profile</span><span class="rc">profile#update</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/profile/password</span><span class="rc">profile#change_password</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/profile</span><span class="rc">profile#destroy</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">dashboard</span><span class="cg-badge">2</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/dashboard</span><span class="rc">dashboard#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/dashboard-summary</span><span class="rc">dashboard#summary</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">owner_pages</span><span class="cg-badge">6</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/my-appointments</span><span class="rc">owner_pages#appointments</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/my-medical-history</span><span class="rc">owner_pages#medical_history_index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/my-payments</span><span class="rc">owner_pages#payments</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/my-pets</span><span class="rc">owner_pages#pets</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/my-pets/:pet_id/medical-history</span><span class="rc">owner_pages#medical_history</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/my-sponsorships</span><span class="rc">owner_pages#sponsorships</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">owner_appointments</span><span class="cg-badge">6</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/owner-appointments-list</span><span class="rc">owner_appointments#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/owner-appointments/:id</span><span class="rc">owner_appointments#show</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/owner-appointments</span><span class="rc">owner_appointments#create</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/owner-appointments/:id/cancel</span><span class="rc">owner_appointments#cancel</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/owner-appointments/:id/confirm</span><span class="rc">owner_appointments#confirm</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/owner-appointments/:id</span><span class="rc">owner_appointments#update</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">owner_availability</span><span class="cg-badge">2</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/owner-available-days</span><span class="rc">owner_availability#days</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/owner-available-vets</span><span class="rc">owner_availability#index</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">owner_payments</span><span class="cg-badge">2</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/owner-payments-list</span><span class="rc">owner_payments#index</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/owner-payments/:id/register</span><span class="rc">owner_payments#register</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">owner_medical_summary</span><span class="cg-badge">1</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/owner-medical-summary</span><span class="rc">owner_medical_summary#index</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">owner_consultations</span><span class="cg-badge">3</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/owner/consultations/:id/export_recipe</span><span class="rc">owner_consultations#export_recipe</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/pets/:pet_id/consultations</span><span class="rc">owner_consultations#index</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/owner/consultations/:id/complete_treatment</span><span class="rc">owner_consultations#complete_treatment</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">owner_lab_exams</span><span class="cg-badge">2</span></div><div class="rt"><span class="vm post">POST</span><span class="rp">/owner/lab_exams/:id/files</span><span class="rc">owner_lab_exams#upload_files</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/owner/lab_exams/:id/results</span><span class="rc">owner_lab_exams#update_results</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">pets</span><span class="cg-badge">10</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/pets</span><span class="rc">pets#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/pets/:id</span><span class="rc">pets#show</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/pets/:id/edit</span><span class="rc">pets#edit</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/pets/new</span><span class="rc">pets#new</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/pets</span><span class="rc">pets#create</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/pets/:id/photo</span><span class="rc">pets#photo</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/pets/:id</span><span class="rc">pets#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/pets/:id</span><span class="rc">pets#update</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/pets/:id</span><span class="rc">pets#destroy</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/pets/:id/photo</span><span class="rc">pets#delete_photo</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">owner_medical_profiles</span><span class="cg-badge">1</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/pets/:pet_id/medical_profile</span><span class="rc">owner_medical_profiles#show</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">owner_vaccinations</span><span class="cg-badge">1</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/pets/:pet_id/vaccinations</span><span class="rc">owner_vaccinations#index</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">owner_dewormings</span><span class="cg-badge">1</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/pets/:pet_id/dewormings</span><span class="rc">owner_dewormings#index</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">owner_medical_reports</span><span class="cg-badge">3</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/pets/:pet_id/medical_reports</span><span class="rc">owner_medical_reports#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/pets/:pet_id/medical_reports/:id</span><span class="rc">owner_medical_reports#show</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/pets/:pet_id/medical_reports/:id/download_pdf</span><span class="rc">owner_medical_reports#download_pdf</span></div></div></section>
+<section class="scope-section" data-scope="admin"><div class="scope-header admin"><span>Admin (Panel administrativo)</span><span class="sh-badge">84 rutas</span></div><div class="cg"><div class="cg-head"><span class="cg-name">admin/pets</span><span class="cg-badge">8</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/pets-list</span><span class="rc">admin/pets#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/pets/:id</span><span class="rc">admin/pets#show</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/pets</span><span class="rc">admin/pets#create</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/pets/:id/photo</span><span class="rc">admin/pets#photo</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/admin/pets/:id</span><span class="rc">admin/pets#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/admin/pets/:id</span><span class="rc">admin/pets#update</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/admin/pets/:id</span><span class="rc">admin/pets#destroy</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/admin/pets/:id/photo</span><span class="rc">admin/pets#delete_photo</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">admin/adoptions</span><span class="cg-badge">3</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/adoptions-list</span><span class="rc">admin/adoptions#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/adoptions/:id</span><span class="rc">admin/adoptions#show</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/adoptions</span><span class="rc">admin/adoptions#create</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">admin/consultations</span><span class="cg-badge">8</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/consultations-list</span><span class="rc">admin/consultations#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/consultations/:id</span><span class="rc">admin/consultations#show</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/consultations/:id/export_recipe</span><span class="rc">admin/consultations#export_recipe</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/consultations</span><span class="rc">admin/consultations#create</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/consultations/:id/complete_treatment</span><span class="rc">admin/consultations#complete_treatment</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/admin/consultations/:id</span><span class="rc">admin/consultations#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/admin/consultations/:id</span><span class="rc">admin/consultations#update</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/admin/consultations/:id</span><span class="rc">admin/consultations#destroy</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">admin/vaccinations</span><span class="cg-badge">6</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/vaccinations-list</span><span class="rc">admin/vaccinations#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/vaccinations/:id</span><span class="rc">admin/vaccinations#show</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/vaccinations</span><span class="rc">admin/vaccinations#create</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/admin/vaccinations/:id</span><span class="rc">admin/vaccinations#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/admin/vaccinations/:id</span><span class="rc">admin/vaccinations#update</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/admin/vaccinations/:id</span><span class="rc">admin/vaccinations#destroy</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">admin/dewormings</span><span class="cg-badge">6</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/dewormings-list</span><span class="rc">admin/dewormings#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/dewormings/:id</span><span class="rc">admin/dewormings#show</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/dewormings</span><span class="rc">admin/dewormings#create</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/admin/dewormings/:id</span><span class="rc">admin/dewormings#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/admin/dewormings/:id</span><span class="rc">admin/dewormings#update</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/admin/dewormings/:id</span><span class="rc">admin/dewormings#destroy</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">admin/vaccination_schedules</span><span class="cg-badge">7</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/vaccination_schedules/:id</span><span class="rc">admin/vaccination_schedules#show</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/vaccination-schedules-list</span><span class="rc">admin/vaccination_schedules#index</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/vaccination_schedules</span><span class="rc">admin/vaccination_schedules#create</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/vaccination_schedules/:id/complete_item</span><span class="rc">admin/vaccination_schedules#complete_item</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/admin/vaccination_schedules/:id</span><span class="rc">admin/vaccination_schedules#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/admin/vaccination_schedules/:id</span><span class="rc">admin/vaccination_schedules#update</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/admin/vaccination_schedules/:id</span><span class="rc">admin/vaccination_schedules#destroy</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">admin/appointments</span><span class="cg-badge">9</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/appointments-list</span><span class="rc">admin/appointments#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/appointments/:id</span><span class="rc">admin/appointments#show</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/appointments/available-days</span><span class="rc">admin/appointments#available_days</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/appointments/available-vets</span><span class="rc">admin/appointments#available_vets</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/appointments/time-slots</span><span class="rc">admin/appointments#time_slots</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/appointments</span><span class="rc">admin/appointments#create</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/admin/appointments/:id</span><span class="rc">admin/appointments#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/admin/appointments/:id</span><span class="rc">admin/appointments#update</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/admin/appointments/:id</span><span class="rc">admin/appointments#destroy</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">admin/payments</span><span class="cg-badge">5</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/payments-list</span><span class="rc">admin/payments#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/payments/:id</span><span class="rc">admin/payments#show</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/payments/:id/register</span><span class="rc">admin/payments#register</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/admin/payments/:id</span><span class="rc">admin/payments#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/admin/payments/:id</span><span class="rc">admin/payments#update</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">admin/owner_pets</span><span class="cg-badge">6</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/owners/:owner_id/pets/:id</span><span class="rc">admin/owner_pets#show</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/owners/:owner_id/pets</span><span class="rc">admin/owner_pets#create</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/owners/:owner_id/pets/:id/photo</span><span class="rc">admin/owner_pets#photo</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/admin/owners/:owner_id/pets/:id</span><span class="rc">admin/owner_pets#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/admin/owners/:owner_id/pets/:id</span><span class="rc">admin/owner_pets#update</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/admin/owners/:owner_id/pets/:id/photo</span><span class="rc">admin/owner_pets#delete_photo</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">admin/medical_profiles</span><span class="cg-badge">3</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/pets/:pet_id/medical_profile</span><span class="rc">admin/medical_profiles#show</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/admin/pets/:pet_id/medical_profile</span><span class="rc">admin/medical_profiles#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/admin/pets/:pet_id/medical_profile</span><span class="rc">admin/medical_profiles#update</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">admin/prescriptions</span><span class="cg-badge">6</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/consultations/:consultation_id/prescriptions</span><span class="rc">admin/prescriptions#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/consultations/:consultation_id/prescriptions/:id</span><span class="rc">admin/prescriptions#show</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/consultations/:consultation_id/prescriptions</span><span class="rc">admin/prescriptions#create</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/admin/consultations/:consultation_id/prescriptions/:id</span><span class="rc">admin/prescriptions#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/admin/consultations/:consultation_id/prescriptions/:id</span><span class="rc">admin/prescriptions#update</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/admin/consultations/:consultation_id/prescriptions/:id</span><span class="rc">admin/prescriptions#destroy</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">admin/lab_exams</span><span class="cg-badge">8</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/consultations/:consultation_id/lab_exams</span><span class="rc">admin/lab_exams#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/consultations/:consultation_id/lab_exams/:id</span><span class="rc">admin/lab_exams#show</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/consultations/:consultation_id/lab_exams</span><span class="rc">admin/lab_exams#create</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/consultations/:consultation_id/lab_exams/:id/files</span><span class="rc">admin/lab_exams#upload_files</span></div>
+<div class="rt"><span class="vm patch">PATCH</span><span class="rp">/admin/consultations/:consultation_id/lab_exams/:id</span><span class="rc">admin/lab_exams#update</span></div>
+<div class="rt"><span class="vm put">PUT</span><span class="rp">/admin/consultations/:consultation_id/lab_exams/:id</span><span class="rc">admin/lab_exams#update</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/admin/consultations/:consultation_id/lab_exams/:id</span><span class="rc">admin/lab_exams#destroy</span></div>
+<div class="rt"><span class="vm delete">DELETE</span><span class="rp">/admin/consultations/:consultation_id/lab_exams/:id/files/:file_id</span><span class="rc">admin/lab_exams#delete_file</span></div></div>
+<div class="cg"><div class="cg-head"><span class="cg-name">admin/medical_reports</span><span class="cg-badge">9</span></div><div class="rt"><span class="vm get">GET</span><span class="rp">/admin/medical_reports</span><span class="rc">admin/medical_reports#index</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/medical_reports/:id</span><span class="rc">admin/medical_reports#show</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/medical_reports/:id/export_csv</span><span class="rc">admin/medical_reports#export_csv</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/medical_reports/:id/export_json</span><span class="rc">admin/medical_reports#export_json</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/medical_reports/:id/export_pdf</span><span class="rc">admin/medical_reports#export_pdf</span></div>
+<div class="rt"><span class="vm get">GET</span><span class="rp">/admin/medical_reports/generate_pdf</span><span class="rc">admin/medical_reports#generate_pdf</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/medical_reports</span><span class="rc">admin/medical_reports#create</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/medical_reports/:id/email</span><span class="rc">admin/medical_reports#email</span></div>
+<div class="rt"><span class="vm post">POST</span><span class="rp">/admin/medical_reports/import</span><span class="rc">admin/medical_reports#import</span></div></div></section>
+</div>
+<script>
+var filter = "all";
+var scopes = ["all","public","owner","admin"];
+var labels = {all:"Todos",public:"Publico",owner:"Owner",admin:"Admin"};
+function renderFilters(){
+  var el = document.getElementById("filters");
+  el.innerHTML = "";
+  scopes.forEach(function(s){
+    var b = document.createElement("button");
+    b.className = "fil" + (filter === s ? " active" : "");
+    b.textContent = labels[s];
+    b.onclick = function(){ filter = s; renderFilters(); renderSections(); };
+    el.appendChild(b);
+  });
+}
+function renderSections(){
+  document.querySelectorAll(".scope-section").forEach(function(sec){
+    sec.classList.toggle("hidden", filter !== "all" && sec.dataset.scope !== filter);
+  });
+}
+renderFilters();
+renderSections();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "app": "pawcare-mobile",
+  "exported_at": "2026-05-31T16:29:33.061Z",
+  "summary": {
+    "total_controllers": 72,
+    "total_routes": 332,
+    "routes_included": 157,
+    "routes_excluded": 175
+  },
+  "controllers": []
+}

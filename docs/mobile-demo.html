@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PawCare Mobile — Demo UI</title>
+  <link rel="stylesheet" href="mobile-design-tokens.css">
+  <link rel="stylesheet" href="mobile-demo.css">
+</head>
+<body class="demo-page">
+
+<header class="demo-topbar">
+  <div class="demo-topbar-main">
+    <h1>PawCare Mobile — Demo UI</h1>
+    <p>Solo diseno · Sin funcionalidad · Basado en <code>mobile-routes.md</code> · Tokens en <code>mobile-design-tokens.css</code></p>
+  </div>
+  <div class="demo-topbar-actions">
+    <div class="demo-theme-controls" role="group" aria-label="Tema de pantallas">
+      <span class="demo-controls-label">Pantallas</span>
+      <button type="button" class="btn btn-outline btn-sm demo-filter-btn active" data-filter="both">Ambos</button>
+      <button type="button" class="btn btn-outline btn-sm demo-filter-btn" data-filter="light">Claro</button>
+      <button type="button" class="btn btn-outline btn-sm demo-filter-btn" data-filter="dark">Oscuro</button>
+    </div>
+    <div class="demo-theme-controls" role="group" aria-label="Tema del catalogo">
+      <span class="demo-controls-label">UI</span>
+      <button type="button" class="btn btn-outline btn-sm demo-ui-btn active" data-ui="light">Claro</button>
+      <button type="button" class="btn btn-outline btn-sm demo-ui-btn" data-ui="dark">Oscuro</button>
+    </div>
+    <button type="button" class="btn btn-primary btn-md demo-print-btn">Imprimir todo (PDF)</button>
+  </div>
+</header>
+
+<nav class="demo-nav">
+  <a href="#public">Public</a>
+  <a href="#auth">Auth</a>
+  <a href="#owner">Owner</a>
+  <a href="#medical">Medico</a>
+  <a href="#admin">Admin</a>
+</nav>
+
+<!-- ========== PUBLIC ========== -->
+<section class="demo-section" id="public">
+  <h2>Public — Descubrimiento y compra</h2>
+  <p class="demo-section-desc">Servicios, tienda, adopcion e informacion legal. Sin autenticacion.</p>
+  <div class="screen-grid">
+
+    <article class="screen-card">
+      <div class="screen-meta">
+        <h3>Servicios</h3>
+        <p class="screen-route">GET /services</p>
+        <div class="screen-tags"><span class="badge badge-outline domain-badge-public">Public</span></div>
+      </div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn" aria-label="Menu">☰</button><div class="app-header-title">Servicios</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="hero-card"><h4>Cuidado integral</h4><p>Consultas, vacunas, cirugia y mas.</p></div>
+            <div class="list-row"><div class="pet-avatar">🩺</div><div class="list-row-body"><div class="list-row-title">Consulta general</div><div class="list-row-sub">Desde $25 · 30 min</div></div><span>›</span></div>
+            <div class="list-row"><div class="pet-avatar">💉</div><div class="list-row-body"><div class="list-row-title">Plan vacunacion</div><div class="list-row-sub">Esquema personalizado</div></div><span>›</span></div>
+            <div class="list-row"><div class="pet-avatar">✂️</div><div class="list-row-body"><div class="list-row-title">Estetica canina</div><div class="list-row-sub">Bano + corte</div></div><span>›</span></div>
+            <button class="btn btn-primary btn-lg btn-block">Agendar cita</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Productos</h3><p class="screen-route">GET /public/products</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Tienda</div><button class="icon-btn">🛒</button></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="search-bar">🔍 Buscar productos…</div>
+            <div class="chips"><span class="chip active">Todos</span><span class="chip">Alimento</span><span class="chip">Higiene</span></div>
+            <div class="list-row"><div class="thumb"></div><div class="list-row-body"><div class="list-row-title">Alimento premium 15kg</div><div class="list-row-sub"><span class="price">$42.00</span> · En stock</div></div></div>
+            <div class="list-row"><div class="thumb"></div><div class="list-row-body"><div class="list-row-title">Shampoo hipoalergenico</div><div class="list-row-sub"><span class="price">$12.50</span> · 8 uds</div></div></div>
+            <div class="list-row"><div class="thumb"></div><div class="list-row-body"><div class="list-row-title">Collar ajustable</div><div class="list-row-sub"><span class="price">$8.99</span> · En stock</div></div></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Detalle producto</h3><p class="screen-route">GET /public/products/:id</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Detalle</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="thumb" style="width:100%;height:9rem;border-radius:var(--radius-xl)"></div>
+            <h4 style="font-size:var(--font-size-lg);font-weight:700">Alimento premium 15kg</h4>
+            <p class="price">$42.00</p>
+            <p style="font-size:var(--font-size-sm);color:var(--color-muted-foreground)">Nutricion completa para perros adultos. Sin colorantes.</p>
+            <div class="info-banner">Retiro en clinica o entrega local disponible.</div>
+            <button class="btn btn-primary btn-lg btn-block">Agregar al pedido</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Checkout</h3><p class="screen-route">POST /public/product_orders</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Checkout</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="section-title">Resumen</div>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">Alimento premium 15kg</div><div class="list-row-sub">Cantidad: 1</div></div><strong>$42.00</strong></div>
+            <div class="form-stack">
+              <div class="form-group"><label class="label">Nombre</label><input class="input" placeholder="Tu nombre" readonly></div>
+              <div class="form-group"><label class="label">Telefono</label><input class="input" placeholder="+58 412 …" readonly></div>
+            </div>
+            <button class="btn btn-primary btn-lg btn-block">Confirmar pedido</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Adopcion</h3><p class="screen-route">GET /adoption · /adoption/pets</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Adopta un amigo</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="hero-card"><h4>12 mascotas esperan hogar</h4><p>Conoce su historia y requisitos.</p></div>
+            <div class="chips"><span class="chip active">Todos</span><span class="chip">Perros</span><span class="chip">Gatos</span></div>
+            <div class="list-row"><div class="pet-avatar">🐕</div><div class="list-row-body"><div class="list-row-title">Max · 2 anos</div><div class="list-row-sub">Mediano · Vacunado</div></div><span class="badge badge-success">Disponible</span></div>
+            <div class="list-row"><div class="pet-avatar">🐈</div><div class="list-row-body"><div class="list-row-title">Luna · 1 ano</div><div class="list-row-sub">Pequena · Esterilizada</div></div><span class="badge badge-success">Disponible</span></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Detalle adopcion</h3><p class="screen-route">GET /adoption/pets/:id</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Max</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="detail-hero"><div class="pet-avatar">🐕</div><h4 style="font-weight:700">Max</h4><p style="color:var(--color-muted-foreground);font-size:var(--font-size-sm)">Labrador mix · 2 anos · Macho</p></div>
+            <div class="section-title">Sobre Max</div>
+            <p style="font-size:var(--font-size-sm)">Rescatado en 2024. Sociable con ninos y otros perros.</p>
+            <div class="section-title">Requisitos</div>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">Espacio cerrado</div></div><span>✓</span></div>
+            <button class="btn btn-primary btn-lg btn-block">Solicitar adopcion</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Contacto</h3><p class="screen-route">GET /pages/contact</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Contacto</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="list-row"><div class="pet-avatar">📍</div><div class="list-row-body"><div class="list-row-title">Av. Principal #123</div><div class="list-row-sub">Lun–Sab 8:00–18:00</div></div></div>
+            <div class="list-row"><div class="pet-avatar">📞</div><div class="list-row-body"><div class="list-row-title">+58 212 555 0100</div></div></div>
+            <div class="form-stack">
+              <div class="form-group"><label class="label">Mensaje</label><input class="input" placeholder="Escribe tu consulta…" readonly></div>
+            </div>
+            <button class="btn btn-primary btn-lg btn-block">Enviar mensaje</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ========== AUTH ========== -->
+<section class="demo-section" id="auth">
+  <h2>Owner — Autenticacion</h2>
+  <p class="demo-section-desc">Flujo de acceso para duenos de mascota.</p>
+  <div class="screen-grid">
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Bienvenida</h3><p class="screen-route">GET /auth</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <div class="screen-body" style="justify-content:center;text-align:center;padding:var(--spacing-8) var(--spacing-4)">
+            <div style="font-size:3rem;margin-bottom:var(--spacing-4)">🐾</div>
+            <h2 style="font-size:var(--font-size-2xl);font-weight:700">PawCare</h2>
+            <p style="color:var(--color-muted-foreground);margin:var(--spacing-2) 0 var(--spacing-8)">Tu clinica veterinaria en el bolsillo</p>
+            <button class="btn btn-primary btn-lg btn-block">Iniciar sesion</button>
+            <button class="btn btn-outline btn-lg btn-block" style="margin-top:var(--spacing-3)">Crear cuenta</button>
+            <p class="link-row" style="margin-top:var(--spacing-6)"><a href="#">Continuar como invitado</a></p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Login</h3><p class="screen-route">POST /auth/login</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Iniciar sesion</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="form-stack">
+              <div class="form-group"><label class="label">Email</label><input class="input" placeholder="tu@email.com" readonly></div>
+              <div class="form-group"><label class="label">Contrasena</label><input class="input" type="password" placeholder="••••••••" readonly></div>
+            </div>
+            <p class="link-row"><a href="#">Olvide mi contrasena</a></p>
+            <button class="btn btn-primary btn-lg btn-block">Entrar</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Registro</h3><p class="screen-route">POST /auth/register_owner</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Crear cuenta</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="form-stack">
+              <div class="form-group"><label class="label">Nombre completo</label><input class="input" placeholder="Maria Gonzalez" readonly></div>
+              <div class="form-group"><label class="label">Email</label><input class="input" placeholder="maria@email.com" readonly></div>
+              <div class="form-group"><label class="label">Contrasena</label><input class="input" type="password" placeholder="Min. 8 caracteres" readonly></div>
+            </div>
+            <button class="btn btn-primary btn-lg btn-block">Registrarme</button>
+            <p class="legal-text" style="margin-top:var(--spacing-3)">Al registrarte aceptas los Terminos y la Politica de privacidad.</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Recuperar contrasena</h3><p class="screen-route">POST /auth/forgot_password</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Recuperar acceso</div></header>
+          <div class="screen-body screen-body-scroll">
+            <p style="font-size:var(--font-size-sm);color:var(--color-muted-foreground);margin-bottom:var(--spacing-4)">Te enviaremos un enlace para restablecer tu contrasena.</p>
+            <div class="form-group"><label class="label">Email</label><input class="input" placeholder="tu@email.com" readonly></div>
+            <button class="btn btn-primary btn-lg btn-block">Enviar enlace</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ========== OWNER ========== -->
+<section class="demo-section" id="owner">
+  <h2>Owner — App principal</h2>
+  <p class="demo-section-desc">Dashboard, mascotas, citas, pagos y perfil.</p>
+  <div class="screen-grid">
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Dashboard</h3><p class="screen-route">GET /dashboard · /dashboard-summary</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><div><div class="app-header-title">Hola, Maria</div><div class="app-header-sub">Domingo, 31 may</div></div><div class="avatar avatar-md">MG</div></header>
+          <div class="screen-body screen-body-scroll no-tabs">
+            <div class="hero-card"><h4>Proxima cita</h4><p>Max · Manana 10:30 · Dr. Perez</p></div>
+            <div class="stats-row">
+              <div class="stat-card"><div class="value">2</div><div class="label">Mascotas</div></div>
+              <div class="stat-card"><div class="value">1</div><div class="label">Pago pendiente</div></div>
+            </div>
+            <div class="section-title">Accesos rapidos</div>
+            <div class="action-grid">
+              <div class="action-tile"><strong>Historial</strong><span>Ver registros</span></div>
+              <div class="action-tile"><strong>Patrocinios</strong><span>Mis donaciones</span></div>
+            </div>
+            <div class="info-banner">Vacuna de Luna vence en 5 dias.</div>
+          </div>
+          <nav class="bottom-nav">
+            <a class="bottom-nav-item active" href="#"><span>🏠</span>Inicio</a>
+            <a class="bottom-nav-item" href="#"><span>🐾</span>Mascotas</a>
+            <a class="bottom-nav-item" href="#"><span>📅</span>Citas</a>
+            <a class="bottom-nav-item" href="#"><span>👤</span>Perfil</a>
+          </nav>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Mis mascotas</h3><p class="screen-route">GET /my-pets · /pets</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><div class="app-header-title">Mis mascotas</div><button class="icon-btn">🔍</button></header>
+          <div class="screen-body screen-body-scroll no-tabs">
+            <div class="list-row"><div class="pet-avatar">🐕</div><div class="list-row-body"><div class="list-row-title">Max</div><div class="list-row-sub">Perro · 4 anos</div></div><span>›</span></div>
+            <div class="list-row"><div class="pet-avatar">🐈</div><div class="list-row-body"><div class="list-row-title">Luna</div><div class="list-row-sub">Gato · 2 anos</div></div><span>›</span></div>
+          </div>
+          <button class="fab" aria-label="Agregar">+</button>
+          <nav class="bottom-nav">
+            <a class="bottom-nav-item" href="#"><span>🏠</span>Inicio</a>
+            <a class="bottom-nav-item active" href="#"><span>🐾</span>Mascotas</a>
+            <a class="bottom-nav-item" href="#"><span>📅</span>Citas</a>
+            <a class="bottom-nav-item" href="#"><span>👤</span>Perfil</a>
+          </nav>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Detalle mascota</h3><p class="screen-route">GET /pets/:id</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Max</div><button class="icon-btn">✎</button></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="detail-hero"><div class="pet-avatar">🐕</div><span class="badge badge-outline">Perro · 28 kg</span></div>
+            <div class="action-grid">
+              <div class="action-tile"><strong>Historial</strong><span>Consultas y vacunas</span></div>
+              <div class="action-tile"><strong>Reportes</strong><span>PDF medicos</span></div>
+              <div class="action-tile"><strong>Perfil medico</strong><span>Alergias</span></div>
+              <div class="action-tile"><strong>Agendar cita</strong><span>Nueva visita</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Nueva mascota</h3><p class="screen-route">POST /pets · POST /pets/:id/photo</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Nueva mascota</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="upload-zone" style="padding:var(--spacing-4)">📷 Toca para agregar foto</div>
+            <div class="form-stack">
+              <div class="form-group"><label class="label">Nombre</label><input class="input" value="Max" readonly></div>
+              <div class="form-group"><label class="label">Especie</label><input class="input" value="Perro" readonly></div>
+              <div class="form-group"><label class="label">Raza</label><input class="input" placeholder="Labrador" readonly></div>
+            </div>
+            <button class="btn btn-primary btn-lg btn-block">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Mis citas</h3><p class="screen-route">GET /owner-appointments-list</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><div class="app-header-title">Mis citas</div></header>
+          <div class="screen-body screen-body-scroll no-tabs">
+            <div class="chips"><span class="chip active">Proximas</span><span class="chip">Pasadas</span></div>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">Max · Consulta</div><div class="list-row-sub">Lun 2 jun · 10:30 · Dr. Perez</div></div><span class="badge badge-warning">Pendiente</span></div>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">Luna · Vacuna</div><div class="list-row-sub">Vie 6 jun · 09:00</div></div><span class="badge badge-success">Confirmada</span></div>
+          </div>
+          <button class="fab">+</button>
+          <nav class="bottom-nav">
+            <a class="bottom-nav-item" href="#"><span>🏠</span>Inicio</a>
+            <a class="bottom-nav-item" href="#"><span>🐾</span>Mascotas</a>
+            <a class="bottom-nav-item active" href="#"><span>📅</span>Citas</a>
+            <a class="bottom-nav-item" href="#"><span>👤</span>Perfil</a>
+          </nav>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Agendar cita</h3><p class="screen-route">POST /owner-appointments · availability</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Agendar cita</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="stepper"><div class="step done"></div><div class="step active"></div><div class="step"></div><div class="step"></div></div>
+            <div class="section-title">Paso 2 · Veterinario</div>
+            <div class="list-row"><div class="avatar avatar-md">DP</div><div class="list-row-body"><div class="list-row-title">Dr. Perez</div><div class="list-row-sub">Medicina general</div></div><span class="badge badge-primary">✓</span></div>
+            <div class="list-row"><div class="avatar avatar-md">AM</div><div class="list-row-body"><div class="list-row-title">Dra. Morales</div><div class="list-row-sub">Dermatologia</div></div></div>
+            <button class="btn btn-primary btn-lg btn-block">Siguiente</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Detalle cita</h3><p class="screen-route">GET /owner-appointments/:id · confirm/cancel</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Detalle cita</div></header>
+          <div class="screen-body screen-body-scroll">
+            <span class="badge badge-warning">Pendiente confirmacion</span>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">Max · Consulta general</div><div class="list-row-sub">Lun 2 jun 2026 · 10:30</div></div></div>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">Dr. Perez</div><div class="list-row-sub">Consultorio 2</div></div></div>
+            <button class="btn btn-primary btn-lg btn-block">Confirmar asistencia</button>
+            <button class="btn btn-outline btn-lg btn-block">Cancelar cita</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Pagos</h3><p class="screen-route">GET /owner-payments-list · register</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Mis pagos</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="chips"><span class="chip active">Pendientes</span><span class="chip">Pagados</span></div>
+            <div class="card card-content">
+              <div style="display:flex;justify-content:space-between;align-items:center"><strong>Consulta Max</strong><span class="price">$25.00</span></div>
+              <p style="font-size:var(--font-size-xs);color:var(--color-muted-foreground);margin:var(--spacing-2) 0">Vence: 5 jun 2026</p>
+              <button class="btn btn-primary btn-md btn-block">Registrar pago</button>
+            </div>
+            <div class="upload-zone">Sube foto del comprobante (Zelle, transferencia…)</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Mi perfil</h3><p class="screen-route">GET /profile · PATCH /profile</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><div class="app-header-title">Mi perfil</div></header>
+          <div class="screen-body screen-body-scroll no-tabs">
+            <div style="text-align:center;margin-bottom:var(--spacing-4)"><div class="avatar avatar-lg" style="margin:0 auto var(--spacing-2)">MG</div><strong>Maria Gonzalez</strong><p style="font-size:var(--font-size-sm);color:var(--color-muted-foreground)">maria@email.com</p></div>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">Editar datos</div></div><span>›</span></div>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">Cambiar contrasena</div></div><span>›</span></div>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title" style="color:var(--color-destructive)">Eliminar cuenta</div></div><span>›</span></div>
+            <button class="btn btn-outline btn-md btn-block">Cerrar sesion</button>
+          </div>
+          <nav class="bottom-nav">
+            <a class="bottom-nav-item" href="#"><span>🏠</span>Inicio</a>
+            <a class="bottom-nav-item" href="#"><span>🐾</span>Mascotas</a>
+            <a class="bottom-nav-item" href="#"><span>📅</span>Citas</a>
+            <a class="bottom-nav-item active" href="#"><span>👤</span>Perfil</a>
+          </nav>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ========== MEDICAL ========== -->
+<section class="demo-section" id="medical">
+  <h2>Owner — Historial medico</h2>
+  <p class="demo-section-desc">Consultas, vacunas, laboratorio y reportes por mascota.</p>
+  <div class="screen-grid">
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Historial medico</h3><p class="screen-route">GET /my-medical-history · /owner-medical-summary</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Historial medico</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="chips"><span class="chip active">Max</span><span class="chip">Luna</span></div>
+            <div class="action-grid">
+              <div class="action-tile"><strong>Vacunas</strong><span>3 al dia</span></div>
+              <div class="action-tile"><strong>Consultas</strong><span>12 registros</span></div>
+              <div class="action-tile"><strong>Lab</strong><span>2 pendientes</span></div>
+              <div class="action-tile"><strong>Reportes</strong><span>PDF</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Vacunas</h3><p class="screen-route">GET /pets/:pet_id/vaccinations</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Vacunas · Max</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><strong>Rabia</strong><p style="font-size:var(--font-size-xs);color:var(--color-muted-foreground)">15 ene 2026 · Refuerzo 2027</p></div></div>
+            <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><strong>Parvovirus</strong><p style="font-size:var(--font-size-xs);color:var(--color-muted-foreground)">3 dic 2025</p></div></div>
+            <div class="info-banner">Proxima dosis sugerida: 5 jun 2026</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Detalle consulta</h3><p class="screen-route">GET /pets/:pet_id/consultations · export_recipe</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Consulta #184</div></header>
+          <div class="screen-body screen-body-scroll">
+            <p style="font-size:var(--font-size-sm);color:var(--color-muted-foreground)">12 may 2026 · Dr. Perez</p>
+            <div class="section-title">Diagnostico</div>
+            <p style="font-size:var(--font-size-sm)">Dermatitis leve. Tratamiento topico 7 dias.</p>
+            <div class="section-title">Receta</div>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">Shampoo medicado</div><div class="list-row-sub">Cada 48h</div></div></div>
+            <button class="btn btn-outline btn-md btn-block">Descargar receta PDF</button>
+            <button class="btn btn-primary btn-md btn-block">Marcar tratamiento completado</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Reporte medico</h3><p class="screen-route">GET /pets/:pet_id/medical_reports/:id</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Reporte #42</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="card card-content" style="text-align:center;padding:var(--spacing-8) var(--spacing-4)">
+              <div style="font-size:2.5rem">📄</div>
+              <p style="font-size:var(--font-size-sm);margin-top:var(--spacing-2)">Informe completo · Max</p>
+              <p style="font-size:var(--font-size-xs);color:var(--color-muted-foreground)">Generado 10 may 2026</p>
+            </div>
+            <button class="btn btn-primary btn-lg btn-block">Descargar PDF</button>
+            <button class="btn btn-outline btn-md btn-block">Compartir</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ========== ADMIN ========== -->
+<section class="demo-section" id="admin">
+  <h2>Admin — Panel administrativo</h2>
+  <p class="demo-section-desc">Flujos de staff: pacientes, consultas, agenda, pagos y reportes.</p>
+  <div class="screen-grid">
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Admin inicio</h3><p class="screen-route">—</p><div class="screen-tags"><span class="badge domain-badge-admin">Admin</span></div></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><div><div class="app-header-title">Panel admin</div><div class="app-header-sub">Dr. Perez · Veterinario</div></div></header>
+          <div class="screen-body screen-body-scroll no-tabs">
+            <div class="stats-row">
+              <div class="stat-card"><div class="value">8</div><div class="label">Citas hoy</div></div>
+              <div class="stat-card"><div class="value">3</div><div class="label">Pagos pend.</div></div>
+            </div>
+            <div class="section-title">Modulos</div>
+            <div class="admin-grid">
+              <div class="admin-tile"><strong>Mascotas</strong><span>124 activas</span></div>
+              <div class="admin-tile"><strong>Consultas</strong><span>Nueva consulta</span></div>
+              <div class="admin-tile"><strong>Agenda</strong><span>Calendario</span></div>
+              <div class="admin-tile"><strong>Reportes</strong><span>Export PDF</span></div>
+            </div>
+          </div>
+          <nav class="bottom-nav">
+            <a class="bottom-nav-item active" href="#"><span>🏠</span>Inicio</a>
+            <a class="bottom-nav-item" href="#"><span>🐾</span>Pacientes</a>
+            <a class="bottom-nav-item" href="#"><span>📅</span>Agenda</a>
+            <a class="bottom-nav-item" href="#"><span>☰</span>Mas</a>
+          </nav>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Mascotas admin</h3><p class="screen-route">GET /admin/pets-list</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Mascotas</div><button class="icon-btn">+</button></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="search-bar">🔍 Buscar por nombre o dueno…</div>
+            <div class="list-row"><div class="pet-avatar">🐕</div><div class="list-row-body"><div class="list-row-title">Max</div><div class="list-row-sub">Maria Gonzalez</div></div><span>›</span></div>
+            <div class="list-row"><div class="pet-avatar">🐈</div><div class="list-row-body"><div class="list-row-title">Luna</div><div class="list-row-sub">Carlos Ruiz</div></div><span>›</span></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Consultas admin</h3><p class="screen-route">GET /admin/consultations-list</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Consultas</div><button class="icon-btn">+</button></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">#184 · Max</div><div class="list-row-sub">Hoy 10:30 · Dr. Perez</div></div><span class="badge badge-success">Cerrada</span></div>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">#185 · Luna</div><div class="list-row-sub">Hoy 11:15 · En curso</div></div><span class="badge badge-warning">Abierta</span></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Detalle consulta admin</h3><p class="screen-route">prescriptions · lab_exams</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Consulta #185</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="chips"><span class="chip active">Notas</span><span class="chip">Receta</span><span class="chip">Lab</span></div>
+            <div class="form-group"><label class="label">Motivo</label><input class="input" value="Control anual" readonly></div>
+            <div class="form-group"><label class="label">Observaciones</label><input class="input" value="Peso estable, buen apetito" readonly></div>
+            <button class="btn btn-primary btn-md btn-block">Agregar receta</button>
+            <button class="btn btn-outline btn-md btn-block">Subir examen lab</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Agenda admin</h3><p class="screen-route">GET /admin/appointments-list</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Agenda</div><button class="icon-btn">+</button></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="chips"><span class="chip active">Hoy</span><span class="chip">Semana</span></div>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">10:30 · Max</div><div class="list-row-sub">Consulta · Dr. Perez</div></div><span class="badge badge-outline">Sala 2</span></div>
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">11:15 · Luna</div><div class="list-row-sub">Vacuna · Dra. Morales</div></div><span class="badge badge-outline">Sala 1</span></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen-card">
+      <div class="screen-meta"><h3>Reportes medicos admin</h3><p class="screen-route">GET /admin/medical_reports</p></div>
+      <div class="device"><div class="device-notch"></div>
+        <div class="mobile-shell no-nav">
+          <div class="status-bar"><span>9:41</span><span>LTE ▴▴▴</span></div>
+          <header class="app-header"><button class="icon-btn">←</button><div class="app-header-title">Reportes</div></header>
+          <div class="screen-body screen-body-scroll">
+            <div class="list-row"><div class="list-row-body"><div class="list-row-title">Reporte #42 · Max</div><div class="list-row-sub">10 may 2026</div></div><span>›</span></div>
+            <button class="btn btn-secondary btn-md btn-block">Generar nuevo PDF</button>
+            <button class="btn btn-outline btn-md btn-block">Importar historial</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<footer style="padding:var(--spacing-8) var(--spacing-6);color:var(--color-muted-foreground);font-size:var(--font-size-sm);border-top:1px solid var(--color-border)">
+  <p>Documentacion: <a href="mobile-screens.md">mobile-screens.md</a> · <a href="mobile-ui-components.md">mobile-ui-components.md</a> · <a href="mobile-routes.md">mobile-routes.md</a></p>
+</footer>
+
+<script>
+(function () {
+  var html = document.documentElement;
+  var FILTER_KEY = "pawcare-demo-filter";
+  var UI_KEY = "pawcare-demo-ui";
+
+  function buildDevicePairs() {
+    document.querySelectorAll(".screen-card").forEach(function (card) {
+      var device = card.querySelector(":scope > .device");
+      if (!device || card.querySelector(".device-pair")) return;
+
+      device.setAttribute("data-theme", "light");
+
+      var pair = document.createElement("div");
+      pair.className = "device-pair";
+
+      var lightWrap = document.createElement("div");
+      lightWrap.className = "device-variant device-variant-light";
+      var lightLabel = document.createElement("span");
+      lightLabel.className = "theme-label";
+      lightLabel.textContent = "Claro";
+      lightWrap.appendChild(lightLabel);
+      lightWrap.appendChild(device);
+
+      var darkWrap = document.createElement("div");
+      darkWrap.className = "device-variant device-variant-dark";
+      var darkLabel = document.createElement("span");
+      darkLabel.className = "theme-label";
+      darkLabel.textContent = "Oscuro";
+      var darkDevice = device.cloneNode(true);
+      darkDevice.setAttribute("data-theme", "dark");
+      darkWrap.appendChild(darkLabel);
+      darkWrap.appendChild(darkDevice);
+
+      pair.appendChild(lightWrap);
+      pair.appendChild(darkWrap);
+      card.appendChild(pair);
+    });
+  }
+
+  function setFilter(mode) {
+    html.dataset.screenFilter = mode;
+    localStorage.setItem(FILTER_KEY, mode);
+    document.querySelectorAll(".demo-filter-btn").forEach(function (btn) {
+      btn.classList.toggle("active", btn.dataset.filter === mode);
+    });
+  }
+
+  function setUiTheme(theme) {
+    html.dataset.uiTheme = theme;
+    localStorage.setItem(UI_KEY, theme);
+    document.querySelectorAll(".demo-ui-btn").forEach(function (btn) {
+      btn.classList.toggle("active", btn.dataset.ui === theme);
+    });
+  }
+
+  function printAll() {
+    html.classList.add("is-printing");
+    window.print();
+  }
+
+  buildDevicePairs();
+  setFilter(localStorage.getItem(FILTER_KEY) || "both");
+  setUiTheme(localStorage.getItem(UI_KEY) || "light");
+
+  document.querySelectorAll(".demo-filter-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { setFilter(btn.dataset.filter); });
+  });
+
+  document.querySelectorAll(".demo-ui-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () { setUiTheme(btn.dataset.ui); });
+  });
+
+  document.querySelector(".demo-print-btn").addEventListener("click", printAll);
+  window.addEventListener("afterprint", function () { html.classList.remove("is-printing"); });
+})();
+</script>
+
+</body>
+</html>

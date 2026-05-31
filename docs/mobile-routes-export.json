@@ -1,0 +1,2323 @@
+{
+  "app": "pawcare-mobile",
+  "exported_at": "2026-05-31T16:29:33.061Z",
+  "summary": {
+    "total_controllers": 72,
+    "total_routes": 332,
+    "routes_included": 157,
+    "routes_excluded": 175
+  },
+  "controllers": [
+    {
+      "controller": "rails/health",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/up",
+          "action": "rails/health#show"
+        }
+      ]
+    },
+    {
+      "controller": "pages",
+      "scope": "public",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/products",
+          "action": "pages#products"
+        },
+        {
+          "method": "GET",
+          "path": "/checkout",
+          "action": "pages#checkout"
+        },
+        {
+          "method": "GET",
+          "path": "/services",
+          "action": "pages#services"
+        },
+        {
+          "method": "GET",
+          "path": "/contact",
+          "action": "pages#contact"
+        },
+        {
+          "method": "GET",
+          "path": "/terms",
+          "action": "pages#terms"
+        },
+        {
+          "method": "GET",
+          "path": "/privacy",
+          "action": "pages#privacy"
+        }
+      ],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "action": "pages#health"
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "action": "pages#home"
+        },
+        {
+          "method": "GET",
+          "path": "/unauthorized",
+          "action": "pages#unauthorized"
+        },
+        {
+          "method": "GET",
+          "path": "/not-found",
+          "action": "pages#not_found"
+        },
+        {
+          "method": "GET",
+          "path": "/about",
+          "action": "pages#about"
+        },
+        {
+          "method": "GET",
+          "path": "/pawcare",
+          "action": "pages#pawcare"
+        },
+        {
+          "method": "GET",
+          "path": "/user_manual",
+          "action": "pages#user_manual"
+        }
+      ]
+    },
+    {
+      "controller": "public/landing",
+      "scope": "public",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/landing",
+          "action": "public/landing#index"
+        }
+      ]
+    },
+    {
+      "controller": "public/contact_messages",
+      "scope": "public",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "POST",
+          "path": "/public/contact_messages",
+          "action": "public/contact_messages#create"
+        }
+      ]
+    },
+    {
+      "controller": "public/products",
+      "scope": "public",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/public/products",
+          "action": "public/products#index"
+        },
+        {
+          "method": "GET",
+          "path": "/public/products/:id",
+          "action": "public/products#show"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "public/product_orders",
+      "scope": "public",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "POST",
+          "path": "/public/product_orders/:id/upload_proof",
+          "action": "public/product_orders#upload_proof"
+        },
+        {
+          "method": "POST",
+          "path": "/public/product_orders",
+          "action": "public/product_orders#create"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "adoption",
+      "scope": "public",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/adoption",
+          "action": "adoption#index"
+        },
+        {
+          "method": "GET",
+          "path": "/adoption/pets",
+          "action": "adoption#pets"
+        },
+        {
+          "method": "GET",
+          "path": "/adoption/pets/:id",
+          "action": "adoption#show"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "auth",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/auth",
+          "action": "auth#index"
+        },
+        {
+          "method": "POST",
+          "path": "/auth/register_owner",
+          "action": "auth#register_owner"
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "action": "auth#login"
+        },
+        {
+          "method": "DELETE",
+          "path": "/auth/logout",
+          "action": "auth#logout"
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "auth#refresh"
+        },
+        {
+          "method": "GET",
+          "path": "/auth/current_user",
+          "action": "auth#current_user"
+        },
+        {
+          "method": "GET",
+          "path": "/auth/debug",
+          "action": "auth#debug"
+        },
+        {
+          "method": "POST",
+          "path": "/auth/forgot_password",
+          "action": "auth#forgot_password"
+        },
+        {
+          "method": "POST",
+          "path": "/auth/reset_password",
+          "action": "auth#reset_password"
+        },
+        {
+          "method": "GET",
+          "path": "/auth/reset_password/:token",
+          "action": "auth#edit_password_reset"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "profile",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/profile",
+          "action": "profile#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/profile",
+          "action": "profile#update"
+        },
+        {
+          "method": "PATCH",
+          "path": "/profile/password",
+          "action": "profile#change_password"
+        },
+        {
+          "method": "DELETE",
+          "path": "/profile",
+          "action": "profile#destroy"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "dashboard",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/dashboard",
+          "action": "dashboard#index"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard-summary",
+          "action": "dashboard#summary"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "owner_pages",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/my-pets",
+          "action": "owner_pages#pets"
+        },
+        {
+          "method": "GET",
+          "path": "/my-pets/:pet_id/medical-history",
+          "action": "owner_pages#medical_history"
+        },
+        {
+          "method": "GET",
+          "path": "/my-sponsorships",
+          "action": "owner_pages#sponsorships"
+        },
+        {
+          "method": "GET",
+          "path": "/my-appointments",
+          "action": "owner_pages#appointments"
+        },
+        {
+          "method": "GET",
+          "path": "/my-payments",
+          "action": "owner_pages#payments"
+        },
+        {
+          "method": "GET",
+          "path": "/my-medical-history",
+          "action": "owner_pages#medical_history_index"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "owner_appointments",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/owner-appointments-list",
+          "action": "owner_appointments#index"
+        },
+        {
+          "method": "GET",
+          "path": "/owner-appointments/:id",
+          "action": "owner_appointments#show"
+        },
+        {
+          "method": "POST",
+          "path": "/owner-appointments",
+          "action": "owner_appointments#create"
+        },
+        {
+          "method": "PATCH",
+          "path": "/owner-appointments/:id",
+          "action": "owner_appointments#update"
+        },
+        {
+          "method": "POST",
+          "path": "/owner-appointments/:id/cancel",
+          "action": "owner_appointments#cancel"
+        },
+        {
+          "method": "POST",
+          "path": "/owner-appointments/:id/confirm",
+          "action": "owner_appointments#confirm"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "owner_availability",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/owner-available-vets",
+          "action": "owner_availability#index"
+        },
+        {
+          "method": "GET",
+          "path": "/owner-available-days",
+          "action": "owner_availability#days"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "owner_services",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/owner-services-list",
+          "action": "owner_services#index"
+        }
+      ]
+    },
+    {
+      "controller": "owner_payments",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/owner-payments-list",
+          "action": "owner_payments#index"
+        },
+        {
+          "method": "POST",
+          "path": "/owner-payments/:id/register",
+          "action": "owner_payments#register"
+        }
+      ],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/owner-payments/:id",
+          "action": "owner_payments#show"
+        }
+      ]
+    },
+    {
+      "controller": "owner_medical_summary",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/owner-medical-summary",
+          "action": "owner_medical_summary#index"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "owner_consultations",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/owner/consultations/:id/export_recipe",
+          "action": "owner_consultations#export_recipe"
+        },
+        {
+          "method": "POST",
+          "path": "/owner/consultations/:id/complete_treatment",
+          "action": "owner_consultations#complete_treatment"
+        },
+        {
+          "method": "GET",
+          "path": "/pets/:pet_id/consultations",
+          "action": "owner_consultations#index"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "owner_prescription_items",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "POST",
+          "path": "/owner/prescription_items/:id/complete",
+          "action": "owner_prescription_items#complete"
+        }
+      ]
+    },
+    {
+      "controller": "owner_lab_exams",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "POST",
+          "path": "/owner/lab_exams/:id/files",
+          "action": "owner_lab_exams#upload_files"
+        },
+        {
+          "method": "PATCH",
+          "path": "/owner/lab_exams/:id/results",
+          "action": "owner_lab_exams#update_results"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "pets",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "POST",
+          "path": "/pets/:id/photo",
+          "action": "pets#photo"
+        },
+        {
+          "method": "DELETE",
+          "path": "/pets/:id/photo",
+          "action": "pets#delete_photo"
+        },
+        {
+          "method": "GET",
+          "path": "/pets",
+          "action": "pets#index"
+        },
+        {
+          "method": "POST",
+          "path": "/pets",
+          "action": "pets#create"
+        },
+        {
+          "method": "GET",
+          "path": "/pets/new",
+          "action": "pets#new"
+        },
+        {
+          "method": "GET",
+          "path": "/pets/:id/edit",
+          "action": "pets#edit"
+        },
+        {
+          "method": "GET",
+          "path": "/pets/:id",
+          "action": "pets#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/pets/:id",
+          "action": "pets#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/pets/:id",
+          "action": "pets#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/pets/:id",
+          "action": "pets#destroy"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "owner_medical_profiles",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/pets/:pet_id/medical_profile",
+          "action": "owner_medical_profiles#show"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "owner_vaccinations",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/pets/:pet_id/vaccinations",
+          "action": "owner_vaccinations#index"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "owner_dewormings",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/pets/:pet_id/dewormings",
+          "action": "owner_dewormings#index"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "owner_medical_reports",
+      "scope": "owner",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/pets/:pet_id/medical_reports/:id/download_pdf",
+          "action": "owner_medical_reports#download_pdf"
+        },
+        {
+          "method": "GET",
+          "path": "/pets/:pet_id/medical_reports",
+          "action": "owner_medical_reports#index"
+        },
+        {
+          "method": "GET",
+          "path": "/pets/:pet_id/medical_reports/:id",
+          "action": "owner_medical_reports#show"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "sponsorships",
+      "scope": "public",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/sponsorships/:id/expenses/:expense_id",
+          "action": "sponsorships#expense"
+        },
+        {
+          "method": "GET",
+          "path": "/sponsorships",
+          "action": "sponsorships#index"
+        },
+        {
+          "method": "POST",
+          "path": "/sponsorships",
+          "action": "sponsorships#create"
+        },
+        {
+          "method": "GET",
+          "path": "/sponsorships/:id",
+          "action": "sponsorships#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/sponsorships/:id",
+          "action": "sponsorships#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/sponsorships/:id",
+          "action": "sponsorships#update"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin_pages",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/pets",
+          "action": "admin_pages#pets"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/adoptions",
+          "action": "admin_pages#adoptions"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/sponsorships",
+          "action": "admin_pages#sponsorships"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/appointments",
+          "action": "admin_pages#appointments"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/owners",
+          "action": "admin_pages#owners"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/medical-history",
+          "action": "admin_pages#medical_records"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/new-consultation",
+          "action": "admin_pages#consultations"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/medical-reports",
+          "action": "admin_pages#reports"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/payments",
+          "action": "admin_pages#payments"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/staff",
+          "action": "admin_pages#staff"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/metrics",
+          "action": "admin_pages#metrics"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/shifts",
+          "action": "admin_pages#shifts"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/financial",
+          "action": "admin_pages#financial"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content",
+          "action": "admin_pages#content"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/products-services",
+          "action": "admin_pages#products_services"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/user-manual",
+          "action": "admin_pages#user_manual"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/user-manual-files",
+          "action": "admin_pages#user_manual_files"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/user-manual-content",
+          "action": "admin_pages#user_manual_content"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/settings/email",
+          "action": "admin_pages#email_settings"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/settings/smtp",
+          "action": "admin_pages#smtp_settings"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/settings/currency",
+          "action": "admin_pages#currency_settings"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/settings/general",
+          "action": "admin_pages#general_settings"
+        }
+      ]
+    },
+    {
+      "controller": "admin/content/promotions",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "PATCH",
+          "path": "/admin/content/promotions/reorder",
+          "action": "admin/content/promotions#reorder"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/promotions",
+          "action": "admin/content/promotions#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/content/promotions",
+          "action": "admin/content/promotions#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/promotions/new",
+          "action": "admin/content/promotions#new"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/promotions/:id/edit",
+          "action": "admin/content/promotions#edit"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/promotions/:id",
+          "action": "admin/content/promotions#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/content/promotions/:id",
+          "action": "admin/content/promotions#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/content/promotions/:id",
+          "action": "admin/content/promotions#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/content/promotions/:id",
+          "action": "admin/content/promotions#destroy"
+        }
+      ]
+    },
+    {
+      "controller": "admin/content/announcements",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/content/announcements",
+          "action": "admin/content/announcements#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/content/announcements",
+          "action": "admin/content/announcements#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/announcements/new",
+          "action": "admin/content/announcements#new"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/announcements/:id/edit",
+          "action": "admin/content/announcements#edit"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/announcements/:id",
+          "action": "admin/content/announcements#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/content/announcements/:id",
+          "action": "admin/content/announcements#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/content/announcements/:id",
+          "action": "admin/content/announcements#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/content/announcements/:id",
+          "action": "admin/content/announcements#destroy"
+        }
+      ]
+    },
+    {
+      "controller": "admin/content/landing_configs",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/content/landing_config",
+          "action": "admin/content/landing_configs#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/content/landing_config",
+          "action": "admin/content/landing_configs#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/content/landing_config",
+          "action": "admin/content/landing_configs#update"
+        }
+      ]
+    },
+    {
+      "controller": "admin/content/email_campaigns",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "POST",
+          "path": "/admin/content/email_campaigns/preview_recipients",
+          "action": "admin/content/email_campaigns#preview_recipients"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/content/email_campaigns/:id/send_campaign",
+          "action": "admin/content/email_campaigns#send_campaign"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/content/email_campaigns/:id/cancel",
+          "action": "admin/content/email_campaigns#cancel"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/content/email_campaigns/:id/clone",
+          "action": "admin/content/email_campaigns#clone"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/email_campaigns",
+          "action": "admin/content/email_campaigns#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/content/email_campaigns",
+          "action": "admin/content/email_campaigns#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/email_campaigns/new",
+          "action": "admin/content/email_campaigns#new"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/email_campaigns/:id/edit",
+          "action": "admin/content/email_campaigns#edit"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/email_campaigns/:id",
+          "action": "admin/content/email_campaigns#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/content/email_campaigns/:id",
+          "action": "admin/content/email_campaigns#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/content/email_campaigns/:id",
+          "action": "admin/content/email_campaigns#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/content/email_campaigns/:id",
+          "action": "admin/content/email_campaigns#destroy"
+        }
+      ]
+    },
+    {
+      "controller": "admin/content/testimonials",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "PATCH",
+          "path": "/admin/content/testimonials/reorder",
+          "action": "admin/content/testimonials#reorder"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/testimonials",
+          "action": "admin/content/testimonials#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/content/testimonials",
+          "action": "admin/content/testimonials#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/testimonials/new",
+          "action": "admin/content/testimonials#new"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/testimonials/:id/edit",
+          "action": "admin/content/testimonials#edit"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/content/testimonials/:id",
+          "action": "admin/content/testimonials#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/content/testimonials/:id",
+          "action": "admin/content/testimonials#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/content/testimonials/:id",
+          "action": "admin/content/testimonials#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/content/testimonials/:id",
+          "action": "admin/content/testimonials#destroy"
+        }
+      ]
+    },
+    {
+      "controller": "admin/pets",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/pets-list",
+          "action": "admin/pets#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/pets/:id/photo",
+          "action": "admin/pets#photo"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/pets/:id/photo",
+          "action": "admin/pets#delete_photo"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/pets",
+          "action": "admin/pets#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/pets/:id",
+          "action": "admin/pets#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/pets/:id",
+          "action": "admin/pets#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/pets/:id",
+          "action": "admin/pets#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/pets/:id",
+          "action": "admin/pets#destroy"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin/adoptions",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/adoptions-list",
+          "action": "admin/adoptions#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/adoptions",
+          "action": "admin/adoptions#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/adoptions/:id",
+          "action": "admin/adoptions#show"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin/owners",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/owners-list",
+          "action": "admin/owners#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/owners",
+          "action": "admin/owners#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/owners/:id",
+          "action": "admin/owners#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/owners/:id",
+          "action": "admin/owners#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/owners/:id",
+          "action": "admin/owners#update"
+        }
+      ]
+    },
+    {
+      "controller": "admin/sponsorships",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/sponsorships-list",
+          "action": "admin/sponsorships#index"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/sponsorships/:id",
+          "action": "admin/sponsorships#show"
+        }
+      ]
+    },
+    {
+      "controller": "admin/consultations",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/consultations-list",
+          "action": "admin/consultations#index"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/consultations/:id/export_recipe",
+          "action": "admin/consultations#export_recipe"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/consultations/:id/complete_treatment",
+          "action": "admin/consultations#complete_treatment"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/consultations",
+          "action": "admin/consultations#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/consultations/:id",
+          "action": "admin/consultations#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/consultations/:id",
+          "action": "admin/consultations#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/consultations/:id",
+          "action": "admin/consultations#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/consultations/:id",
+          "action": "admin/consultations#destroy"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin/vaccinations",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/vaccinations-list",
+          "action": "admin/vaccinations#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/vaccinations",
+          "action": "admin/vaccinations#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/vaccinations/:id",
+          "action": "admin/vaccinations#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/vaccinations/:id",
+          "action": "admin/vaccinations#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/vaccinations/:id",
+          "action": "admin/vaccinations#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/vaccinations/:id",
+          "action": "admin/vaccinations#destroy"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin/dewormings",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/dewormings-list",
+          "action": "admin/dewormings#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/dewormings",
+          "action": "admin/dewormings#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/dewormings/:id",
+          "action": "admin/dewormings#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/dewormings/:id",
+          "action": "admin/dewormings#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/dewormings/:id",
+          "action": "admin/dewormings#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/dewormings/:id",
+          "action": "admin/dewormings#destroy"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin/vaccination_schedules",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/vaccination-schedules-list",
+          "action": "admin/vaccination_schedules#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/vaccination_schedules/:id/complete_item",
+          "action": "admin/vaccination_schedules#complete_item"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/vaccination_schedules",
+          "action": "admin/vaccination_schedules#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/vaccination_schedules/:id",
+          "action": "admin/vaccination_schedules#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/vaccination_schedules/:id",
+          "action": "admin/vaccination_schedules#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/vaccination_schedules/:id",
+          "action": "admin/vaccination_schedules#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/vaccination_schedules/:id",
+          "action": "admin/vaccination_schedules#destroy"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin/staff",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/staff-list",
+          "action": "admin/staff#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/staff",
+          "action": "admin/staff#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/staff/:id",
+          "action": "admin/staff#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/staff/:id",
+          "action": "admin/staff#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/staff/:id",
+          "action": "admin/staff#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/staff/:id",
+          "action": "admin/staff#destroy"
+        }
+      ]
+    },
+    {
+      "controller": "admin/services",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/services-list",
+          "action": "admin/services#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/services",
+          "action": "admin/services#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/services/:id",
+          "action": "admin/services#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/services/:id",
+          "action": "admin/services#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/services/:id",
+          "action": "admin/services#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/services/:id",
+          "action": "admin/services#destroy"
+        }
+      ]
+    },
+    {
+      "controller": "admin/staff_schedules",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/staff-schedules-list",
+          "action": "admin/staff_schedules#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/staff_schedules",
+          "action": "admin/staff_schedules#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/staff_schedules/:id",
+          "action": "admin/staff_schedules#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/staff_schedules/:id",
+          "action": "admin/staff_schedules#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/staff_schedules/:id",
+          "action": "admin/staff_schedules#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/staff_schedules/:id",
+          "action": "admin/staff_schedules#destroy"
+        }
+      ]
+    },
+    {
+      "controller": "admin/appointments",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/appointments-list",
+          "action": "admin/appointments#index"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/appointments/available-days",
+          "action": "admin/appointments#available_days"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/appointments/available-vets",
+          "action": "admin/appointments#available_vets"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/appointments/time-slots",
+          "action": "admin/appointments#time_slots"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/appointments",
+          "action": "admin/appointments#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/appointments/:id",
+          "action": "admin/appointments#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/appointments/:id",
+          "action": "admin/appointments#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/appointments/:id",
+          "action": "admin/appointments#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/appointments/:id",
+          "action": "admin/appointments#destroy"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin/payments",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/payments-list",
+          "action": "admin/payments#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/payments/:id/register",
+          "action": "admin/payments#register"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/payments/:id",
+          "action": "admin/payments#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/payments/:id",
+          "action": "admin/payments#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/payments/:id",
+          "action": "admin/payments#update"
+        }
+      ],
+      "excluded_routes": [
+        {
+          "method": "POST",
+          "path": "/admin/payments/:id/extend",
+          "action": "admin/payments#extend"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/payments/:id/cancel",
+          "action": "admin/payments#cancel"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/payments",
+          "action": "admin/payments#create"
+        }
+      ]
+    },
+    {
+      "controller": "admin/products",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/products-list",
+          "action": "admin/products#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/products/:id/add_stock",
+          "action": "admin/products#add_stock"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/products/:id/remove_stock",
+          "action": "admin/products#remove_stock"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/products/:id/adjust_stock",
+          "action": "admin/products#adjust_stock"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/products/:id/image",
+          "action": "admin/products#image"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/products/:id/image",
+          "action": "admin/products#delete_image"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/products",
+          "action": "admin/products#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/products/:id",
+          "action": "admin/products#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/products/:id",
+          "action": "admin/products#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/products/:id",
+          "action": "admin/products#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/products/:id",
+          "action": "admin/products#destroy"
+        }
+      ]
+    },
+    {
+      "controller": "admin/stock_movements",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/stock-movements-list",
+          "action": "admin/stock_movements#index"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/stock_movements/:id",
+          "action": "admin/stock_movements#show"
+        }
+      ]
+    },
+    {
+      "controller": "admin/service_categories",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/service-categories-list",
+          "action": "admin/service_categories#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/service_categories",
+          "action": "admin/service_categories#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/service_categories/:id",
+          "action": "admin/service_categories#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/service_categories/:id",
+          "action": "admin/service_categories#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/service_categories/:id",
+          "action": "admin/service_categories#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/service_categories/:id",
+          "action": "admin/service_categories#destroy"
+        }
+      ]
+    },
+    {
+      "controller": "admin/settings",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/settings/email-config",
+          "action": "admin/settings#email"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/settings/smtp-config",
+          "action": "admin/settings#smtp"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/settings/smtp-status",
+          "action": "admin/settings#smtp_status"
+        }
+      ]
+    },
+    {
+      "controller": "admin/owner_pets",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "POST",
+          "path": "/admin/owners/:owner_id/pets/:id/photo",
+          "action": "admin/owner_pets#photo"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/owners/:owner_id/pets/:id/photo",
+          "action": "admin/owner_pets#delete_photo"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/owners/:owner_id/pets",
+          "action": "admin/owner_pets#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/owners/:owner_id/pets/:id",
+          "action": "admin/owner_pets#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/owners/:owner_id/pets/:id",
+          "action": "admin/owner_pets#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/owners/:owner_id/pets/:id",
+          "action": "admin/owner_pets#update"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin/medical_profiles",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/pets/:pet_id/medical_profile",
+          "action": "admin/medical_profiles#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/pets/:pet_id/medical_profile",
+          "action": "admin/medical_profiles#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/pets/:pet_id/medical_profile",
+          "action": "admin/medical_profiles#update"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin/prescription_items",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "POST",
+          "path": "/admin/prescription_items/:id/complete",
+          "action": "admin/prescription_items#complete"
+        }
+      ]
+    },
+    {
+      "controller": "admin/prescriptions",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/consultations/:consultation_id/prescriptions",
+          "action": "admin/prescriptions#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/consultations/:consultation_id/prescriptions",
+          "action": "admin/prescriptions#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/consultations/:consultation_id/prescriptions/:id",
+          "action": "admin/prescriptions#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/consultations/:consultation_id/prescriptions/:id",
+          "action": "admin/prescriptions#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/consultations/:consultation_id/prescriptions/:id",
+          "action": "admin/prescriptions#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/consultations/:consultation_id/prescriptions/:id",
+          "action": "admin/prescriptions#destroy"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin/lab_exams",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "POST",
+          "path": "/admin/consultations/:consultation_id/lab_exams/:id/files",
+          "action": "admin/lab_exams#upload_files"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/consultations/:consultation_id/lab_exams/:id/files/:file_id",
+          "action": "admin/lab_exams#delete_file"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/consultations/:consultation_id/lab_exams",
+          "action": "admin/lab_exams#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/consultations/:consultation_id/lab_exams",
+          "action": "admin/lab_exams#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/consultations/:consultation_id/lab_exams/:id",
+          "action": "admin/lab_exams#show"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/consultations/:consultation_id/lab_exams/:id",
+          "action": "admin/lab_exams#update"
+        },
+        {
+          "method": "PUT",
+          "path": "/admin/consultations/:consultation_id/lab_exams/:id",
+          "action": "admin/lab_exams#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/consultations/:consultation_id/lab_exams/:id",
+          "action": "admin/lab_exams#destroy"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin/medical_reports",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/medical_reports/generate_pdf",
+          "action": "admin/medical_reports#generate_pdf"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/medical_reports/import",
+          "action": "admin/medical_reports#import"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/medical_reports/:id/export_json",
+          "action": "admin/medical_reports#export_json"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/medical_reports/:id/export_csv",
+          "action": "admin/medical_reports#export_csv"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/medical_reports/:id/export_pdf",
+          "action": "admin/medical_reports#export_pdf"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/medical_reports/:id/email",
+          "action": "admin/medical_reports#email"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/medical_reports",
+          "action": "admin/medical_reports#index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/medical_reports",
+          "action": "admin/medical_reports#create"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/medical_reports/:id",
+          "action": "admin/medical_reports#show"
+        }
+      ],
+      "excluded_routes": []
+    },
+    {
+      "controller": "admin/metrics",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/metrics/dashboard",
+          "action": "admin/metrics#dashboard"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/metrics/consultations",
+          "action": "admin/metrics#consultations"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/metrics/patients",
+          "action": "admin/metrics#patients"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/metrics/revenue",
+          "action": "admin/metrics#revenue"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/metrics/appointments",
+          "action": "admin/metrics#appointments"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/metrics/vaccinations",
+          "action": "admin/metrics#vaccinations"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/metrics/adoptions",
+          "action": "admin/metrics#adoptions"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/metrics/sponsorships",
+          "action": "admin/metrics#sponsorships"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/metrics/financial",
+          "action": "admin/metrics#financial"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/metrics/refresh",
+          "action": "admin/metrics#refresh"
+        }
+      ]
+    },
+    {
+      "controller": "admin/shifts",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/shifts/clinic_schedule",
+          "action": "admin/shifts#clinic_schedule"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/shifts/clinic_schedule",
+          "action": "admin/shifts#update_clinic_schedule"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/shifts/staff_schedules",
+          "action": "admin/shifts#staff_schedules"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/shifts/staff_schedules/:user_id",
+          "action": "admin/shifts#update_staff_schedule"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/shifts/weekly_overview",
+          "action": "admin/shifts#weekly_overview"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/shifts/exceptions",
+          "action": "admin/shifts#create_exception"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/shifts/exceptions/:id",
+          "action": "admin/shifts#destroy_exception"
+        }
+      ]
+    },
+    {
+      "controller": "admin/financial",
+      "scope": "admin",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/admin/financial/expenses",
+          "action": "admin/financial#index"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/financial/expenses/:id",
+          "action": "admin/financial#show"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/financial/expenses",
+          "action": "admin/financial#create"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/financial/expenses/:id",
+          "action": "admin/financial#update"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/financial/expenses/:id",
+          "action": "admin/financial#destroy"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/financial/balance",
+          "action": "admin/financial#balance"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/financial/refunds",
+          "action": "admin/financial#refunds_index"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/financial/refunds",
+          "action": "admin/financial#refunds_create"
+        }
+      ]
+    },
+    {
+      "controller": "action_mailbox/ingresses/postmark/inbound_emails",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "POST",
+          "path": "/rails/action_mailbox/postmark/inbound_emails",
+          "action": "action_mailbox/ingresses/postmark/inbound_emails#create"
+        }
+      ]
+    },
+    {
+      "controller": "action_mailbox/ingresses/relay/inbound_emails",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "POST",
+          "path": "/rails/action_mailbox/relay/inbound_emails",
+          "action": "action_mailbox/ingresses/relay/inbound_emails#create"
+        }
+      ]
+    },
+    {
+      "controller": "action_mailbox/ingresses/sendgrid/inbound_emails",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "POST",
+          "path": "/rails/action_mailbox/sendgrid/inbound_emails",
+          "action": "action_mailbox/ingresses/sendgrid/inbound_emails#create"
+        }
+      ]
+    },
+    {
+      "controller": "action_mailbox/ingresses/mandrill/inbound_emails",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/rails/action_mailbox/mandrill/inbound_emails",
+          "action": "action_mailbox/ingresses/mandrill/inbound_emails#health_check"
+        },
+        {
+          "method": "POST",
+          "path": "/rails/action_mailbox/mandrill/inbound_emails",
+          "action": "action_mailbox/ingresses/mandrill/inbound_emails#create"
+        }
+      ]
+    },
+    {
+      "controller": "action_mailbox/ingresses/mailgun/inbound_emails",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "POST",
+          "path": "/rails/action_mailbox/mailgun/inbound_emails/mime",
+          "action": "action_mailbox/ingresses/mailgun/inbound_emails#create"
+        }
+      ]
+    },
+    {
+      "controller": "rails/conductor/action_mailbox/inbound_emails",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/rails/conductor/action_mailbox/inbound_emails",
+          "action": "rails/conductor/action_mailbox/inbound_emails#index"
+        },
+        {
+          "method": "POST",
+          "path": "/rails/conductor/action_mailbox/inbound_emails",
+          "action": "rails/conductor/action_mailbox/inbound_emails#create"
+        },
+        {
+          "method": "GET",
+          "path": "/rails/conductor/action_mailbox/inbound_emails/new",
+          "action": "rails/conductor/action_mailbox/inbound_emails#new"
+        },
+        {
+          "method": "GET",
+          "path": "/rails/conductor/action_mailbox/inbound_emails/:id",
+          "action": "rails/conductor/action_mailbox/inbound_emails#show"
+        }
+      ]
+    },
+    {
+      "controller": "rails/conductor/action_mailbox/inbound_emails/sources",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/rails/conductor/action_mailbox/inbound_emails/sources/new",
+          "action": "rails/conductor/action_mailbox/inbound_emails/sources#new"
+        },
+        {
+          "method": "POST",
+          "path": "/rails/conductor/action_mailbox/inbound_emails/sources",
+          "action": "rails/conductor/action_mailbox/inbound_emails/sources#create"
+        }
+      ]
+    },
+    {
+      "controller": "rails/conductor/action_mailbox/reroutes",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "POST",
+          "path": "/rails/conductor/action_mailbox/:inbound_email_id/reroute",
+          "action": "rails/conductor/action_mailbox/reroutes#create"
+        }
+      ]
+    },
+    {
+      "controller": "rails/conductor/action_mailbox/incinerates",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "POST",
+          "path": "/rails/conductor/action_mailbox/:inbound_email_id/incinerate",
+          "action": "rails/conductor/action_mailbox/incinerates#create"
+        }
+      ]
+    },
+    {
+      "controller": "active_storage/blobs/redirect",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/rails/active_storage/blobs/redirect/:signed_id/*filename",
+          "action": "active_storage/blobs/redirect#show"
+        },
+        {
+          "method": "GET",
+          "path": "/rails/active_storage/blobs/:signed_id/*filename",
+          "action": "active_storage/blobs/redirect#show"
+        }
+      ]
+    },
+    {
+      "controller": "active_storage/blobs/proxy",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/rails/active_storage/blobs/proxy/:signed_id/*filename",
+          "action": "active_storage/blobs/proxy#show"
+        }
+      ]
+    },
+    {
+      "controller": "active_storage/representations/redirect",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/rails/active_storage/representations/redirect/:signed_blob_id/:variation_key/*filename",
+          "action": "active_storage/representations/redirect#show"
+        },
+        {
+          "method": "GET",
+          "path": "/rails/active_storage/representations/:signed_blob_id/:variation_key/*filename",
+          "action": "active_storage/representations/redirect#show"
+        }
+      ]
+    },
+    {
+      "controller": "active_storage/representations/proxy",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/rails/active_storage/representations/proxy/:signed_blob_id/:variation_key/*filename",
+          "action": "active_storage/representations/proxy#show"
+        }
+      ]
+    },
+    {
+      "controller": "active_storage/disk",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "GET",
+          "path": "/rails/active_storage/disk/:encoded_key/*filename",
+          "action": "active_storage/disk#show"
+        },
+        {
+          "method": "PUT",
+          "path": "/rails/active_storage/disk/:encoded_token",
+          "action": "active_storage/disk#update"
+        }
+      ]
+    },
+    {
+      "controller": "active_storage/direct_uploads",
+      "scope": "system",
+      "priority": "none",
+      "notes": null,
+      "included_routes": [],
+      "excluded_routes": [
+        {
+          "method": "POST",
+          "path": "/rails/active_storage/direct_uploads",
+          "action": "active_storage/direct_uploads#create"
+        }
+      ]
+    }
+  ]
+}
