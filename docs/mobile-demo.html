@@ -27,7 +27,7 @@
       <button type="button" class="btn btn-outline btn-sm demo-ui-btn" data-ui="dark">Oscuro</button>
     </div>
     <button type="button" class="btn btn-primary btn-md demo-print-btn">Imprimir todo (PDF)</button>
-    <p class="print-hint no-print">En el dialogo de impresion: orientacion <strong>Horizontal</strong> y activar <strong>Graficos de fondo</strong>.</p>
+    <p class="print-hint no-print">PDF A4 horizontal · <strong>2 mockups por hoja</strong> (claro + oscuro) · activar <strong>Graficos de fondo</strong>.</p>
   </div>
 </header>
 
@@ -704,7 +704,15 @@
   }
 
   function applyPrintLayout() {
-    var sample = document.querySelector(".device-variant-light .device") || document.querySelector(".device");
+    var filter = html.dataset.screenFilter || "both";
+    var sample;
+
+    if (filter === "dark") {
+      sample = document.querySelector(".device-variant-dark .device");
+    } else {
+      sample = document.querySelector(".device-variant-light .device") || document.querySelector(".device");
+    }
+
     if (!sample) return;
 
     var deviceW = sample.getBoundingClientRect().width;
@@ -718,14 +726,12 @@
     var metaH = meta ? meta.getBoundingClientRect().height : 72;
     var labelsH = 28;
     var gap = 16;
+    var variants = filter === "both" ? 2 : 1;
 
-    /* Area util aprox. A4 horizontal con margenes 8mm */
     var pageW = 980;
     var pageH = 700;
-
-    var contentW = deviceW * 2 + gap;
+    var contentW = deviceW * variants + gap * (variants - 1);
     var contentH = metaH + labelsH + deviceH;
-
     var scale = Math.min(1, pageW / contentW, pageH / contentH);
     scale = Math.floor(scale * 1000) / 1000;
 

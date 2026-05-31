@@ -751,7 +751,7 @@ html[data-screen-filter="dark"] .device-variant-light {
   }
 }
 
-/* ========== PRINT / PDF — WYSIWYG (igual que pantalla) ========== */
+/* ========== PRINT / PDF — WYSIWYG, 2 mockups por hoja ========== */
 @media print {
   @page {
     size: A4 landscape;
@@ -786,7 +786,6 @@ html[data-screen-filter="dark"] .device-variant-light {
     break-after: page;
   }
 
-  /* Una tarjeta por pagina; layout interno identico al HTML */
   .screen-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -816,10 +815,11 @@ html[data-screen-filter="dark"] .device-variant-light {
   .device-pair {
     display: flex;
     gap: var(--spacing-4);
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
     width: 100%;
   }
+
   .device-variant {
     flex: 0 0 var(--print-device-width, 17.5rem);
     width: var(--print-device-width, 17.5rem);
