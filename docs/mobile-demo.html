@@ -14,7 +14,7 @@
     <h1>PawCare Mobile — Demo UI</h1>
     <p>Solo diseno · Sin funcionalidad · Basado en <code>mobile-routes.md</code> · Tokens en <code>mobile-design-tokens.css</code></p>
   </div>
-  <div class="demo-topbar-actions">
+  <div class="demo-topbar-actions no-print">
     <div class="demo-theme-controls" role="group" aria-label="Tema de pantallas">
       <span class="demo-controls-label">Pantallas</span>
       <button type="button" class="btn btn-outline btn-sm demo-filter-btn active" data-filter="both">Ambos</button>
@@ -27,10 +27,11 @@
       <button type="button" class="btn btn-outline btn-sm demo-ui-btn" data-ui="dark">Oscuro</button>
     </div>
     <button type="button" class="btn btn-primary btn-md demo-print-btn">Imprimir todo (PDF)</button>
+    <p class="print-hint no-print">En el dialogo de impresion: orientacion <strong>Horizontal</strong> y activar <strong>Graficos de fondo</strong>.</p>
   </div>
 </header>
 
-<nav class="demo-nav">
+<nav class="demo-nav no-print">
   <a href="#public">Public</a>
   <a href="#auth">Auth</a>
   <a href="#owner">Owner</a>
@@ -642,7 +643,7 @@
   </div>
 </section>
 
-<footer style="padding:var(--spacing-8) var(--spacing-6);color:var(--color-muted-foreground);font-size:var(--font-size-sm);border-top:1px solid var(--color-border)">
+<footer class="no-print" style="padding:var(--spacing-8) var(--spacing-6);color:var(--color-muted-foreground);font-size:var(--font-size-sm);border-top:1px solid var(--color-border)">
   <p>Documentacion: <a href="mobile-screens.md">mobile-screens.md</a> · <a href="mobile-ui-components.md">mobile-ui-components.md</a> · <a href="mobile-routes.md">mobile-routes.md</a></p>
 </footer>
 
@@ -702,9 +703,55 @@
     });
   }
 
+  function applyPrintLayout() {
+    var sample = document.querySelector(".device-variant-light .device") || document.querySelector(".device");
+    if (!sample) return;
+
+    var deviceW = sample.getBoundingClientRect().width;
+    var deviceH = sample.getBoundingClientRect().height;
+    if (deviceW < 1) {
+      deviceW = 280;
+      deviceH = deviceW * 844 / 390;
+    }
+
+    var meta = document.querySelector(".screen-card .screen-meta");
+    var metaH = meta ? meta.getBoundingClientRect().height : 72;
+    var labelsH = 28;
+    var gap = 16;
+
+    /* Area util aprox. A4 horizontal con margenes 8mm */
+    var pageW = 980;
+    var pageH = 700;
+
+    var contentW = deviceW * 2 + gap;
+    var contentH = metaH + labelsH + deviceH;
+
+    var scale = Math.min(1, pageW / contentW, pageH / contentH);
+    scale = Math.floor(scale * 1000) / 1000;
+
+    var printW = Math.max(1, Math.round(deviceW * scale));
+    document.documentElement.style.setProperty("--print-device-width", printW + "px");
+  }
+
+  function clearPrintLayout() {
+    document.documentElement.style.removeProperty("--print-device-width");
+  }
+
   function printAll() {
     html.classList.add("is-printing");
+    html.dataset.screenFilter = "both";
+    document.querySelectorAll(".demo-filter-btn").forEach(function (btn) {
+      btn.classList.toggle("active", btn.dataset.filter === "both");
+    });
+    applyPrintLayout();
+    window.scrollTo(0, 0);
     window.print();
+  }
+
+  function onAfterPrint() {
+    html.classList.remove("is-printing");
+    clearPrintLayout();
+    setFilter(localStorage.getItem(FILTER_KEY) || "both");
   }
 
   buildDevicePairs();
@@ -720,7 +767,14 @@
   });
 
   document.querySelector(".demo-print-btn").addEventListener("click", printAll);
-  window.addEventListener("afterprint", function () { html.classList.remove("is-printing"); });
+  window.addEventListener("beforeprint", function () {
+    if (!html.classList.contains("is-printing")) {
+      html.classList.add("is-printing");
+      html.dataset.screenFilter = "both";
+      applyPrintLayout();
+    }
+  });
+  window.addEventListener("afterprint", onAfterPrint);
 })();
 </script>
 

@@ -31,6 +31,14 @@
   flex-shrink: 0;
 }
 
+.print-hint {
+  flex: 1 1 100%;
+  font-size: var(--font-size-xs);
+  color: var(--color-muted-foreground);
+  margin: 0;
+  line-height: var(--line-height-normal);
+}
+
 .demo-topbar-actions {
   display: flex;
   align-items: center;
@@ -63,47 +71,79 @@
   border-color: var(--color-primary);
 }
 
-/* UI catalogo — modo oscuro (no afecta mockups) */
+/* UI catalogo — modo oscuro (solo chrome, no mockups) */
 html[data-ui-theme="dark"] body.demo-page {
-  background: hsl(222, 84%, 5%);
-  color: hsl(210, 40%, 98%);
+  --color-background: hsl(222, 84%, 5%);
+  --color-foreground: hsl(210, 40%, 98%);
+  --color-card: hsl(217, 33%, 18%);
+  --color-border: hsl(217, 33%, 18%);
+  --color-input: hsl(217, 33%, 18%);
+  --color-muted-foreground: hsl(215, 20%, 65%);
+  --color-secondary: hsl(217, 33%, 18%);
+  --color-secondary-foreground: hsl(210, 40%, 98%);
+  background:
+    radial-gradient(circle at top right, hsla(174, 55%, 47%, 0.06), transparent 40%),
+    var(--color-background);
+  color: var(--color-foreground);
 }
 
 html[data-ui-theme="dark"] .demo-topbar {
-  background: hsl(222, 84%, 5%);
-  border-color: hsl(217, 33%, 18%);
+  background: color-mix(in srgb, var(--color-background) 92%, transparent);
+  border-color: var(--color-border);
 }
 
 html[data-ui-theme="dark"] .demo-nav {
-  background: hsl(222, 84%, 5%);
-  border-color: hsl(217, 33%, 18%);
+  background: var(--color-background);
+  border-color: var(--color-border);
 }
 
 html[data-ui-theme="dark"] .demo-nav a,
 html[data-ui-theme="dark"] .demo-theme-controls {
-  background: hsl(217, 33%, 18%);
-  border-color: hsl(217, 33%, 18%);
-  color: hsl(210, 40%, 98%);
+  background: var(--color-card);
+  border-color: var(--color-border);
+  color: var(--color-foreground);
+}
+
+html[data-ui-theme="dark"] .demo-theme-controls .btn-outline {
+  color: var(--color-foreground);
+  border-color: var(--color-border);
+  background: var(--color-card);
 }
 
 html[data-ui-theme="dark"] .demo-section > h2,
 html[data-ui-theme="dark"] .screen-meta h3 {
-  color: hsl(210, 40%, 98%);
+  color: var(--color-foreground);
 }
 
 html[data-ui-theme="dark"] .demo-section > .demo-section-desc,
 html[data-ui-theme="dark"] .screen-meta p,
 html[data-ui-theme="dark"] .theme-label,
 html[data-ui-theme="dark"] footer {
-  color: hsl(215, 20%, 65%);
+  color: var(--color-muted-foreground);
 }
 
 html[data-ui-theme="dark"] footer {
-  border-color: hsl(217, 33%, 18%);
+  border-color: var(--color-border);
 }
 
 html[data-ui-theme="dark"] footer a {
   color: hsl(174, 55%, 57%);
+}
+
+html[data-ui-theme="dark"] .demo-topbar p,
+html[data-ui-theme="dark"] .demo-topbar code {
+  color: var(--color-muted-foreground);
+}
+
+/* Mockups: aislar tema claro/oscuro del UI padre */
+.device[data-theme="light"],
+.device[data-theme="dark"] {
+  color: var(--color-foreground);
+  color-scheme: light;
+}
+
+.device[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 /* Filtro claro / oscuro / ambos */
@@ -270,6 +310,7 @@ html[data-screen-filter="dark"] .device-variant-light {
   width: 100%;
   height: 100%;
   background: var(--color-background);
+  color: var(--color-foreground);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -303,6 +344,7 @@ html[data-screen-filter="dark"] .device-variant-light {
   flex: 1;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
+  color: var(--color-foreground);
 }
 
 .app-header-sub {
@@ -330,6 +372,7 @@ html[data-screen-filter="dark"] .device-variant-light {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-3);
+  color: var(--color-foreground);
 }
 
 .screen-body-scroll {
@@ -708,77 +751,54 @@ html[data-screen-filter="dark"] .device-variant-light {
   }
 }
 
-/* ========== PRINT / PDF — una pantalla por pagina, landscape ========== */
+/* ========== PRINT / PDF — WYSIWYG (igual que pantalla) ========== */
 @media print {
   @page {
     size: A4 landscape;
-    margin: 10mm 12mm;
+    margin: 8mm;
+  }
+
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print {
+    display: none !important;
   }
 
   html,
   body {
     width: 100%;
     height: auto;
-    background: #fff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
   }
 
-  .demo-page {
-    background: #fff !important;
-  }
-
-  .demo-nav,
-  .demo-print-btn,
-  .demo-theme-controls,
-  footer {
-    display: none !important;
-  }
-
-  html.is-printing .device-variant-light,
-  html.is-printing .device-variant-dark {
-    display: flex !important;
+  .demo-topbar,
+  .demo-nav {
+    position: static;
+    backdrop-filter: none;
   }
 
   .demo-topbar {
-    position: static;
-    backdrop-filter: none;
-    background: #fff;
-    border-bottom: 2px solid var(--color-border);
-    padding: 0 0 6mm;
-    margin-bottom: 4mm;
     page-break-after: always;
     break-after: page;
   }
 
-  .demo-section {
-    padding: 0;
-    margin: 0;
-  }
-
-  .demo-section > h2,
-  .demo-section > .demo-section-desc {
-    display: none;
-  }
-
+  /* Una tarjeta por pagina; layout interno identico al HTML */
   .screen-grid {
-    display: block;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
   }
 
   .screen-card {
-    display: grid;
-    grid-template-columns: 38mm 1fr;
-    grid-template-rows: auto;
-    align-items: start;
-    gap: 6mm;
-    width: 100%;
-    max-width: none;
-    margin: 0;
-    padding: 0;
     page-break-after: always;
     break-after: page;
     break-inside: avoid;
     page-break-inside: avoid;
+    padding: 0 0 4mm;
   }
 
   .screen-card:last-child {
@@ -786,112 +806,50 @@ html[data-screen-filter="dark"] .device-variant-light {
     break-after: auto;
   }
 
-  .screen-meta {
-    padding-top: 2mm;
-  }
-
-  .screen-meta h3 {
-    font-size: 11pt;
-    margin-bottom: 2mm;
-  }
-
-  .screen-meta p,
-  .screen-meta .screen-route {
-    font-size: 8pt;
-    word-break: break-all;
-  }
-
-  .screen-tags {
-    margin-top: 3mm;
+  html.is-printing .device-variant-light,
+  html.is-printing .device-variant-dark,
+  .device-variant-light,
+  .device-variant-dark {
+    display: flex !important;
   }
 
   .device-pair {
     display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 5mm;
+    gap: var(--spacing-4);
+    flex-wrap: wrap;
+    justify-content: center;
     width: 100%;
   }
-
   .device-variant {
-    flex: 0 0 auto;
-    max-width: none;
-    align-items: center;
-  }
-
-  .theme-label {
-    font-size: 7pt;
-    margin-bottom: 1mm;
-    color: #666 !important;
+    flex: 0 0 var(--print-device-width, 17.5rem);
+    width: var(--print-device-width, 17.5rem);
+    max-width: var(--print-device-width, 17.5rem);
   }
 
   .device {
-    width: 390px;
-    max-width: 390px;
-    height: auto;
-    min-height: 0;
-    aspect-ratio: unset;
-    margin: 0;
-    border-width: 10px;
-    border-radius: 2rem;
-    border-color: hsl(210, 24%, 16%) !important;
-    box-shadow: none;
-    overflow: visible;
-    break-inside: avoid;
-    page-break-inside: avoid;
-    zoom: 0.34;
-    justify-self: start;
-  }
-
-  .device-notch {
-    height: 5mm;
-    width: 36%;
-    background: hsl(210, 24%, 16%) !important;
-  }
-
-  .device[data-theme="dark"] .mobile-shell {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    width: 100%;
+    max-width: var(--print-device-width, 17.5rem);
+    aspect-ratio: 390 / 844;
+    height: calc(var(--print-device-width, 17.5rem) * 844 / 390);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    color: var(--color-foreground);
   }
 
   .mobile-shell {
-    height: auto;
-    min-height: 0;
-    overflow: visible;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    color: var(--color-foreground);
+    background: var(--color-background);
   }
 
   .screen-body,
-  .screen-body-scroll,
-  .screen-body.no-tabs {
-    overflow: visible !important;
-    max-height: none !important;
-    flex: none;
+  .screen-body-scroll {
+    overflow: hidden;
   }
 
   .fab {
-    position: static;
-    margin: var(--spacing-2) 0 0 auto;
-    display: flex;
-  }
-
-  .bottom-nav {
-    position: static;
-  }
-
-  .btn,
-  .badge,
-  .hero-card,
-  .stat-card,
-  .list-row,
-  .card,
-  .admin-tile,
-  .action-tile,
-  .info-banner,
-  .upload-zone,
-  .chip.active {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    position: absolute;
   }
 }
