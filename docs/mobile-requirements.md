@@ -1,6 +1,8 @@
 # PawCare Mobile — Requisitos funcionales y no funcionales
 
-> Basado en [mobile-routes.md](./mobile-routes.md) · 157 rutas API · App movil Expo / React Native
+> Basado en [mobile-routes.md](./mobile-routes.md) · 157 rutas API · App movil **Android** (Expo / React Native)
+
+**Alcance de plataforma:** solo **Android**. Sin soporte para iOS.
 
 **Convenciones**
 
@@ -108,7 +110,7 @@ La app debe mostrar paginas de contacto, terminos de uso y politica de privacida
 Alta
 
 **Justificacion**  
-Requisito legal y de confianza para usuarios y tiendas de aplicaciones. Rutas: `GET /pages/contact`, `GET /pages/terms`, `GET /pages/privacy`.
+Requisito legal y de confianza para usuarios de la app. Rutas: `GET /pages/contact`, `GET /pages/terms`, `GET /pages/privacy`.
 
 **Criterios de aceptacion**
 
@@ -574,9 +576,9 @@ Los RNF siguen el formato `RNF-{Categoria}-{NNN}: {Titulo}` con enunciado direct
 
 ---
 
-### RNF-ARQ-001: Plataforma movil cross-platform
+### RNF-ARQ-001: Plataforma movil Android
 
-La aplicacion debe desarrollarse con **Expo SDK 56**, **React Native** y **TypeScript**, como cliente nativo para **iOS y Android**. El codigo de pantallas y servicios debe estar tipado de forma estricta. Los flujos principales no deben depender de contenedores web embebidos. La version de Expo debe mantenerse alineada con la documentacion oficial v56 (`AGENTS.md`, `docs/arq.md`).
+La aplicacion debe desarrollarse con **Expo SDK 56**, **React Native** y **TypeScript**, como cliente nativo **solo para Android**. El codigo de pantallas y servicios debe estar tipado de forma estricta. Los flujos principales no deben depender de contenedores web embebidos. La version de Expo debe mantenerse alineada con la documentacion oficial v56 (`AGENTS.md`, `docs/arq.md`). No se incluyen targets, builds ni dependencias especificas de iOS.
 
 ---
 
@@ -619,7 +621,7 @@ La navegacion y las llamadas API deben restringirse segun rol: **publico**, **du
 
 ### RNF-UX-001: Experiencia de usuario movil
 
-La interfaz debe cumplir patrones moviles de produccion: areas tactiles minimas de **44×44 px**, inputs con **font-size ≥ 16 px** en iOS, estados de carga / vacio / error en todo listado o formulario, navegacion por tabs y stacks segun `mobile-screens.md`, y respeto de **safe areas** en dispositivos con notch. Los mensajes al usuario deben estar en espanol claro, sin stack traces ni jerga tecnica.
+La interfaz debe cumplir patrones moviles de produccion en Android: areas tactiles minimas de **48×48 dp** (Material), inputs con **font-size ≥ 16 px**, estados de carga / vacio / error en todo listado o formulario, navegacion por tabs y stacks segun `mobile-screens.md`, y respeto de **safe areas** y barras del sistema (status bar, navigation bar, recortes de pantalla). Los mensajes al usuario deben estar en espanol claro, sin stack traces ni jerga tecnica.
 
 ---
 
@@ -675,9 +677,9 @@ Los errores no controlados deben registrarse con contexto tecnico en entorno de 
 
 ---
 
-### RNF-CMP-001: Compatibilidad de dispositivos
+### RNF-CMP-001: Compatibilidad de dispositivos Android
 
-La app debe ser compatible con las versiones de **iOS y Android** soportadas por Expo SDK 56 segun `app.json`. Debe funcionar en telefonos pequenos (320 px de ancho logico) y grandes, con interaccion tactil completa (sin depender de teclado fisico). Debe validarse manualmente en al menos un dispositivo iOS y uno Android antes de cada release mayor.
+La app debe ser compatible con las versiones de **Android** soportadas por Expo SDK 56 segun `app.json` (API level minimo definido en el proyecto). Debe funcionar en telefonos pequenos (320 px de ancho logico) y grandes, con interaccion tactil completa (sin depender de teclado fisico). Debe validarse manualmente en al menos un dispositivo Android fisico y un emulador durante QA.
 
 ---
 

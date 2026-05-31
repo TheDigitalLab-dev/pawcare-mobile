@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PawCare Mobile — Diagramas de Arquitectura</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --secondary: #7c3aed;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --line: #94a3b8;
+    --line-soft: #cbd5e1;
+    --text: #1f2937;
+    --muted: #64748b;
+    --bg: #ffffff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--text);
+    line-height: 1.45;
+    padding: 28px;
+    max-width: 1180px;
+    margin: 0 auto;
+    background: var(--bg);
+  }
+  h1 { font-size: 27px; color: var(--primary); }
+  .subtitle { color: var(--muted); font-size: 14px; margin: 2px 0 14px; }
+  h2 {
+    font-size: 18px; margin: 38px 0 6px; color: #0f172a;
+    border-bottom: 2px solid var(--primary); padding-bottom: 5px;
+  }
+  .legend { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+
+  .scope {
+    border: 1px solid #bfdbfe; background: #eff6ff; border-radius: 8px;
+    padding: 12px 16px; font-size: 12.5px; margin-bottom: 8px;
+  }
+  .scope strong { color: var(--primary); }
+  .scope .excluded { color: var(--danger); }
+
+  /* ====== Generic node box ====== */
+  .node {
+    display: inline-block;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 14px;
+    background: #fff;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .node small { display: block; font-weight: 400; color: var(--muted); font-size: 10.5px; margin-top: 2px; }
+  .n-primary   { border-color: var(--primary);   background: #eff6ff; color: var(--primary); }
+  .n-secondary { border-color: var(--secondary); background: #f5f3ff; color: var(--secondary); }
+  .n-success   { border-color: var(--success);   background: #ecfdf5; color: var(--success); }
+  .n-warning   { border-color: var(--warning);   background: #fffbeb; color: var(--warning); }
+  .n-danger    { border-color: var(--danger);    background: #fef2f2; color: var(--danger); }
+  .n-muted     { border-color: var(--line-soft); background: #f8fafc; color: var(--muted); }
+
+  /* ====== Layered diagram (vertical stack with arrows) ====== */
+  .layers { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .layer-band {
+    width: 100%;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px 12px;
+    position: relative;
+    background: #fff;
+  }
+  .band-title {
+    position: absolute; top: -10px; left: 18px; background: #fff; padding: 0 8px;
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+  }
+  .band-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; padding-top: 6px; }
+  .v-arrow { font-size: 22px; color: var(--line); line-height: 1; margin: 3px 0; }
+  .v-arrow small { display:block; font-size: 10px; color: var(--muted); font-weight:600; margin-top:-2px;}
+
+  .band-primary   { border-color: var(--primary); }
+  .band-primary   .band-title { color: var(--primary); }
+  .band-secondary { border-color: var(--secondary); }
+  .band-secondary .band-title { color: var(--secondary); }
+  .band-success   { border-color: var(--success); }
+  .band-success   .band-title { color: var(--success); }
+  .band-warning   { border-color: var(--warning); background: #fffdf7;}
+  .band-warning   .band-title { color: var(--warning); }
+  .band-danger    { border-color: var(--danger); background: #fffafa;}
+  .band-danger    .band-title { color: var(--danger); }
+
+  /* ====== Horizontal flow diagram ====== */
+  .flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 0; justify-content: center; }
+  .flow .step {
+    border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 14px;
+    background: #fff; min-width: 132px; max-width: 168px; text-align: center; font-size: 11.5px;
+  }
+  .flow .step b { display: block; font-size: 12.5px; margin-bottom: 3px; }
+  .flow .h-arrow { display:flex; align-items:center; font-size: 22px; color: var(--line); padding: 0 6px; }
+
+  /* ====== Tree diagram (vertical org-chart style) ====== */
+  .tree, .tree ul { list-style: none; }
+  .tree { font-size: 12px; }
+  .tree ul { margin-left: 22px; }
+  .tree li { position: relative; padding: 5px 0 5px 26px; }
+  .tree li::before {
+    content: ''; position: absolute; left: 0; top: 0; height: calc(50% + 1px);
+    width: 18px; border-left: 2px solid var(--line-soft); border-bottom: 2px solid var(--line-soft);
+    border-bottom-left-radius: 6px;
+  }
+  .tree li::after {
+    content: ''; position: absolute; left: 0; top: 50%; bottom: 0;
+    border-left: 2px solid var(--line-soft);
+  }
+  .tree li:last-child::after { display: none; }
+  .tree > li { padding-left: 0; }
+  .tree > li::before, .tree > li::after { display: none; }
+  .leaf {
+    display: inline-block; border: 1.5px solid var(--line); border-radius: 7px;
+    padding: 4px 10px; background: #fff; font-weight: 600; font-size: 11.5px;
+  }
+  .leaf small { color: var(--muted); font-weight: 400; }
+  .leaf.l-primary   { border-color: var(--primary);   background:#eff6ff; color: var(--primary); }
+  .leaf.l-secondary { border-color: var(--secondary); background:#f5f3ff; color: var(--secondary); }
+  .leaf.l-success   { border-color: var(--success);   background:#ecfdf5; color: var(--success); }
+  .leaf.l-plain     { font-weight: 500; color: var(--text); border-color: var(--line-soft); }
+  .leaf.l-route     { font-family: 'SF Mono', monospace; font-weight: 500; font-size: 10.5px; color: var(--muted); border-style: dashed; }
+
+  .cols-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
+
+  /* ====== SVG hub diagrams ====== */
+  .hub-wrap { width: 100%; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: -apple-system, 'Segoe UI', sans-serif; }
+
+  .figcaption { font-size: 11px; color: var(--muted); text-align: center; margin-top: 4px; }
+
+  .no-break { page-break-inside: avoid; }
+
+  .print-btn {
+    position: fixed; top: 16px; right: 16px; z-index: 50;
+    background: var(--primary); color: #fff; border: none; border-radius: 8px;
+    padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,.18); font-family: inherit;
+  }
+  .print-btn:hover { background: #1d4ed8; }
+
+  /* Cada segmento = una hoja imprimible */
+  .sheet { margin-bottom: 46px; }
+
+  @media print {
+    body { padding: 0; }
+    h2 { margin-top: 0; }
+    .v-arrow { margin: 2px 0; }
+    .sheet {
+      page-break-after: always;
+      break-after: page;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      margin-bottom: 0;
+      padding: 45px;
+    }
+    .sheet:last-of-type { page-break-after: auto; break-after: auto; }
+    /* compactar para que cada seccion entre en una pagina */
+    .layer-band { padding: 7px 12px 9px; }
+    .node { padding: 6px 11px; }
+    .flow .step { padding: 8px 11px; }
+    .tree li { padding-top: 3px; padding-bottom: 3px; }
+    .scope { font-size: 12px; }
+    .print-btn { display: none !important; }
+  }
+  /* El margen visible lo da el padding de cada .sheet (45px), asi se respeta
+     aunque el dialogo de impresion use "sin margenes". @page sin margen evita duplicarlo. */
+  @page { margin: 0; size: A4; }
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
+
+<section class="sheet">
+<h1>PawCare Mobile</h1>
+<p class="subtitle">Diagramas de arquitectura &mdash; aplicacion movil (Expo SDK 56 · React Native · TypeScript)</p>
+
+<div class="scope no-break">
+  <strong>Alcance:</strong> este documento cubre <strong>unicamente lo que consume la app movil</strong> &mdash;
+  las <strong>157 rutas</strong> de <code>mobile-routes.md</code> (Public 19 · Owner 54 · Admin 84), repartidas en <strong>33 controladores</strong> del backend Rails.<br>
+  <span class="excluded">Excluido (solo web):</span> metricas, turnos/shifts, modulo financiero, gestion de contenido y campanas de email, administracion de staff, movimientos de stock, categorias de servicio y configuracion. Esos endpoints existen en el backend pero la app movil no los usa.
+</div>
+
+</section>
+
+<!-- ============ 1. LAYERED ============ -->
+<section class="sheet">
+<h2>1. Diagrama de capas</h2>
+<p class="legend">Flujo vertical cliente &rarr; backend. La app movil es el cliente; el backend Rails se muestra solo como frontera de integracion.</p>
+<div class="layers no-break">
+
+  <div class="layer-band band-primary">
+    <span class="band-title">Presentacion · React Native</span>
+    <div class="band-row">
+      <span class="node n-primary">Navigation<small>stacks · tabs · guards de rol</small></span>
+      <span class="node n-primary">Screens<small>~98 pantallas</small></span>
+      <span class="node n-primary">Components UI<small>Button · Card · Input · Badge</small></span>
+      <span class="node n-primary">Theme / Tokens<small>claro · oscuro</small></span>
+    </div>
+  </div>
+
+  <div class="v-arrow">&darr;</div>
+
+  <div class="layer-band band-secondary">
+    <span class="band-title">Logica de cliente</span>
+    <div class="band-row">
+      <span class="node n-secondary">Hooks<small>useAuth · useTheme · data</small></span>
+      <span class="node n-secondary">Types<small>models · payloads · nav</small></span>
+      <span class="node n-secondary">Cola offline<small>borradores · reintentos</small></span>
+      <span class="node n-secondary">Utils<small>storage · format</small></span>
+    </div>
+  </div>
+
+  <div class="v-arrow">&darr;</div>
+
+  <div class="layer-band band-success">
+    <span class="band-title">Servicios HTTP (src/services)</span>
+    <div class="band-row">
+      <span class="node n-success">api.ts<small>cliente base · JWT · refresh</small></span>
+      <span class="node n-success">auth · profile</span>
+      <span class="node n-success">pets · appointments</span>
+      <span class="node n-success">payments · medical</span>
+      <span class="node n-success">products · adoption · sponsorships</span>
+    </div>
+  </div>
+
+  <div class="v-arrow">&darr;<small>HTTPS · JSON</small></div>
+
+  <div class="layer-band band-warning">
+    <span class="band-title">Backend Rails 8 (frontera · 33 controladores usados)</span>
+    <div class="band-row">
+      <span class="node n-warning">Controllers<small>Public · Owner · Admin</small></span>
+      <span class="node n-warning">Actions<small>Result.success / failure</small></span>
+      <span class="node n-warning">Models<small>subconjunto movil</small></span>
+    </div>
+  </div>
+
+  <div class="v-arrow">&darr;</div>
+
+  <div class="layer-band band-danger">
+    <span class="band-title">Persistencia</span>
+    <div class="band-row">
+      <span class="node n-danger">MySQL 8.0</span>
+      <span class="node n-danger">ActiveStorage<small>fotos · PDFs · lab</small></span>
+    </div>
+  </div>
+</div>
+
+</section>
+
+<!-- ============ 2. DATA FLOW ============ -->
+<section class="sheet">
+<h2>2. Diagrama de flujo de una peticion</h2>
+<p class="legend">Ciclo de vida de una accion del usuario (ej. agendar cita, crear mascota).</p>
+<div class="flow no-break">
+  <div class="step"><b>1 · Screen</b>Usuario toca o envia formulario</div>
+  <div class="h-arrow">&rarr;</div>
+  <div class="step"><b>2 · Hook</b>Valida, arma payload, estado local</div>
+  <div class="h-arrow">&rarr;</div>
+  <div class="step"><b>3 · Service</b>Request con JWT (SecureStore)</div>
+  <div class="h-arrow">&rarr;</div>
+  <div class="step"><b>4 · Rails API</b>Controller &rarr; Action &rarr; JSON</div>
+  <div class="h-arrow">&rarr;</div>
+  <div class="step"><b>5 · UI</b>Render con respuesta + tokens</div>
+</div>
+
+<div class="flow no-break" style="margin-top:18px;">
+  <div class="step n-muted" style="max-width:220px;"><b>401 · sesion</b>Dispara POST /auth/refresh; reintenta. Si falla &rarr; login</div>
+  <div class="h-arrow">&nbsp;</div>
+  <div class="step n-muted" style="max-width:220px;"><b>422 · validacion</b>Marca el campo afectado en el formulario</div>
+  <div class="h-arrow">&nbsp;</div>
+  <div class="step n-muted" style="max-width:220px;"><b>Sin red</b>Encola escritura &rarr; sincroniza con WiFi/datos (opt-in)</div>
+</div>
+<p class="figcaption">Manejo de errores y operacion offline (RNF-REL / RNF-MOB-002).</p>
+
+</section>
+
+<!-- ============ 3. NAVIGATION TREE ============ -->
+<section class="sheet">
+<h2>3. Diagrama de navegacion</h2>
+<p class="legend"><strong>RootNavigator</strong> decide el arbol segun el estado de sesion y el rol. Columna izquierda: acceso publico / pre-login. Columna derecha: navegadores autenticados (owner y staff).</p>
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:22px;" class="no-break">
+
+  <div>
+    <ul class="tree">
+      <li><span class="leaf l-success">PublicStack <small>· sin auth · 19</small></span>
+        <ul>
+          <li><span class="leaf l-plain">Servicios</span></li>
+          <li><span class="leaf l-plain">Productos &rarr; Detalle &rarr; Checkout &rarr; Comprobante</span></li>
+          <li><span class="leaf l-plain">Adopcion &rarr; Mascotas &rarr; Detalle</span></li>
+          <li><span class="leaf l-plain">Patrocinios &rarr; Detalle &rarr; Gasto</span></li>
+          <li><span class="leaf l-plain">Contacto · Terminos · Privacidad</span></li>
+        </ul>
+      </li>
+    </ul>
+    <ul class="tree" style="margin-top:12px;">
+      <li><span class="leaf l-primary">AuthStack <small>· no autenticado</small></span>
+        <ul>
+          <li><span class="leaf l-plain">Login</span></li>
+          <li><span class="leaf l-plain">Registro de dueno</span></li>
+          <li><span class="leaf l-plain">Olvide / Restablecer contrasena</span></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <div>
+    <ul class="tree">
+      <li><span class="leaf l-primary">MainTabs (Owner) <small>· autenticado · 54</small></span>
+        <ul>
+          <li><span class="leaf l-plain">HomeStack &rarr; Dashboard (resumen)</span></li>
+          <li><span class="leaf l-plain">PetsStack</span>
+            <ul>
+              <li><span class="leaf l-plain">Lista &rarr; Detalle &rarr; Crear / Editar</span></li>
+              <li><span class="leaf l-plain">Historial · Perfil · Vacunas · Desparasit.</span></li>
+              <li><span class="leaf l-plain">Reportes (PDF) · Examenes lab</span></li>
+            </ul>
+          </li>
+          <li><span class="leaf l-plain">AppointmentsStack &rarr; Lista · Agendar</span></li>
+          <li><span class="leaf l-plain">ProfileStack &rarr; Perfil · Pagos · Patrocinios · Ajustes</span></li>
+        </ul>
+      </li>
+    </ul>
+    <ul class="tree" style="margin-top:12px;">
+      <li><span class="leaf l-secondary">AdminStack (Staff) <small>· rol staff · 84</small></span>
+        <ul>
+          <li><span class="leaf l-plain">Mascotas · Mascotas de duenos · Perfil medico</span></li>
+          <li><span class="leaf l-plain">Citas (agenda · disponibilidad · slots)</span></li>
+          <li><span class="leaf l-plain">Consultas &rarr; Recetas · Examenes lab</span></li>
+          <li><span class="leaf l-plain">Vacunas · Desparasitaciones · Esquemas</span></li>
+          <li><span class="leaf l-plain">Pagos · Adopciones · Reportes medicos</span></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</div>
+
+</section>
+
+<!-- ============ 4. DOMAINS / ROUTES ============ -->
+<section class="sheet">
+<h2>4. Diagrama de dominios y grupos de rutas</h2>
+<p class="legend">Las 157 rutas moviles agrupadas por dominio y controlador (numero de rutas entre parentesis).</p>
+<div class="cols-3 no-break">
+
+  <ul class="tree">
+    <li>
+      <span class="leaf l-success">Public <small>· 19</small></span>
+      <ul>
+        <li><span class="leaf l-route">pages (6)</span></li>
+        <li><span class="leaf l-route">public/products (2)</span></li>
+        <li><span class="leaf l-route">public/product_orders (2)</span></li>
+        <li><span class="leaf l-route">adoption (3)</span></li>
+        <li><span class="leaf l-route">sponsorships (6)</span></li>
+      </ul>
+    </li>
+  </ul>
+
+  <ul class="tree">
+    <li>
+      <span class="leaf l-primary">Owner <small>· 54</small></span>
+      <ul>
+        <li><span class="leaf l-route">auth (10)</span></li>
+        <li><span class="leaf l-route">profile (4)</span></li>
+        <li><span class="leaf l-route">dashboard (2)</span></li>
+        <li><span class="leaf l-route">owner_pages (6)</span></li>
+        <li><span class="leaf l-route">owner_appointments (6)</span></li>
+        <li><span class="leaf l-route">owner_availability (2)</span></li>
+        <li><span class="leaf l-route">owner_payments (2)</span></li>
+        <li><span class="leaf l-route">pets (10)</span></li>
+        <li><span class="leaf l-route">owner_medical_* (12)</span></li>
+      </ul>
+    </li>
+  </ul>
+
+  <ul class="tree">
+    <li>
+      <span class="leaf l-secondary">Admin <small>· 84</small></span>
+      <ul>
+        <li><span class="leaf l-route">admin/pets (8)</span></li>
+        <li><span class="leaf l-route">admin/owner_pets (6)</span></li>
+        <li><span class="leaf l-route">admin/appointments (9)</span></li>
+        <li><span class="leaf l-route">admin/consultations (8)</span></li>
+        <li><span class="leaf l-route">admin/prescriptions (6)</span></li>
+        <li><span class="leaf l-route">admin/lab_exams (8)</span></li>
+        <li><span class="leaf l-route">admin/vaccinations (6)</span></li>
+        <li><span class="leaf l-route">admin/dewormings (6)</span></li>
+        <li><span class="leaf l-route">admin/vaccination_schedules (7)</span></li>
+        <li><span class="leaf l-route">admin/medical_profiles (3)</span></li>
+        <li><span class="leaf l-route">admin/medical_reports (9)</span></li>
+        <li><span class="leaf l-route">admin/payments (5)</span></li>
+        <li><span class="leaf l-route">admin/adoptions (3)</span></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+</section>
+
+<!-- ============ 5. ENTITY HUBS ============ -->
+<section class="sheet">
+<h2>5. Diagrama de entidades (datos que toca la app movil)</h2>
+<p class="legend">Solo el subconjunto de tablas accesibles desde rutas moviles. Diagramas hub centrados en las dos entidades principales: Owner y Pet.</p>
+
+<div class="hub-wrap no-break">
+  <svg viewBox="0 0 800 360" role="img" aria-label="Diagrama hub de Owner">
+    <defs>
+      <style>
+        .e-center { fill:#eff6ff; stroke:#2563eb; stroke-width:2; }
+        .e-sat    { fill:#fff;    stroke:#94a3b8; stroke-width:1.5; }
+        .e-rel    { stroke:#94a3b8; stroke-width:1.5; }
+        .e-t      { font-size:13px; font-weight:700; fill:#2563eb; }
+        .e-ts     { font-size:12px; font-weight:600; fill:#1f2937; }
+        .e-tr     { font-size:10px; fill:#64748b; }
+      </style>
+    </defs>
+    <!-- relations -->
+    <line class="e-rel" x1="320" y1="180" x2="210" y2="55"/>
+    <line class="e-rel" x1="320" y1="180" x2="210" y2="150"/>
+    <line class="e-rel" x1="320" y1="180" x2="210" y2="245"/>
+    <line class="e-rel" x1="320" y1="180" x2="210" y2="320"/>
+    <line class="e-rel" x1="480" y1="180" x2="590" y2="55"/>
+    <line class="e-rel" x1="480" y1="180" x2="590" y2="150"/>
+    <line class="e-rel" x1="480" y1="180" x2="590" y2="245"/>
+    <line class="e-rel" x1="480" y1="180" x2="590" y2="320"/>
+    <!-- center -->
+    <rect class="e-center" x="320" y="150" width="160" height="60" rx="10"/>
+    <text class="e-t" x="400" y="178" text-anchor="middle">owners</text>
+    <text class="e-tr" x="400" y="195" text-anchor="middle">/auth · /profile</text>
+    <!-- left satellites -->
+    <rect class="e-sat" x="40" y="30"  width="170" height="50" rx="8"/>
+    <text class="e-ts" x="125" y="52" text-anchor="middle">pets</text>
+    <text class="e-tr" x="125" y="68" text-anchor="middle">posee · /my-pets</text>
+    <rect class="e-sat" x="40" y="125" width="170" height="50" rx="8"/>
+    <text class="e-ts" x="125" y="147" text-anchor="middle">appointments</text>
+    <text class="e-tr" x="125" y="163" text-anchor="middle">agenda · /owner-appointments</text>
+    <rect class="e-sat" x="40" y="220" width="170" height="50" rx="8"/>
+    <text class="e-ts" x="125" y="242" text-anchor="middle">payments</text>
+    <text class="e-tr" x="125" y="258" text-anchor="middle">/owner-payments</text>
+    <rect class="e-sat" x="40" y="295" width="170" height="50" rx="8"/>
+    <text class="e-ts" x="125" y="317" text-anchor="middle">sponsorships</text>
+    <text class="e-tr" x="125" y="333" text-anchor="middle">/my-sponsorships</text>
+    <!-- right satellites -->
+    <rect class="e-sat" x="590" y="30"  width="170" height="50" rx="8"/>
+    <text class="e-ts" x="675" y="52" text-anchor="middle">refresh_tokens</text>
+    <text class="e-tr" x="675" y="68" text-anchor="middle">sesion (server-side)</text>
+    <rect class="e-sat" x="590" y="125" width="170" height="50" rx="8"/>
+    <text class="e-ts" x="675" y="147" text-anchor="middle">product_orders</text>
+    <text class="e-tr" x="675" y="163" text-anchor="middle">/public/product_orders</text>
+    <rect class="e-sat" x="590" y="220" width="170" height="50" rx="8"/>
+    <text class="e-ts" x="675" y="242" text-anchor="middle">adoption_records</text>
+    <text class="e-tr" x="675" y="258" text-anchor="middle">/adoption</text>
+    <rect class="e-sat" x="590" y="295" width="170" height="50" rx="8"/>
+    <text class="e-ts" x="675" y="317" text-anchor="middle">users (staff)</text>
+    <text class="e-tr" x="675" y="333" text-anchor="middle">atiende · dominio Admin</text>
+  </svg>
+  <p class="figcaption">Hub 1 &mdash; <strong>owners</strong> y sus relaciones directas.</p>
+</div>
+
+<div class="hub-wrap no-break" style="margin-top:24px;">
+  <svg viewBox="0 0 800 360" role="img" aria-label="Diagrama hub de Pet">
+    <defs>
+      <style>
+        .p-center { fill:#ecfdf5; stroke:#059669; stroke-width:2; }
+        .p-sat    { fill:#fff;    stroke:#94a3b8; stroke-width:1.5; }
+        .p-rel    { stroke:#94a3b8; stroke-width:1.5; }
+        .p-t      { font-size:13px; font-weight:700; fill:#059669; }
+        .p-ts     { font-size:12px; font-weight:600; fill:#1f2937; }
+        .p-tr     { font-size:10px; fill:#64748b; }
+      </style>
+    </defs>
+    <line class="p-rel" x1="320" y1="180" x2="210" y2="55"/>
+    <line class="p-rel" x1="320" y1="180" x2="210" y2="150"/>
+    <line class="p-rel" x1="320" y1="180" x2="210" y2="245"/>
+    <line class="p-rel" x1="320" y1="180" x2="210" y2="320"/>
+    <line class="p-rel" x1="480" y1="180" x2="590" y2="55"/>
+    <line class="p-rel" x1="480" y1="180" x2="590" y2="150"/>
+    <line class="p-rel" x1="480" y1="180" x2="590" y2="245"/>
+    <line class="p-rel" x1="480" y1="180" x2="590" y2="320"/>
+    <rect class="p-center" x="320" y="150" width="160" height="60" rx="10"/>
+    <text class="p-t" x="400" y="178" text-anchor="middle">pets</text>
+    <text class="p-tr" x="400" y="195" text-anchor="middle">/pets · /admin/pets</text>
+    <rect class="p-sat" x="40" y="30"  width="170" height="50" rx="8"/>
+    <text class="p-ts" x="125" y="52" text-anchor="middle">pet_medical_profiles</text>
+    <text class="p-tr" x="125" y="68" text-anchor="middle">/medical_profile</text>
+    <rect class="p-sat" x="40" y="125" width="170" height="50" rx="8"/>
+    <text class="p-ts" x="125" y="147" text-anchor="middle">consultations</text>
+    <text class="p-tr" x="125" y="163" text-anchor="middle">/consultations</text>
+    <rect class="p-sat" x="40" y="220" width="170" height="50" rx="8"/>
+    <text class="p-ts" x="125" y="242" text-anchor="middle">vaccinations</text>
+    <text class="p-tr" x="125" y="258" text-anchor="middle">/vaccinations · schedules</text>
+    <rect class="p-sat" x="40" y="295" width="170" height="50" rx="8"/>
+    <text class="p-ts" x="125" y="317" text-anchor="middle">dewormings</text>
+    <text class="p-tr" x="125" y="333" text-anchor="middle">/dewormings</text>
+    <rect class="p-sat" x="590" y="30"  width="170" height="50" rx="8"/>
+    <text class="p-ts" x="675" y="52" text-anchor="middle">appointments</text>
+    <text class="p-tr" x="675" y="68" text-anchor="middle">citas de la mascota</text>
+    <rect class="p-sat" x="590" y="125" width="170" height="50" rx="8"/>
+    <text class="p-ts" x="675" y="147" text-anchor="middle">medical_reports</text>
+    <text class="p-tr" x="675" y="163" text-anchor="middle">PDF · /medical_reports</text>
+    <rect class="p-sat" x="590" y="220" width="170" height="50" rx="8"/>
+    <text class="p-ts" x="675" y="242" text-anchor="middle">lab_exams</text>
+    <text class="p-tr" x="675" y="258" text-anchor="middle">+ archivos adjuntos</text>
+    <rect class="p-sat" x="590" y="295" width="170" height="50" rx="8"/>
+    <text class="p-ts" x="675" y="317" text-anchor="middle">prescriptions</text>
+    <text class="p-tr" x="675" y="333" text-anchor="middle">+ prescription_items</text>
+  </svg>
+  <p class="figcaption">Hub 2 &mdash; <strong>pets</strong>: entidad clinica central. consultations agrupa recetas, examenes y tratamientos.</p>
+</div>
+
+</section>
+
+<!-- ============ 6. AUTH SEQUENCE ============ -->
+<section class="sheet">
+<h2>6. Diagrama de secuencia &mdash; sesion y seguridad</h2>
+<p class="legend">Manejo de tokens (RNF-SEC-001) y control de acceso por rol (RNF-SEC-002).</p>
+<div class="flow no-break">
+  <div class="step n-primary"><b>App start</b>Lee token de SecureStore</div>
+  <div class="h-arrow">&rarr;</div>
+  <div class="step"><b>GET current_user</b>Restaura sesion + rol</div>
+  <div class="h-arrow">&rarr;</div>
+  <div class="step n-secondary"><b>Router por rol</b>public · owner · admin</div>
+  <div class="h-arrow">&rarr;</div>
+  <div class="step"><b>Refresh</b>POST /auth/refresh ante 401</div>
+  <div class="h-arrow">&rarr;</div>
+  <div class="step n-danger"><b>Logout</b>DELETE /auth/logout + purga local</div>
+</div>
+<p class="figcaption">Un dueno nunca accede a pantallas ni endpoints /admin/*; intentos no autorizados &rarr; 403 / redireccion a login.</p>
+
+</section>
+
+<!-- ============ 7. SYSTEM / DEPLOYMENT ============ -->
+<section class="sheet">
+<h2>7. Diagrama de elementos del sistema (despliegue)</h2>
+<p class="legend">Nodos fisicos/logicos y su comunicacion. El dispositivo movil opera <strong>local-first</strong>; el backend Rails y MySQL corren en contenedores Docker.</p>
+
+<div class="hub-wrap no-break">
+  <svg viewBox="0 0 820 470" role="img" aria-label="Diagrama de despliegue del sistema">
+    <defs>
+      <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/>
+      </marker>
+      <style>
+        .d-dev   { fill:#eff6ff; stroke:#2563eb; stroke-width:2; }
+        .d-app   { fill:#fff;    stroke:#2563eb; stroke-width:1.5; }
+        .d-local { fill:#ecfdf5; stroke:#059669; stroke-width:1.5; }
+        .d-host  { fill:#fffdf7; stroke:#d97706; stroke-width:2; stroke-dasharray:6 4; }
+        .d-cont  { fill:#fff;    stroke:#d97706; stroke-width:1.5; }
+        .d-db    { fill:#fef2f2; stroke:#dc2626; stroke-width:1.5; }
+        .d-link  { stroke:#64748b; stroke-width:2; fill:none; marker-end:url(#arrow); }
+        .d-link2 { stroke:#64748b; stroke-width:2; fill:none; marker-start:url(#arrow); marker-end:url(#arrow); }
+        .t-title { font-size:13px; font-weight:700; }
+        .t-sub   { font-size:10px; fill:#64748b; }
+        .t-lbl   { font-size:10.5px; font-weight:600; fill:#475569; }
+        .c-blue { fill:#2563eb; } .c-green{ fill:#059669; } .c-amber{ fill:#d97706; } .c-red{ fill:#dc2626; }
+      </style>
+    </defs>
+
+    <!-- ===== Mobile device node ===== -->
+    <rect class="d-dev" x="20" y="40" width="300" height="380" rx="14"/>
+    <text class="t-title c-blue" x="40" y="68">Dispositivo movil</text>
+    <text class="t-sub" x="40" y="84">iOS / Android &mdash; Expo SDK 56</text>
+
+    <!-- React Native app -->
+    <rect class="d-app" x="44" y="100" width="252" height="78" rx="10"/>
+    <text class="t-title c-blue" x="60" y="126">App React Native</text>
+    <text class="t-sub" x="60" y="143">TypeScript · React Navigation</text>
+    <text class="t-sub" x="60" y="158">Screens · Hooks · Services</text>
+    <text class="t-sub" x="60" y="173">Tema claro / oscuro</text>
+
+    <!-- Local-first store -->
+    <rect class="d-local" x="44" y="194" width="252" height="96" rx="10"/>
+    <text class="t-title c-green" x="60" y="220">Local-first</text>
+    <text class="t-sub" x="60" y="237">Cache local de datos sincronizados</text>
+    <text class="t-sub" x="60" y="252">Cola offline de escrituras + borradores</text>
+    <text class="t-sub" x="60" y="267">SecureStore (tokens cifrados)</text>
+    <text class="t-sub" x="60" y="282">Lectura/edicion sin conexion</text>
+
+    <!-- Sync engine -->
+    <rect class="d-app" x="44" y="306" width="252" height="62" rx="10"/>
+    <text class="t-title c-blue" x="60" y="330">Motor de sincronizacion</text>
+    <text class="t-sub" x="60" y="347">Opt-in del usuario · WiFi / datos</text>
+    <text class="t-sub" x="60" y="362">Reconcilia cola &harr; API al recuperar red</text>
+
+    <!-- internal arrows: App <-> Local-first es bidireccional (lee/escribe local);
+         Local-first -> Sync es unidireccional (el motor consume la cola) -->
+    <line class="d-link2" x1="170" y1="178" x2="170" y2="194"/>
+    <line class="d-link" x1="170" y1="290" x2="170" y2="306"/>
+
+    <!-- ===== HTTPS link ===== -->
+    <path class="d-link2" d="M320,250 L470,250"/>
+    <rect x="345" y="225" width="100" height="24" rx="12" fill="#f1f5f9" stroke="#94a3b8"/>
+    <text class="t-lbl" x="395" y="241" text-anchor="middle">HTTPS · JSON</text>
+    <text class="t-sub" x="395" y="270" text-anchor="middle">REST · JWT (httpOnly)</text>
+
+    <!-- ===== VPS / Docker host ===== -->
+    <rect class="d-host" x="470" y="40" width="330" height="380" rx="14"/>
+    <text class="t-title c-amber" x="490" y="66">VPS &mdash; Host Docker</text>
+    <text class="t-sub" x="490" y="82">Servidor remoto (cloud) · Linux</text>
+    <text class="t-sub" x="490" y="96">Contenedores orquestados (docker compose)</text>
+
+    <!-- Rails container -->
+    <rect class="d-cont" x="496" y="116" width="278" height="108" rx="10"/>
+    <text class="t-title c-amber" x="512" y="130">Contenedor: API Rails 8</text>
+    <text class="t-sub" x="512" y="148">Controllers · Actions (Result)</text>
+    <text class="t-sub" x="512" y="163">Autenticacion JWT · roles</text>
+    <text class="t-sub" x="512" y="178">ActiveJob (colas async)</text>
+    <text class="t-sub" x="512" y="193">ActiveStorage (fotos · PDF · lab)</text>
+    <text class="t-sub" x="512" y="208">Expone las 157 rutas moviles</text>
+
+    <!-- MySQL container -->
+    <rect class="d-db" x="496" y="244" width="278" height="86" rx="10"/>
+    <text class="t-title c-red" x="512" y="270">Contenedor: MySQL 8.0</text>
+    <text class="t-sub" x="512" y="288">Base de datos relacional (45 tablas)</text>
+    <text class="t-sub" x="512" y="303">Soft delete (Discard)</text>
+    <text class="t-sub" x="512" y="318">Volumen persistente Docker</text>
+
+    <!-- Storage volume -->
+    <rect class="d-cont" x="496" y="350" width="278" height="54" rx="10"/>
+    <text class="t-title c-amber" x="512" y="374">Volumen de archivos</text>
+    <text class="t-sub" x="512" y="391">ActiveStorage: imagenes y documentos</text>
+
+    <!-- internal docker arrows: Rails <-> MySQL (consulta/resultado) -->
+    <line class="d-link2" x1="635" y1="224" x2="635" y2="244"/>
+    <!-- Rails (no MySQL) gestiona ActiveStorage: se enruta por el margen izquierdo -->
+    <polyline class="d-link" points="496,200 482,200 482,377 496,377"/>
+  </svg>
+  <p class="figcaption">
+    El movil es <strong>local-first</strong>: funciona con su copia local y encola cambios; sincroniza con el backend por HTTPS solo con consentimiento del usuario (RNF-MOB-002 / RNF-REL-003).
+    El backend Rails y MySQL se despliegan como contenedores Docker independientes sobre un <strong>VPS</strong> (servidor virtual remoto).
+  </p>
+</div>
+</section>
+
+<!-- ============ 8. SCREEN -> ENDPOINTS MAP ============ -->
+<section class="sheet">
+<h2>8. Mapa pantalla &rarr; endpoints</h2>
+<p class="legend">Cada pantalla principal con las rutas API que dispara. <span style="color:var(--success);font-weight:600;">Verde</span> = publico (sin auth) · <span style="color:var(--primary);font-weight:600;">azul</span> = owner autenticado.</p>
+<div class="cols-3 no-break">
+
+  <ul class="tree">
+    <li><span class="leaf l-primary">Login</span>
+      <ul>
+        <li><span class="leaf l-route">POST /auth/login</span></li>
+        <li><span class="leaf l-route">GET /auth/current_user</span></li>
+        <li><span class="leaf l-route">POST /auth/refresh</span></li>
+      </ul>
+    </li>
+    <li><span class="leaf l-primary">Registro</span>
+      <ul><li><span class="leaf l-route">POST /auth/register_owner</span></li></ul>
+    </li>
+    <li><span class="leaf l-primary">Recuperar contrasena</span>
+      <ul>
+        <li><span class="leaf l-route">POST /auth/forgot_password</span></li>
+        <li><span class="leaf l-route">POST /auth/reset_password</span></li>
+      </ul>
+    </li>
+    <li><span class="leaf l-primary">Perfil</span>
+      <ul>
+        <li><span class="leaf l-route">GET /profile</span></li>
+        <li><span class="leaf l-route">PATCH /profile</span></li>
+        <li><span class="leaf l-route">PATCH /profile/password</span></li>
+        <li><span class="leaf l-route">DELETE /profile</span></li>
+      </ul>
+    </li>
+    <li><span class="leaf l-primary">Dashboard</span>
+      <ul>
+        <li><span class="leaf l-route">GET /dashboard</span></li>
+        <li><span class="leaf l-route">GET /dashboard-summary</span></li>
+      </ul>
+    </li>
+  </ul>
+
+  <ul class="tree">
+    <li><span class="leaf l-primary">Mis mascotas</span>
+      <ul>
+        <li><span class="leaf l-route">GET /my-pets</span></li>
+        <li><span class="leaf l-route">GET /pets/:id</span></li>
+      </ul>
+    </li>
+    <li><span class="leaf l-primary">Crear / editar mascota</span>
+      <ul>
+        <li><span class="leaf l-route">POST /pets</span></li>
+        <li><span class="leaf l-route">PATCH /pets/:id</span></li>
+        <li><span class="leaf l-route">POST /pets/:id/photo</span></li>
+      </ul>
+    </li>
+    <li><span class="leaf l-primary">Historial medico</span>
+      <ul>
+        <li><span class="leaf l-route">GET /my-medical-history</span></li>
+        <li><span class="leaf l-route">GET /pets/:pet_id/consultations</span></li>
+      </ul>
+    </li>
+    <li><span class="leaf l-primary">Vacunas / desparasit.</span>
+      <ul>
+        <li><span class="leaf l-route">GET /pets/:pet_id/vaccinations</span></li>
+        <li><span class="leaf l-route">GET /pets/:pet_id/dewormings</span></li>
+      </ul>
+    </li>
+    <li><span class="leaf l-primary">Reportes medicos</span>
+      <ul>
+        <li><span class="leaf l-route">GET /pets/:pet_id/medical_reports</span></li>
+        <li><span class="leaf l-route">GET .../:id/download_pdf</span></li>
+      </ul>
+    </li>
+  </ul>
+
+  <ul class="tree">
+    <li><span class="leaf l-primary">Agendar cita</span>
+      <ul>
+        <li><span class="leaf l-route">GET /owner-available-vets</span></li>
+        <li><span class="leaf l-route">GET /owner-available-days</span></li>
+        <li><span class="leaf l-route">POST /owner-appointments</span></li>
+      </ul>
+    </li>
+    <li><span class="leaf l-primary">Mis citas</span>
+      <ul>
+        <li><span class="leaf l-route">GET /owner-appointments-list</span></li>
+        <li><span class="leaf l-route">POST .../:id/confirm</span></li>
+        <li><span class="leaf l-route">POST .../:id/cancel</span></li>
+      </ul>
+    </li>
+    <li><span class="leaf l-primary">Pagos</span>
+      <ul>
+        <li><span class="leaf l-route">GET /owner-payments-list</span></li>
+        <li><span class="leaf l-route">POST /owner-payments/:id/register</span></li>
+      </ul>
+    </li>
+    <li><span class="leaf l-success">Tienda (publico)</span>
+      <ul>
+        <li><span class="leaf l-route">GET /public/products</span></li>
+        <li><span class="leaf l-route">GET /public/products/:id</span></li>
+      </ul>
+    </li>
+    <li><span class="leaf l-success">Checkout (publico)</span>
+      <ul>
+        <li><span class="leaf l-route">POST /public/product_orders</span></li>
+        <li><span class="leaf l-route">POST .../:id/upload_proof</span></li>
+      </ul>
+    </li>
+    <li><span class="leaf l-success">Adopcion (publico)</span>
+      <ul>
+        <li><span class="leaf l-route">GET /adoption/pets</span></li>
+        <li><span class="leaf l-route">GET /adoption/pets/:id</span></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+</section>
+
+<!-- ============ 9. SYNC FLOWCHART ============ -->
+<section class="sheet">
+<h2>9. Diagrama de sincronizacion (local-first)</h2>
+<p class="legend">Flujo de la cola offline y el motor de sincronizacion (RNF-MOB-002, RNF-REL-002/003). Rombos = decision.</p>
+<div class="hub-wrap no-break">
+  <svg viewBox="0 0 800 660" role="img" aria-label="Flujo de sincronizacion local-first">
+    <defs><marker id="arS10" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker></defs>
+
+    <!-- process boxes -->
+    <rect x="300" y="15"  width="200" height="40" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="400" y="40"  text-anchor="middle" font-size="12" fill="#1f2937">Accion del usuario</text>
+    <rect x="300" y="85"  width="200" height="40" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="400" y="103" text-anchor="middle" font-size="11.5" fill="#1f2937">Guardar en cola local</text>
+    <text x="400" y="117" text-anchor="middle" font-size="10" fill="#64748b">+ borrador (autosave)</text>
+
+    <!-- decision 1 -->
+    <polygon points="330,180 400,146 470,180 400,214" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="400" y="184" text-anchor="middle" font-size="11" fill="#1f2937">&iquest;Hay conexion?</text>
+    <rect x="600" y="158" width="180" height="44" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="690" y="176" text-anchor="middle" font-size="11" fill="#1f2937">Mantener pendiente</text>
+    <text x="690" y="191" text-anchor="middle" font-size="10" fill="#64748b">badge "pendiente"</text>
+
+    <!-- decision 2 -->
+    <polygon points="330,275 400,241 470,275 400,309" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="400" y="279" text-anchor="middle" font-size="11" fill="#1f2937">&iquest;Sync opt-in?</text>
+    <rect x="600" y="253" width="180" height="44" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="690" y="271" text-anchor="middle" font-size="11" fill="#1f2937">Esperar sync manual</text>
+    <text x="690" y="286" text-anchor="middle" font-size="10" fill="#64748b">iniciado por usuario</text>
+
+    <!-- process -->
+    <rect x="300" y="335" width="200" height="40" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="400" y="360" text-anchor="middle" font-size="12" fill="#1f2937">Procesar cola (FIFO)</text>
+    <rect x="300" y="405" width="200" height="40" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="400" y="430" text-anchor="middle" font-size="12" fill="#1f2937">Enviar al API (HTTPS)</text>
+
+    <!-- decision 3 -->
+    <polygon points="330,510 400,476 470,510 400,544" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="400" y="514" text-anchor="middle" font-size="11" fill="#1f2937">&iquest;Respuesta?</text>
+
+    <!-- terminals -->
+    <rect x="300" y="600" width="200" height="44" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="400" y="618" text-anchor="middle" font-size="11.5" fill="#1f2937">Sincronizado</text>
+    <text x="400" y="633" text-anchor="middle" font-size="10" fill="#64748b">badge "al dia"</text>
+    <rect x="40"  y="488" width="200" height="44" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="140" y="506" text-anchor="middle" font-size="11" fill="#1f2937">Resolver conflicto</text>
+    <text x="140" y="521" text-anchor="middle" font-size="10" fill="#64748b">merge / decision usuario</text>
+    <rect x="600" y="488" width="180" height="44" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="690" y="506" text-anchor="middle" font-size="11" fill="#1f2937">Marcar error</text>
+    <text x="690" y="521" text-anchor="middle" font-size="10" fill="#64748b">reintentar luego</text>
+
+    <!-- arrows -->
+    <line x1="400" y1="55"  x2="400" y2="85"  stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS10)"/>
+    <line x1="400" y1="125" x2="400" y2="144" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS10)"/>
+    <line x1="470" y1="180" x2="598" y2="180" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS10)"/>
+    <text x="530" y="173" text-anchor="middle" font-size="10" fill="#64748b">No</text>
+    <line x1="400" y1="214" x2="400" y2="239" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS10)"/>
+    <text x="410" y="231" font-size="10" fill="#64748b">Si</text>
+    <line x1="470" y1="275" x2="598" y2="275" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS10)"/>
+    <text x="530" y="268" text-anchor="middle" font-size="10" fill="#64748b">No</text>
+    <line x1="400" y1="309" x2="400" y2="333" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS10)"/>
+    <text x="410" y="326" font-size="10" fill="#64748b">Si</text>
+    <line x1="400" y1="375" x2="400" y2="405" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS10)"/>
+    <line x1="400" y1="445" x2="400" y2="474" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS10)"/>
+    <line x1="400" y1="544" x2="400" y2="598" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS10)"/>
+    <text x="410" y="575" font-size="10" fill="#64748b">Exito</text>
+    <line x1="330" y1="510" x2="242" y2="510" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS10)"/>
+    <text x="286" y="503" text-anchor="middle" font-size="10" fill="#64748b">409</text>
+    <line x1="470" y1="510" x2="598" y2="510" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS10)"/>
+    <text x="534" y="503" text-anchor="middle" font-size="10" fill="#64748b">error / timeout</text>
+    <polyline points="140,488 140,425 298,425" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS10)"/>
+    <text x="175" y="417" font-size="10" fill="#64748b">reintenta</text>
+  </svg>
+  <p class="figcaption">Sin conexion o sin opt-in, la app nunca simula exito: las escrituras quedan visibles como <strong>pendientes</strong> hasta confirmacion del servidor (RNF-REL-003).</p>
+</div>
+
+</section>
+
+<!-- ============ 10. UI COMPONENTS ============ -->
+<section class="sheet">
+<h2>10. Diagrama de componentes UI</h2>
+<p class="legend">Jerarquia de composicion (de <code>mobile-ui-components.md</code>). Los primitivos consumen los tokens del design system.</p>
+<div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:22px;" class="no-break">
+
+  <ul class="tree">
+    <li><span class="leaf l-primary">MobileShell</span>
+      <ul>
+        <li><span class="leaf l-plain">StatusBar <small>(nativa)</small></span></li>
+        <li><span class="leaf l-plain">AppHeader <small>back · titulo · acciones</small></span></li>
+        <li><span class="leaf l-plain">ScreenBody <small>scroll · padding 16</small></span>
+          <ul>
+            <li><span class="leaf l-plain">Listas / Grids <small>(FlatList)</small></span></li>
+            <li><span class="leaf l-plain">Cards <small>header · content · footer</small></span></li>
+            <li><span class="leaf l-plain">Formularios</span></li>
+            <li><span class="leaf l-plain">Estados: Loading · Empty · Error</span></li>
+          </ul>
+        </li>
+        <li><span class="leaf l-plain">BottomTabBar <small>Home · Mascotas · Citas · Perfil</small></span></li>
+        <li><span class="leaf l-plain">FAB <small>accion primaria</small></span></li>
+      </ul>
+    </li>
+  </ul>
+
+  <div>
+    <ul class="tree">
+      <li><span class="leaf l-secondary">Primitivos (design system)</span>
+        <ul>
+          <li><span class="leaf l-plain">Button <small>primary · outline · ghost · destructive</small></span></li>
+          <li><span class="leaf l-plain">Input <small>label · error · 16px</small></span></li>
+          <li><span class="leaf l-plain">Badge <small>estado</small></span></li>
+          <li><span class="leaf l-plain">Avatar <small>fallback iniciales</small></span></li>
+          <li><span class="leaf l-plain">Separator · Label</span></li>
+        </ul>
+      </li>
+    </ul>
+    <div class="layer-band band-success" style="margin-top:14px;">
+      <span class="band-title" style="color:var(--success);">Tokens</span>
+      <div class="band-row" style="justify-content:flex-start;">
+        <span class="node n-success">colores<small>claro / oscuro</small></span>
+        <span class="node n-success">spacing</span>
+        <span class="node n-success">radius</span>
+        <span class="node n-success">tipografia</span>
+        <span class="node n-success">sombras</span>
+      </div>
+    </div>
+    <p class="figcaption" style="text-align:left;">Los primitivos se construyen con <code>StyleSheet.create()</code> + <code>src/theme/tokens.ts</code> y alimentan todas las pantallas.</p>
+  </div>
+</div>
+
+<div style="margin-top:42px; padding-top:14px; border-top:1px solid var(--line-soft); font-size:11px; color:var(--muted); display:flex; justify-content:space-between;">
+  <span>PawCare Mobile &mdash; Diagramas de arquitectura (alcance movil) · v3.0</span>
+  <span>Fuentes: mobile-routes.md · mobile-requirements.md · mobile-ui-components.md · arq.md · architecture.json</span>
+</div>
+</section>
+
+</body>
+</html>

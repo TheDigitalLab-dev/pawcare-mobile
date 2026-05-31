@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PawCare Mobile — Requisitos funcionales y no funcionales</title>
+<style>
+  :root{
+    --primary:#2563eb; --text:#1f2937; --muted:#64748b; --line:#e5e7eb; --line2:#cbd5e1;
+    --alta-bg:#fee2e2; --alta-fg:#b91c1c;
+    --media-bg:#fef3c7; --media-fg:#b45309;
+    --baja-bg:#e0e7ff; --baja-fg:#4338ca;
+    --pub:#059669; --own:#2563eb; --adm:#7c3aed;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    color:var(--text); line-height:1.5; max-width:900px; margin:0 auto; padding:45px;
+    background:#fff;
+  }
+  h1{font-size:26px;color:var(--primary);}
+  .subtitle{color:var(--muted);font-size:13.5px;margin:4px 0 16px;}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;font-size:11.5px;margin-bottom:20px;}
+  .meta span{background:#f1f5f9;color:#475569;padding:3px 9px;border-radius:4px;}
+
+  .part-title{
+    font-size:19px;margin:28px 0 6px;padding-bottom:6px;border-bottom:2px solid var(--primary);color:#0f172a;
+  }
+  .part-intro{font-size:12.5px;color:var(--muted);margin-bottom:16px;}
+
+  .domain{
+    font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+    margin:22px 0 10px;padding:6px 10px;border-radius:6px;color:#fff;
+  }
+  .domain.pub{background:var(--pub);}
+  .domain.own{background:var(--own);}
+  .domain.adm{background:var(--adm);}
+  .domain.cat{background:#334155;}
+
+  .req{
+    border:1px solid var(--line); border-left:4px solid var(--line2);
+    border-radius:8px; padding:14px 16px; margin-bottom:14px;
+    page-break-inside:avoid; break-inside:avoid;
+  }
+  .req.pub{border-left-color:var(--pub);}
+  .req.own{border-left-color:var(--own);}
+  .req.adm{border-left-color:var(--adm);}
+  .req.rnf{border-left-color:#334155;}
+
+  .req-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+  .req-id{font-family:'SF Mono',ui-monospace,monospace;font-size:12px;font-weight:700;color:var(--primary);}
+  .req-head h3{font-size:14.5px;font-weight:700;flex:1;min-width:200px;}
+  .badge{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;white-space:nowrap;}
+  .badge-alta{background:var(--alta-bg);color:var(--alta-fg);}
+  .badge-media{background:var(--media-bg);color:var(--media-fg);}
+  .badge-baja{background:var(--baja-bg);color:var(--baja-fg);}
+  .badge-cat{background:#e2e8f0;color:#334155;}
+
+  .req p{font-size:12.5px;margin:6px 0;}
+  .req .just{color:#374151;}
+  .req .label{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-top:10px;}
+  .req ul{margin:4px 0 0 18px;font-size:12px;}
+  .req ul li{margin:3px 0;}
+  code{font-family:'SF Mono',ui-monospace,monospace;font-size:11.5px;background:#f1f5f9;padding:1px 5px;border-radius:4px;color:#0f172a;}
+
+  table{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0;page-break-inside:avoid;}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;}
+  th{background:#f1f5f9;font-size:11px;text-transform:uppercase;letter-spacing:.3px;}
+
+  .legend-box{font-size:12px;color:var(--muted);background:#f8fafc;border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin-bottom:14px;}
+
+  /* Apendice de cobertura */
+  .cov{font-size:11px;}
+  .cov thead{display:table-header-group;}
+  .cov th,.cov td{padding:4px 8px;}
+  .cov td:first-child{font-family:'SF Mono',ui-monospace,monospace;font-size:10.5px;}
+  .cov td:last-child{white-space:nowrap;font-weight:600;}
+  .cov .grp td{background:#eef2ff;color:#3730a3;font-weight:700;font-family:'SF Mono',ui-monospace,monospace;font-size:10.5px;}
+  .cov .none td:last-child{color:var(--muted);font-weight:400;font-style:italic;}
+  .cov-note{font-size:12px;color:var(--muted);margin:6px 0 12px;}
+
+  .print-btn{
+    position:fixed;top:16px;right:16px;z-index:50;background:var(--primary);color:#fff;border:none;
+    border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,.18);font-family:inherit;
+  }
+  .print-btn:hover{background:#1d4ed8;}
+
+  footer{margin-top:32px;padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+
+  @media print{
+    /* El margen lo da el padding del body (45px), que SI se imprime aunque el
+       dialogo use "Margenes: Ninguno". @page va en 0 para no anular ni duplicar. */
+    body{padding:45px;max-width:none;}
+    .print-btn{display:none !important;}
+    .domain{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .badge{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
+  @page{ margin:0; size:A4; }
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
+
+<h1>PawCare Mobile</h1>
+<p class="subtitle">Requisitos funcionales y no funcionales &mdash; aplicacion movil Android (Expo SDK 56 · React Native · TypeScript)</p>
+<div class="meta">
+  <span>157 rutas API</span><span>26 requisitos funcionales</span><span>17 no funcionales</span>
+  <span>Public 19 · Owner 54 · Admin 84</span><span>Fuente: mobile-requirements.md</span>
+</div>
+
+<div class="legend-box">
+  <strong>Convenciones.</strong> <strong>RF-</strong> (funcionales): Descripcion · Prioridad · Justificacion · Criterios de aceptacion.
+  <strong>RNF-</strong> (no funcionales): <code>RNF-{Categoria}-{NNN}</code> + enunciado directo.
+  Prioridades: <span class="badge badge-alta">Alta</span> (MVP / legal) ·
+  <span class="badge badge-media">Media</span> (operacion completa) ·
+  <span class="badge badge-baja">Baja</span> (mejora o alcance secundario).
+</div>
+
+<!-- ========================= PARTE 1 ========================= -->
+<h2 class="part-title">Parte 1 &mdash; Requisitos funcionales</h2>
+
+<!-- ---------- PUBLIC ---------- -->
+<div class="domain pub">Public &mdash; sin autenticacion (RF-PUB)</div>
+
+<article class="req pub">
+  <div class="req-head"><span class="req-id">RF-PUB-01</span><h3>Informacion de servicios clinicos</h3><span class="badge badge-media">Media</span></div>
+  <p>La app debe mostrar el catalogo de servicios veterinarios ofrecidos por la clinica, consumiendo la informacion publica del backend, sin requerir autenticacion.</p>
+  <p class="just"><strong>Justificacion.</strong> Permite al usuario descubrir la oferta antes de registrarse o agendar una cita. Rutas: <code>GET /services</code>, <code>GET /pages/services</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>El usuario puede abrir la pantalla de servicios sin iniciar sesion.</li>
+    <li>Se listan los servicios de <code>GET /services</code> con nombre, descripcion y precio cuando el API los provea.</li>
+    <li>Ante error de red o respuesta vacia se muestra estado vacio o mensaje comprensible.</li>
+    <li>Existe acceso claro a registro, login o agendamiento de cita desde servicios.</li>
+  </ul>
+</article>
+
+<article class="req pub">
+  <div class="req-head"><span class="req-id">RF-PUB-02</span><h3>Tienda de productos y checkout</h3><span class="badge badge-media">Media</span></div>
+  <p>La app debe permitir consultar productos, ver detalle, crear un pedido y subir comprobante de pago, como flujo publico de compra.</p>
+  <p class="just"><strong>Justificacion.</strong> Habilita venta de insumos desde el movil. Rutas: <code>GET /pages/products</code>, <code>GET /public/products</code>, <code>GET /public/products/:id</code>, <code>GET /pages/checkout</code>, <code>POST /public/product_orders</code>, <code>POST /public/product_orders/:id/upload_proof</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Listar productos via <code>GET /public/products</code> y ver detalle via <code>GET /public/products/:id</code>.</li>
+    <li>El checkout muestra resumen del pedido antes de confirmar.</li>
+    <li>Al confirmar, envia <code>POST /public/product_orders</code> con los datos requeridos.</li>
+    <li>Tras crear el pedido, adjuntar comprobante con <code>POST /public/product_orders/:id/upload_proof</code>.</li>
+    <li>Mensajes de exito o error segun la respuesta; stock/indisponibilidad reflejado en UI.</li>
+  </ul>
+</article>
+
+<article class="req pub">
+  <div class="req-head"><span class="req-id">RF-PUB-03</span><h3>Adopcion de mascotas</h3><span class="badge badge-media">Media</span></div>
+  <p>La app debe exponer el programa de adopcion: landing informativo, listado de mascotas disponibles y ficha de detalle.</p>
+  <p class="just"><strong>Justificacion.</strong> Canal publico para promover adopciones responsables. Rutas: <code>GET /adoption</code>, <code>GET /adoption/pets</code>, <code>GET /adoption/pets/:id</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Landing (<code>GET /adoption</code>) con informacion general y enlace al listado.</li>
+    <li>Listado (<code>GET /adoption/pets</code>) con datos basicos (nombre, especie, edad, estado).</li>
+    <li>Detalle (<code>GET /adoption/pets/:id</code>) con ficha completa, requisitos y accion de contacto/solicitud.</li>
+    <li>Solo se muestran mascotas retornadas por el backend; sin datos hardcodeados.</li>
+  </ul>
+</article>
+
+<article class="req pub">
+  <div class="req-head"><span class="req-id">RF-PUB-04</span><h3>Patrocinios (acceso publico)</h3><span class="badge badge-baja">Baja</span></div>
+  <p>La app debe permitir consultar campanas de patrocinio, ver detalle, gastos asociados y crear o actualizar un patrocinio desde el dominio publico.</p>
+  <p class="just"><strong>Justificacion.</strong> Canal de donaciones y transparencia de gastos. Rutas: <code>GET /sponsorships</code>, <code>GET /sponsorships/:id</code>, <code>GET /sponsorships/:id/expenses/:expense_id</code>, <code>POST /sponsorships</code>, <code>PATCH/PUT /sponsorships/:id</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Listar patrocinios activos via <code>GET /sponsorships</code>; detalle con meta, progreso e historial.</li>
+    <li>Abrir un gasto via <code>GET /sponsorships/:id/expenses/:expense_id</code>.</li>
+    <li>Alta via <code>POST /sponsorships</code> con validacion de campos obligatorios.</li>
+    <li>Edicion via <code>PATCH</code>/<code>PUT</code> a <code>/sponsorships/:id</code> reflejada en pantalla.</li>
+  </ul>
+</article>
+
+<article class="req pub">
+  <div class="req-head"><span class="req-id">RF-PUB-05</span><h3>Contacto y contenido legal</h3><span class="badge badge-alta">Alta</span></div>
+  <p>La app debe mostrar paginas de contacto, terminos de uso y politica de privacidad como contenido informativo publico.</p>
+  <p class="just"><strong>Justificacion.</strong> Requisito legal y de confianza para usuarios y tiendas de aplicaciones. Rutas: <code>GET /pages/contact</code>, <code>GET /pages/terms</code>, <code>GET /pages/privacy</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Las tres pantallas accesibles sin autenticacion; contenido desde rutas <code>pages#*</code>.</li>
+    <li>Contacto muestra medios oficiales (telefono, email, direccion) cuando el API los provea.</li>
+    <li>Terminos y privacidad legibles en movil (scroll, tipografia adecuada).</li>
+    <li>Enlaces a terminos y privacidad disponibles desde registro y checkout.</li>
+  </ul>
+</article>
+
+<!-- ---------- OWNER ---------- -->
+<div class="domain own">Owner &mdash; dueno de mascota (RF-OWN)</div>
+
+<article class="req own">
+  <div class="req-head"><span class="req-id">RF-OWN-01</span><h3>Autenticacion y gestion de sesion</h3><span class="badge badge-alta">Alta</span></div>
+  <p>La app debe permitir login, logout, consulta del usuario autenticado y renovacion silenciosa de sesion mediante tokens.</p>
+  <p class="just"><strong>Justificacion.</strong> Base de todo el dominio Owner y Admin. Rutas: <code>GET /auth</code>, <code>POST /auth/login</code>, <code>DELETE /auth/logout</code>, <code>GET /auth/current_user</code>, <code>POST /auth/refresh</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Pantalla de bienvenida (<code>GET /auth</code>) con acceso a login y registro.</li>
+    <li>Login envia credenciales a <code>POST /auth/login</code> y persiste el token de forma segura.</li>
+    <li>Tras login, navega al dashboard/pantalla principal del rol correspondiente.</li>
+    <li><code>GET /auth/current_user</code> al iniciar para restaurar sesion valida.</li>
+    <li><code>POST /auth/refresh</code> antes de expirar o ante 401 recuperable, sin interrumpir al usuario.</li>
+    <li>Logout (<code>DELETE /auth/logout</code>) invalida sesion local y remota.</li>
+    <li>Credenciales invalidas muestran error sin revelar si el email existe.</li>
+  </ul>
+</article>
+
+<article class="req own">
+  <div class="req-head"><span class="req-id">RF-OWN-02</span><h3>Registro de dueno y recuperacion de contrasena</h3><span class="badge badge-alta">Alta</span></div>
+  <p>La app debe permitir registrar un dueno de mascota y completar el flujo de olvido y restablecimiento de contrasena.</p>
+  <p class="just"><strong>Justificacion.</strong> Onboarding de nuevos usuarios y recuperacion de acceso. Rutas: <code>POST /auth/register_owner</code>, <code>POST /auth/forgot_password</code>, <code>GET /auth/reset_password/:token</code>, <code>POST /auth/reset_password</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Registro via <code>POST /auth/register_owner</code> con validacion client-side de email, password y campos obligatorios.</li>
+    <li>Tras registro, el usuario inicia sesion o queda autenticado segun respuesta del API.</li>
+    <li>"Olvide mi contrasena" envia email via <code>POST /auth/forgot_password</code> y confirma en UI.</li>
+    <li>El deep link con token abre pantalla de nueva contrasena (<code>GET /auth/reset_password/:token</code>).</li>
+    <li>Restablecer via <code>POST /auth/reset_password</code>; maneja token invalido o expirado.</li>
+    <li>Passwords cumplen reglas minimas del backend.</li>
+  </ul>
+</article>
+
+<article class="req own">
+  <div class="req-head"><span class="req-id">RF-OWN-03</span><h3>Perfil del dueno</h3><span class="badge badge-alta">Alta</span></div>
+  <p>El dueno autenticado debe poder ver, editar su perfil, cambiar contrasena y eliminar su cuenta.</p>
+  <p class="just"><strong>Justificacion.</strong> Autogestion de datos personales y cumplimiento de derechos del usuario. Rutas: <code>GET /profile</code>, <code>PATCH /profile</code>, <code>PATCH /profile/password</code>, <code>DELETE /profile</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li><code>GET /profile</code> muestra datos actuales; edicion via <code>PATCH /profile</code>.</li>
+    <li>Cambio de contrasena via <code>PATCH /profile/password</code> pidiendo actual y nueva.</li>
+    <li>Eliminar cuenta requiere confirmacion explicita antes de <code>DELETE /profile</code>.</li>
+    <li>Tras eliminar, la sesion se cierra y no quedan tokens locales.</li>
+  </ul>
+</article>
+
+<article class="req own">
+  <div class="req-head"><span class="req-id">RF-OWN-04</span><h3>Dashboard del dueno</h3><span class="badge badge-alta">Alta</span></div>
+  <p>La app debe presentar un resumen del estado del dueno: citas proximas, pagos, alertas medicas y accesos rapidos.</p>
+  <p class="just"><strong>Justificacion.</strong> Punto de entrada principal post-login. Rutas: <code>GET /dashboard</code>, <code>GET /dashboard-summary</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Consume <code>GET /dashboard</code> y/o <code>GET /dashboard-summary</code>.</li>
+    <li>Muestra al menos: proxima cita, cantidad de mascotas y pagos pendientes cuando el API los incluya.</li>
+    <li>Accesos rapidos a mascotas, citas, historial medico y pagos.</li>
+    <li>Solo accesible con sesion de dueno valida; ante fallo, estado de error con reintento.</li>
+  </ul>
+</article>
+
+<article class="req own">
+  <div class="req-head"><span class="req-id">RF-OWN-05</span><h3>Gestion de mascotas (dueno)</h3><span class="badge badge-alta">Alta</span></div>
+  <p>El dueno debe poder listar, crear, editar, eliminar sus mascotas y gestionar la foto de perfil de cada una.</p>
+  <p class="just"><strong>Justificacion.</strong> Entidad central del ecosistema PawCare. Rutas: <code>GET /my-pets</code>, <code>GET /pets</code>, <code>GET /pets/:id</code>, <code>GET /pets/new</code>, <code>GET /pets/:id/edit</code>, <code>POST /pets</code>, <code>PATCH/PUT /pets/:id</code>, <code>DELETE /pets/:id</code>, <code>POST /pets/:id/photo</code>, <code>DELETE /pets/:id/photo</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Listado via <code>GET /my-pets</code> o <code>GET /pets</code>; creacion via <code>POST /pets</code> con campos validados.</li>
+    <li>Edicion via <code>PATCH</code>/<code>PUT</code>; eliminacion via <code>DELETE</code> con confirmacion.</li>
+    <li>Foto via <code>POST</code>/<code>DELETE /pets/:id/photo</code> desde camara o galeria.</li>
+    <li>El dueno solo ve/modifica sus mascotas (403/404 manejados); desde detalle accede a historial y citas.</li>
+  </ul>
+</article>
+
+<article class="req own">
+  <div class="req-head"><span class="req-id">RF-OWN-06</span><h3>Citas veterinarias (dueno)</h3><span class="badge badge-alta">Alta</span></div>
+  <p>El dueno debe poder listar citas, ver detalle, agendar, editar, confirmar y cancelar citas usando disponibilidad de veterinarios y dias.</p>
+  <p class="just"><strong>Justificacion.</strong> Funcionalidad core de la clinica movil. Rutas: <code>GET /my-appointments</code>, <code>GET /owner-appointments-list</code>, <code>GET /owner-appointments/:id</code>, <code>POST /owner-appointments</code>, <code>PATCH /owner-appointments/:id</code>, <code>POST .../confirm</code>, <code>POST .../cancel</code>, <code>GET /owner-available-vets</code>, <code>GET /owner-available-days</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Listado via <code>GET /owner-appointments-list</code> o hub <code>GET /my-appointments</code>; detalle con estado, mascota, vet y fecha/hora.</li>
+    <li>Agendar via <code>POST /owner-appointments</code> tras seleccionar mascota, vet y dia/hora (endpoints de disponibilidad).</li>
+    <li>Editar via <code>PATCH</code>; confirmar via <code>.../confirm</code>; cancelar via <code>.../cancel</code> con confirmacion.</li>
+    <li>Citas pasadas y proximas distinguibles; no se permiten slots no disponibles.</li>
+  </ul>
+</article>
+
+<article class="req own">
+  <div class="req-head"><span class="req-id">RF-OWN-07</span><h3>Pagos del dueno</h3><span class="badge badge-alta">Alta</span></div>
+  <p>El dueno debe consultar sus pagos pendientes o realizados y registrar comprobante de pago.</p>
+  <p class="just"><strong>Justificacion.</strong> Cierra el ciclo de servicios facturables. Rutas: <code>GET /my-payments</code>, <code>GET /owner-payments-list</code>, <code>POST /owner-payments/:id/register</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Listado via <code>GET /owner-payments-list</code> o hub <code>GET /my-payments</code>.</li>
+    <li>Cada pago muestra monto, concepto, estado y fecha de vencimiento si aplica.</li>
+    <li>Registrar pago via <code>POST /owner-payments/:id/register</code> con datos y comprobante.</li>
+    <li>Tras registro, el estado se actualiza en listado y detalle; pagos ajenos no accesibles.</li>
+  </ul>
+</article>
+
+<article class="req own">
+  <div class="req-head"><span class="req-id">RF-OWN-08</span><h3>Historial medico, consultas y resumen</h3><span class="badge badge-alta">Alta</span></div>
+  <p>El dueno debe consultar el historial medico global y por mascota, ver consultas, exportar recetas y marcar tratamientos completados.</p>
+  <p class="just"><strong>Justificacion.</strong> Transparencia clinica y continuidad del cuidado. Rutas: <code>GET /my-medical-history</code>, <code>GET /my-pets/:pet_id/medical-history</code>, <code>GET /owner-medical-summary</code>, <code>GET /pets/:pet_id/consultations</code>, <code>GET /owner/consultations/:id/export_recipe</code>, <code>POST /owner/consultations/:id/complete_treatment</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Hub via <code>GET /my-medical-history</code> y resumen via <code>GET /owner-medical-summary</code>.</li>
+    <li>Historial por mascota y listado de consultas via las rutas correspondientes.</li>
+    <li>Exportar receta via <code>export_recipe</code> y abrir/compartir el archivo.</li>
+    <li>Completar tratamiento via <code>complete_treatment</code> con confirmacion; solo registros del dueno.</li>
+  </ul>
+</article>
+
+<article class="req own">
+  <div class="req-head"><span class="req-id">RF-OWN-09</span><h3>Perfil medico, vacunas y desparasitaciones</h3><span class="badge badge-media">Media</span></div>
+  <p>El dueno debe consultar el perfil medico base de su mascota, el historial de vacunas y desparasitaciones.</p>
+  <p class="just"><strong>Justificacion.</strong> Informacion preventiva de salud animal. Rutas: <code>GET /pets/:pet_id/medical_profile</code>, <code>GET /pets/:pet_id/vaccinations</code>, <code>GET /pets/:pet_id/dewormings</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Perfil medico via <code>medical_profile</code> (alergias, peso, notas segun API).</li>
+    <li>Vacunas y desparasitaciones listadas con fechas y tipo.</li>
+    <li>La UI indica proximas dosis o vencimientos cuando el backend los calcule.</li>
+  </ul>
+</article>
+
+<article class="req own">
+  <div class="req-head"><span class="req-id">RF-OWN-10</span><h3>Reportes medicos y examenes de laboratorio (dueno)</h3><span class="badge badge-media">Media</span></div>
+  <p>El dueno debe consultar reportes medicos en PDF, subir archivos de laboratorio y consultar resultados cuando el flujo lo permita.</p>
+  <p class="just"><strong>Justificacion.</strong> Acceso documental y participacion en estudios clinicos. Rutas: <code>GET /pets/:pet_id/medical_reports</code>, <code>GET .../:id</code>, <code>GET .../:id/download_pdf</code>, <code>POST /owner/lab_exams/:id/files</code>, <code>PATCH /owner/lab_exams/:id/results</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Listado y detalle de reportes; descarga PDF con apertura en visor o app externa.</li>
+    <li>Subida de archivos de lab via <code>files</code>; actualizacion de resultados via <code>results</code> cuando corresponda al rol.</li>
+    <li>Adjuntos muestran progreso de carga y errores de tamano o formato.</li>
+  </ul>
+</article>
+
+<article class="req own">
+  <div class="req-head"><span class="req-id">RF-OWN-11</span><h3>Patrocinios del dueno</h3><span class="badge badge-baja">Baja</span></div>
+  <p>El dueno autenticado debe ver el listado de sus patrocinios activos desde su area personal.</p>
+  <p class="just"><strong>Justificacion.</strong> Continuidad del flujo de donaciones en sesion autenticada. Ruta: <code>GET /my-sponsorships</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Pantalla accesible desde dashboard o menu del dueno.</li>
+    <li>Consume <code>GET /my-sponsorships</code> y lista solo patrocinios del usuario.</li>
+    <li>Desde cada item se navega al detalle reutilizando RF-PUB-04.</li>
+  </ul>
+</article>
+
+<!-- ---------- ADMIN ---------- -->
+<div class="domain adm">Admin &mdash; panel administrativo (RF-ADM)</div>
+
+<article class="req adm">
+  <div class="req-head"><span class="req-id">RF-ADM-01</span><h3>Gestion de mascotas (administrador)</h3><span class="badge badge-alta">Alta</span></div>
+  <p>El staff autorizado debe listar, crear, editar, eliminar mascotas clinicas y gestionar sus fotos desde el panel admin movil.</p>
+  <p class="just"><strong>Justificacion.</strong> Operacion diaria de la clinica. Rutas: <code>GET /admin/pets-list</code>, <code>GET /admin/pets/:id</code>, <code>POST /admin/pets</code>, <code>PATCH/PUT /admin/pets/:id</code>, <code>DELETE /admin/pets/:id</code>, <code>POST/DELETE /admin/pets/:id/photo</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Listado con busqueda via <code>GET /admin/pets-list</code>; CRUD completo segun permisos del rol.</li>
+    <li>Gestion de foto via POST/DELETE en <code>/admin/pets/:id/photo</code>.</li>
+    <li>Solo usuarios admin autenticados acceden; acciones destructivas con confirmacion.</li>
+  </ul>
+</article>
+
+<article class="req adm">
+  <div class="req-head"><span class="req-id">RF-ADM-02</span><h3>Gestion de adopciones (administrador)</h3><span class="badge badge-media">Media</span></div>
+  <p>El staff debe listar solicitudes o registros de adopcion, ver detalle y crear nuevos registros de adopcion.</p>
+  <p class="just"><strong>Justificacion.</strong> Gestion interna del programa de adopcion. Rutas: <code>GET /admin/adoptions-list</code>, <code>GET /admin/adoptions/:id</code>, <code>POST /admin/adoptions</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Listado y detalle via las rutas correspondientes; alta via <code>POST</code> con validacion.</li>
+    <li>Estados de adopcion mostrados segun respuesta del API.</li>
+  </ul>
+</article>
+
+<article class="req adm">
+  <div class="req-head"><span class="req-id">RF-ADM-03</span><h3>Consultas clinicas (administrador)</h3><span class="badge badge-alta">Alta</span></div>
+  <p>El staff debe gestionar consultas: listar, crear, editar, eliminar, exportar receta y completar tratamientos.</p>
+  <p class="just"><strong>Justificacion.</strong> Nucleo del trabajo veterinario en la app. Rutas: <code>/admin/consultations*</code> (list, show, create, update, destroy), <code>.../export_recipe</code>, <code>.../complete_treatment</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Listado filtrable; formulario envia POST o PATCH segun creacion o edicion.</li>
+    <li>Detalle con notas clinicas, mascota, veterinario y estado.</li>
+    <li>Exportar receta y completar tratamiento via sus endpoints; eliminar con confirmacion.</li>
+  </ul>
+</article>
+
+<article class="req adm">
+  <div class="req-head"><span class="req-id">RF-ADM-04</span><h3>Recetas y examenes de laboratorio (administrador)</h3><span class="badge badge-alta">Alta</span></div>
+  <p>Dentro de una consulta, el staff debe gestionar prescripciones y examenes de laboratorio, incluyendo archivos adjuntos.</p>
+  <p class="just"><strong>Justificacion.</strong> Documentacion clinica completa en consulta. Rutas prescriptions y lab_exams bajo <code>/admin/consultations/:consultation_id/</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>CRUD de prescripciones y de examenes via los endpoints anidados.</li>
+    <li>Subir archivos via <code>.../lab_exams/:id/files</code>; eliminar via <code>.../files/:file_id</code>.</li>
+    <li>Cambios en receta/lab reflejados al volver al detalle de consulta.</li>
+  </ul>
+</article>
+
+<article class="req adm">
+  <div class="req-head"><span class="req-id">RF-ADM-05</span><h3>Vacunas, desparasitaciones y esquemas</h3><span class="badge badge-alta">Alta</span></div>
+  <p>El staff debe administrar registros de vacunacion, desparasitacion y esquemas programados, incluyendo marcar items completados.</p>
+  <p class="just"><strong>Justificacion.</strong> Control preventivo de salud animal. Rutas: <code>/admin/vaccinations*</code>, <code>/admin/dewormings*</code>, <code>/admin/vaccination_schedules*</code>, <code>POST .../complete_item</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>CRUD de vacunas, desparasitaciones y esquemas via sus endpoints y listados <code>-list</code>.</li>
+    <li>Completar item de esquema via <code>complete_item</code>.</li>
+    <li>Listados muestran mascota asociada y fechas relevantes.</li>
+  </ul>
+</article>
+
+<article class="req adm">
+  <div class="req-head"><span class="req-id">RF-ADM-06</span><h3>Agenda y citas (administrador)</h3><span class="badge badge-alta">Alta</span></div>
+  <p>El staff debe gestionar la agenda: listar citas, crear y editar citas usando disponibilidad de veterinarios, dias y franjas horarias.</p>
+  <p class="just"><strong>Justificacion.</strong> Coordinacion operativa de la clinica. Rutas: <code>/admin/appointments*</code> (list, show, available-days, available-vets, time-slots, create, update, destroy).</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Listado/calendario via <code>GET /admin/appointments-list</code>.</li>
+    <li>Creacion usa vets, dias y slots de disponibilidad antes de <code>POST</code>.</li>
+    <li>Editar/cancelar via PATCH/PUT/DELETE; detalle con dueno, mascota, servicio y sala si aplica.</li>
+    <li>Conflictos de horario retornados por el API se muestran al usuario.</li>
+  </ul>
+</article>
+
+<article class="req adm">
+  <div class="req-head"><span class="req-id">RF-ADM-07</span><h3>Pagos (administrador)</h3><span class="badge badge-alta">Alta</span></div>
+  <p>El staff debe listar pagos, ver detalle, registrar pagos recibidos y actualizar su estado.</p>
+  <p class="just"><strong>Justificacion.</strong> Control financiero de servicios. Rutas: <code>/admin/payments-list</code>, <code>/admin/payments/:id</code>, <code>POST .../register</code>, <code>PATCH/PUT .../:id</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Listado con filtros por estado si el API los soporta; detalle via <code>GET</code>.</li>
+    <li>Registro de pago via <code>register</code>; actualizacion via PATCH/PUT.</li>
+    <li>Comprobantes adjuntos visibles cuando el backend los incluya.</li>
+  </ul>
+</article>
+
+<article class="req adm">
+  <div class="req-head"><span class="req-id">RF-ADM-08</span><h3>Perfil medico de mascotas (administrador)</h3><span class="badge badge-media">Media</span></div>
+  <p>El staff debe consultar y editar el perfil medico base de una mascota bajo administracion.</p>
+  <p class="just"><strong>Justificacion.</strong> Datos clinicos de referencia para consultas. Rutas: <code>GET/PATCH/PUT /admin/pets/:pet_id/medical_profile</code>.</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Visualizacion via GET; edicion via PATCH/PUT con validacion de campos clinicos.</li>
+    <li>Cambios persisten y se reflejan en consultas posteriores.</li>
+  </ul>
+</article>
+
+<article class="req adm">
+  <div class="req-head"><span class="req-id">RF-ADM-09</span><h3>Mascotas de duenos (administrador)</h3><span class="badge badge-media">Media</span></div>
+  <p>El staff debe poder crear y editar mascotas asociadas a un dueno especifico, incluyendo foto.</p>
+  <p class="just"><strong>Justificacion.</strong> Alta asistida en recepcion o consulta. Rutas: <code>/admin/owners/:owner_id/pets*</code> (show, create, update, photo).</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Creacion via <code>POST /admin/owners/:owner_id/pets</code>; edicion via PATCH/PUT anidada con owner_id.</li>
+    <li>Gestion de foto via endpoints de photo; detalle via GET con datos del dueno y la mascota.</li>
+  </ul>
+</article>
+
+<article class="req adm">
+  <div class="req-head"><span class="req-id">RF-ADM-10</span><h3>Reportes medicos (administrador)</h3><span class="badge badge-media">Media</span></div>
+  <p>El staff debe listar reportes medicos, generarlos, importarlos, exportarlos en multiples formatos y enviarlos por email.</p>
+  <p class="just"><strong>Justificacion.</strong> Documentacion formal y comunicacion con duenos. Rutas: <code>/admin/medical_reports</code> (index, show, create, generate_pdf, import, export_csv/json/pdf, email).</p>
+  <p class="label">Criterios de aceptacion</p>
+  <ul>
+    <li>Listado y detalle; generar PDF via <code>generate_pdf</code>; importar via <code>import</code>.</li>
+    <li>Exportar CSV, JSON y PDF via endpoints <code>export_*</code>; enviar por email via <code>email</code>.</li>
+    <li>Archivos generados se pueden abrir o compartir desde el dispositivo.</li>
+  </ul>
+</article>
+
+<!-- ========================= PARTE 2 ========================= -->
+<h2 class="part-title">Parte 2 &mdash; Requisitos no funcionales</h2>
+<p class="part-intro">Formato <code>RNF-{Categoria}-{NNN}: Titulo</code>. Categorias: ARQ (arquitectura), MOB (movil), SEC (seguridad), UX (experiencia), REL (confiabilidad), PERF (rendimiento), ARC (archivos), PRI (privacidad), OBS (observabilidad), CMP (compatibilidad), MAINT (mantenibilidad).</p>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-ARQ-001</span><h3>Plataforma movil Android</h3><span class="badge badge-cat">ARQ</span></div>
+  <p>La aplicacion debe desarrollarse con <strong>Expo SDK 56</strong>, <strong>React Native</strong> y <strong>TypeScript</strong>, como cliente nativo <strong>solo para Android</strong>. El codigo de pantallas y servicios debe estar tipado de forma estricta. Los flujos principales no deben depender de contenedores web embebidos. La version de Expo debe mantenerse alineada con la documentacion oficial v56 (<code>AGENTS.md</code>, <code>docs/arq.md</code>). No se incluyen targets, builds ni dependencias especificas de iOS.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-ARQ-002</span><h3>Integracion con API Rails</h3><span class="badge badge-cat">ARQ</span></div>
+  <p>La app debe consumir exclusivamente las <strong>157 rutas</strong> documentadas en <code>mobile-routes.md</code>, sin reimplementar logica de negocio en el cliente. Debe existir un cliente HTTP centralizado con base URL configurable por entorno (desarrollo, staging, produccion). Los payloads y respuestas deben estar tipados segun los contratos del API Rails existente.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-MOB-001</span><h3>Mobile First</h3><span class="badge badge-cat">MOB</span></div>
+  <p>La aplicacion debe disenarse y construirse con enfoque <strong>mobile first</strong>: layouts, navegacion, tipografia y patrones de interaccion pensados primero para pantallas de telefono (una mano, orientacion vertical, safe areas). Las adaptaciones a tablet, si existen en el futuro, deben ser extensiones del diseno movil base y no condicionar la arquitectura. Toda pantalla de <code>mobile-screens.md</code> debe priorizar legibilidad y acciones principales en viewports desde <strong>320 px</strong> de ancho logico.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-MOB-002</span><h3>Auto-sincronizacion bajo consentimiento del usuario</h3><span class="badge badge-cat">MOB</span></div>
+  <p>La aplicacion debe ser capaz de <strong>auto-sincronizarse</strong> con el backend cuando detecte conexion activa por <strong>WiFi o datos moviles</strong>, <strong>si y solo si el usuario lo ha autorizado</strong> previamente en ajustes (opt-in explicito, revocable en cualquier momento).</p>
+  <p class="label">Comportamiento esperado</p>
+  <ul>
+    <li>Sin autorizacion, <strong>ninguna</strong> sincronizacion automatica en segundo plano; solo sincronizacion manual.</li>
+    <li>Con autorizacion, al detectar conectividad procesa la cola local (formularios, uploads, acciones diferidas) y refresca datos stale segun prioridad.</li>
+    <li>El usuario elige, como minimo, sincronizar solo con <strong>WiFi</strong> o tambien con <strong>datos moviles</strong>.</li>
+    <li>Indicador discreto de estado (sincronizando / al dia / pendiente / error) sin interrumpir salvo conflicto que requiera decision.</li>
+  </ul>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-SEC-001</span><h3>Seguridad de sesion y almacenamiento de tokens</h3><span class="badge badge-cat">SEC</span></div>
+  <p>Los tokens de autenticacion y demas secretos deben almacenarse en el almacenamiento seguro del sistema operativo cuando este disponible, <strong>nunca</strong> en almacenamiento plano sin cifrar. Toda comunicacion con el backend por <strong>HTTPS</strong>. El refresh via <code>POST /auth/refresh</code> sin exponer tokens en logs de produccion. Al cerrar sesion (<code>DELETE /auth/logout</code>) deben eliminarse todos los secretos y datos de sesion locales.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-SEC-002</span><h3>Control de acceso por rol y dominio</h3><span class="badge badge-cat">SEC</span></div>
+  <p>La navegacion y las llamadas API deben restringirse segun rol: <strong>publico</strong>, <strong>dueno (owner)</strong> o <strong>administrador (admin)</strong>. Un dueno autenticado no debe acceder a pantallas ni endpoints <code>/admin/*</code>. El staff admin solo accede al dominio Admin segun permisos de <code>GET /auth/current_user</code>. Los intentos no autorizados redirigen a login o informan error <strong>403</strong> de forma clara.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-UX-001</span><h3>Experiencia de usuario movil</h3><span class="badge badge-cat">UX</span></div>
+  <p>La interfaz debe cumplir patrones moviles de produccion en Android: areas tactiles minimas de <strong>48&times;48 dp</strong> (Material), inputs con <strong>font-size &ge; 16 px</strong>, estados de carga / vacio / error en todo listado o formulario, navegacion por tabs y stacks segun <code>mobile-screens.md</code>, y respeto de <strong>safe areas</strong> y barras del sistema (status bar, navigation bar, recortes de pantalla). Los mensajes deben estar en espanol claro, sin stack traces ni jerga tecnica.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-UX-002</span><h3>Design system y tema claro/oscuro</h3><span class="badge badge-cat">UX</span></div>
+  <p>La UI debe implementar los tokens centralizados de <code>mobile-design-tokens.css</code> y <code>src/theme/tokens.ts</code>, incluyendo <strong>modo claro y modo oscuro</strong> coherentes con <code>mobile-ui-components.md</code>. El tema puede seguir la preferencia del sistema o una seleccion manual del usuario.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-REL-001</span><h3>Tolerancia a fallos</h3><span class="badge badge-cat">REL</span></div>
+  <p>El sistema debe manejar los errores comunes con elegancia &mdash; interrupciones de red, timeouts, respuestas <strong>5xx</strong> o token expirado &mdash; e informar al usuario, intentando <strong>preservar los datos ingresados</strong> (borrador local, cola de reintentos, no descartar formularios). Los errores <strong>422</strong> deben senalar el campo afectado. Los <strong>401</strong> deben disparar refresh de sesion o re-autenticacion segun corresponda.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-REL-002</span><h3>Copia de seguridad local y recuperacion</h3><span class="badge badge-cat">REL</span></div>
+  <p><strong>RPO:</strong> ante cierre inesperado o fallo del dispositivo, la perdida de datos no sincronizados encolados no debe exceder el <strong>ultimo guardado automatico de borrador</strong> (intervalo maximo recomendado: <strong>5 minutos</strong> mientras se edita, o al perder foco del formulario).</p>
+  <p><strong>RTO:</strong> tras reiniciar la app, el usuario debe poder retomar operaciones pendientes o borradores recuperables en un plazo maximo de <strong>30 segundos</strong> desde el arranque, sin reingresar datos ya capturados localmente.</p>
+  <p>Los datos clinicos descargados no deben depender de cache permanente sin cifrar; la recuperacion aplica a <strong>cola de sincronizacion</strong>, <strong>borradores</strong> y <strong>estado de sesion</strong> autorizado.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-REL-003</span><h3>Operacion offline controlada</h3><span class="badge badge-cat">REL</span></div>
+  <p>Sin conexion, la app debe permitir consultar la <strong>ultima copia local</strong> de datos ya sincronizados (cuando exista) y encolar acciones de escritura para envio posterior. Las acciones encoladas deben mostrarse como <strong>pendientes de sincronizacion</strong>. No debe simular exito de operaciones no confirmadas por el servidor.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-PERF-001</span><h3>Rendimiento en red movil</h3><span class="badge badge-cat">PERF</span></div>
+  <p>Las transiciones entre pantallas principales deben percibirse en <strong>menos de 1 segundo</strong> con conexion normal. Las operaciones largas (upload/download) no deben bloquear la UI; deben mostrar progreso y permitir cancelacion cuando el SO lo permita. Los listados deben soportar paginacion si el API la ofrece.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-ARC-001</span><h3>Manejo de archivos y multimedia</h3><span class="badge badge-cat">ARC</span></div>
+  <p>La app debe soportar captura y subida de imagenes (fotos de mascota, comprobantes) y descarga o visualizacion de <strong>PDFs medicos</strong> y archivos de laboratorio, conforme a las rutas de upload/download del API. Debe respetar limites de tamano y tipo MIME del backend. Los permisos de camara, galeria y almacenamiento se solicitan en runtime con mensaje contextual.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-PRI-001</span><h3>Privacidad y datos de salud animal</h3><span class="badge badge-cat">PRI</span></div>
+  <p>Los datos medicos y personales deben tratarse con minima exposicion: sin cache innecesaria en disco, sin logs con informacion identificable en builds de produccion, y con acceso a la politica de privacidad (<code>GET /pages/privacy</code>) desde registro y perfil. La eliminacion de cuenta debe purgar datos locales. La auto-sincronizacion (RNF-MOB-002) nunca debe activarse sin consentimiento explicito.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-OBS-001</span><h3>Observabilidad y registro de errores</h3><span class="badge badge-cat">OBS</span></div>
+  <p>Los errores no controlados deben registrarse con contexto tecnico en entorno de <strong>desarrollo</strong> unicamente. En produccion, el usuario recibe mensajes accionables; el equipo tecnico correlaciona fallos mediante identificadores de error anonimos, sin incluir tokens, contrasenas ni diagnosticos veterinarios completos.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-CMP-001</span><h3>Compatibilidad de dispositivos Android</h3><span class="badge badge-cat">CMP</span></div>
+  <p>La app debe ser compatible con las versiones de <strong>Android</strong> soportadas por Expo SDK 56 segun <code>app.json</code> (API level minimo definido en el proyecto). Debe funcionar en telefonos pequenos (320 px de ancho logico) y grandes, con interaccion tactil completa (sin depender de teclado fisico). Debe validarse manualmente en al menos un dispositivo Android fisico y un emulador durante QA.</p>
+</article>
+
+<article class="req rnf">
+  <div class="req-head"><span class="req-id">RNF-MAINT-001</span><h3>Mantenibilidad y trazabilidad documental</h3><span class="badge badge-cat">MAINT</span></div>
+  <p>El codigo debe mantener trazabilidad entre requisitos (<strong>RF-*</strong>, <strong>RNF-*</strong>), rutas API (<code>mobile-routes.md</code>), pantallas (<code>mobile-screens.md</code>) y componentes (<code>mobile-ui-components.md</code>). Los servicios API deben agruparse por dominio en <code>src/services/</code>. Cambios en rutas incluidas deben actualizar la documentacion en <code>docs/</code>. El demo HTML es referencia visual, no codigo de produccion.</p>
+</article>
+
+<!-- ========================= MATRIZ ========================= -->
+<h2 class="part-title">Matriz de trazabilidad resumida</h2>
+<table>
+  <thead>
+    <tr><th>Dominio</th><th>Requisitos funcionales</th><th>Rutas API (aprox.)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Public</td><td>RF-PUB-01 a RF-PUB-05</td><td>19</td></tr>
+    <tr><td>Owner</td><td>RF-OWN-01 a RF-OWN-11</td><td>54</td></tr>
+    <tr><td>Admin</td><td>RF-ADM-01 a RF-ADM-10</td><td>84</td></tr>
+    <tr><td>No funcionales</td><td>RNF-ARQ, MOB, SEC, UX, REL, PERF, ARC, PRI, OBS, CMP, MAINT</td><td>&mdash;</td></tr>
+  </tbody>
+</table>
+
+<!-- ========================= APENDICE DE COBERTURA ========================= -->
+<h2 class="part-title">Apendice &mdash; Cobertura endpoint &rarr; RF</h2>
+<p class="cov-note">Mapeo de las <strong>157 rutas</strong> de <code>mobile-routes.md</code> a su requisito funcional. Cobertura: <strong>156 / 157</strong> endpoints. Unico endpoint sin RF: <code>GET /auth/debug</code> (diagnostico, fuera del alcance funcional).</p>
+
+<h3 style="font-size:14px;margin:14px 0 6px;color:var(--pub);">Public &mdash; 19 rutas</h3>
+<table class="cov">
+  <thead><tr><th>Metodo &middot; Ruta</th><th>RF</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="2">pages</td></tr>
+    <tr><td>GET /services</td><td>RF-PUB-01</td></tr>
+    <tr><td>GET /products</td><td>RF-PUB-02</td></tr>
+    <tr><td>GET /checkout</td><td>RF-PUB-02</td></tr>
+    <tr><td>GET /contact</td><td>RF-PUB-05</td></tr>
+    <tr><td>GET /terms</td><td>RF-PUB-05</td></tr>
+    <tr><td>GET /privacy</td><td>RF-PUB-05</td></tr>
+    <tr class="grp"><td colspan="2">public/products &middot; public/product_orders</td></tr>
+    <tr><td>GET /public/products</td><td>RF-PUB-02</td></tr>
+    <tr><td>GET /public/products/:id</td><td>RF-PUB-02</td></tr>
+    <tr><td>POST /public/product_orders</td><td>RF-PUB-02</td></tr>
+    <tr><td>POST /public/product_orders/:id/upload_proof</td><td>RF-PUB-02</td></tr>
+    <tr class="grp"><td colspan="2">adoption</td></tr>
+    <tr><td>GET /adoption</td><td>RF-PUB-03</td></tr>
+    <tr><td>GET /adoption/pets</td><td>RF-PUB-03</td></tr>
+    <tr><td>GET /adoption/pets/:id</td><td>RF-PUB-03</td></tr>
+    <tr class="grp"><td colspan="2">sponsorships</td></tr>
+    <tr><td>GET /sponsorships</td><td>RF-PUB-04</td></tr>
+    <tr><td>GET /sponsorships/:id</td><td>RF-PUB-04</td></tr>
+    <tr><td>GET /sponsorships/:id/expenses/:expense_id</td><td>RF-PUB-04</td></tr>
+    <tr><td>POST /sponsorships</td><td>RF-PUB-04</td></tr>
+    <tr><td>PATCH /sponsorships/:id</td><td>RF-PUB-04</td></tr>
+    <tr><td>PUT /sponsorships/:id</td><td>RF-PUB-04</td></tr>
+  </tbody>
+</table>
+
+<h3 style="font-size:14px;margin:16px 0 6px;color:var(--own);">Owner &mdash; 54 rutas</h3>
+<table class="cov">
+  <thead><tr><th>Metodo &middot; Ruta</th><th>RF</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="2">auth</td></tr>
+    <tr><td>GET /auth</td><td>RF-OWN-01</td></tr>
+    <tr><td>GET /auth/current_user</td><td>RF-OWN-01</td></tr>
+    <tr class="none"><td>GET /auth/debug</td><td>sin RF (diagnostico)</td></tr>
+    <tr><td>POST /auth/login</td><td>RF-OWN-01</td></tr>
+    <tr><td>POST /auth/refresh</td><td>RF-OWN-01</td></tr>
+    <tr><td>DELETE /auth/logout</td><td>RF-OWN-01</td></tr>
+    <tr><td>POST /auth/register_owner</td><td>RF-OWN-02</td></tr>
+    <tr><td>POST /auth/forgot_password</td><td>RF-OWN-02</td></tr>
+    <tr><td>GET /auth/reset_password/:token</td><td>RF-OWN-02</td></tr>
+    <tr><td>POST /auth/reset_password</td><td>RF-OWN-02</td></tr>
+    <tr class="grp"><td colspan="2">profile</td></tr>
+    <tr><td>GET /profile</td><td>RF-OWN-03</td></tr>
+    <tr><td>PATCH /profile</td><td>RF-OWN-03</td></tr>
+    <tr><td>PATCH /profile/password</td><td>RF-OWN-03</td></tr>
+    <tr><td>DELETE /profile</td><td>RF-OWN-03</td></tr>
+    <tr class="grp"><td colspan="2">dashboard</td></tr>
+    <tr><td>GET /dashboard</td><td>RF-OWN-04</td></tr>
+    <tr><td>GET /dashboard-summary</td><td>RF-OWN-04</td></tr>
+    <tr class="grp"><td colspan="2">owner_pages (hubs)</td></tr>
+    <tr><td>GET /my-pets</td><td>RF-OWN-05</td></tr>
+    <tr><td>GET /my-appointments</td><td>RF-OWN-06</td></tr>
+    <tr><td>GET /my-payments</td><td>RF-OWN-07</td></tr>
+    <tr><td>GET /my-medical-history</td><td>RF-OWN-08</td></tr>
+    <tr><td>GET /my-pets/:pet_id/medical-history</td><td>RF-OWN-08</td></tr>
+    <tr><td>GET /my-sponsorships</td><td>RF-OWN-11</td></tr>
+    <tr class="grp"><td colspan="2">owner_appointments &middot; owner_availability</td></tr>
+    <tr><td>GET /owner-appointments-list</td><td>RF-OWN-06</td></tr>
+    <tr><td>GET /owner-appointments/:id</td><td>RF-OWN-06</td></tr>
+    <tr><td>POST /owner-appointments</td><td>RF-OWN-06</td></tr>
+    <tr><td>PATCH /owner-appointments/:id</td><td>RF-OWN-06</td></tr>
+    <tr><td>POST /owner-appointments/:id/confirm</td><td>RF-OWN-06</td></tr>
+    <tr><td>POST /owner-appointments/:id/cancel</td><td>RF-OWN-06</td></tr>
+    <tr><td>GET /owner-available-vets</td><td>RF-OWN-06</td></tr>
+    <tr><td>GET /owner-available-days</td><td>RF-OWN-06</td></tr>
+    <tr class="grp"><td colspan="2">owner_payments</td></tr>
+    <tr><td>GET /owner-payments-list</td><td>RF-OWN-07</td></tr>
+    <tr><td>POST /owner-payments/:id/register</td><td>RF-OWN-07</td></tr>
+    <tr class="grp"><td colspan="2">owner_medical_summary &middot; owner_consultations</td></tr>
+    <tr><td>GET /owner-medical-summary</td><td>RF-OWN-08</td></tr>
+    <tr><td>GET /pets/:pet_id/consultations</td><td>RF-OWN-08</td></tr>
+    <tr><td>GET /owner/consultations/:id/export_recipe</td><td>RF-OWN-08</td></tr>
+    <tr><td>POST /owner/consultations/:id/complete_treatment</td><td>RF-OWN-08</td></tr>
+    <tr class="grp"><td colspan="2">pets</td></tr>
+    <tr><td>GET /pets</td><td>RF-OWN-05</td></tr>
+    <tr><td>GET /pets/new</td><td>RF-OWN-05</td></tr>
+    <tr><td>GET /pets/:id</td><td>RF-OWN-05</td></tr>
+    <tr><td>GET /pets/:id/edit</td><td>RF-OWN-05</td></tr>
+    <tr><td>POST /pets</td><td>RF-OWN-05</td></tr>
+    <tr><td>PATCH /pets/:id</td><td>RF-OWN-05</td></tr>
+    <tr><td>PUT /pets/:id</td><td>RF-OWN-05</td></tr>
+    <tr><td>DELETE /pets/:id</td><td>RF-OWN-05</td></tr>
+    <tr><td>POST /pets/:id/photo</td><td>RF-OWN-05</td></tr>
+    <tr><td>DELETE /pets/:id/photo</td><td>RF-OWN-05</td></tr>
+    <tr class="grp"><td colspan="2">owner_medical_profiles &middot; vaccinations &middot; dewormings</td></tr>
+    <tr><td>GET /pets/:pet_id/medical_profile</td><td>RF-OWN-09</td></tr>
+    <tr><td>GET /pets/:pet_id/vaccinations</td><td>RF-OWN-09</td></tr>
+    <tr><td>GET /pets/:pet_id/dewormings</td><td>RF-OWN-09</td></tr>
+    <tr class="grp"><td colspan="2">owner_lab_exams &middot; owner_medical_reports</td></tr>
+    <tr><td>POST /owner/lab_exams/:id/files</td><td>RF-OWN-10</td></tr>
+    <tr><td>PATCH /owner/lab_exams/:id/results</td><td>RF-OWN-10</td></tr>
+    <tr><td>GET /pets/:pet_id/medical_reports</td><td>RF-OWN-10</td></tr>
+    <tr><td>GET /pets/:pet_id/medical_reports/:id</td><td>RF-OWN-10</td></tr>
+    <tr><td>GET /pets/:pet_id/medical_reports/:id/download_pdf</td><td>RF-OWN-10</td></tr>
+  </tbody>
+</table>
+
+<h3 style="font-size:14px;margin:16px 0 6px;color:var(--adm);">Admin &mdash; 84 rutas</h3>
+<table class="cov">
+  <thead><tr><th>Metodo &middot; Ruta</th><th>RF</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="2">admin/pets</td></tr>
+    <tr><td>GET /admin/pets-list</td><td>RF-ADM-01</td></tr>
+    <tr><td>GET /admin/pets/:id</td><td>RF-ADM-01</td></tr>
+    <tr><td>POST /admin/pets</td><td>RF-ADM-01</td></tr>
+    <tr><td>PATCH /admin/pets/:id</td><td>RF-ADM-01</td></tr>
+    <tr><td>PUT /admin/pets/:id</td><td>RF-ADM-01</td></tr>
+    <tr><td>DELETE /admin/pets/:id</td><td>RF-ADM-01</td></tr>
+    <tr><td>POST /admin/pets/:id/photo</td><td>RF-ADM-01</td></tr>
+    <tr><td>DELETE /admin/pets/:id/photo</td><td>RF-ADM-01</td></tr>
+    <tr class="grp"><td colspan="2">admin/adoptions</td></tr>
+    <tr><td>GET /admin/adoptions-list</td><td>RF-ADM-02</td></tr>
+    <tr><td>GET /admin/adoptions/:id</td><td>RF-ADM-02</td></tr>
+    <tr><td>POST /admin/adoptions</td><td>RF-ADM-02</td></tr>
+    <tr class="grp"><td colspan="2">admin/consultations</td></tr>
+    <tr><td>GET /admin/consultations-list</td><td>RF-ADM-03</td></tr>
+    <tr><td>GET /admin/consultations/:id</td><td>RF-ADM-03</td></tr>
+    <tr><td>GET /admin/consultations/:id/export_recipe</td><td>RF-ADM-03</td></tr>
+    <tr><td>POST /admin/consultations</td><td>RF-ADM-03</td></tr>
+    <tr><td>POST /admin/consultations/:id/complete_treatment</td><td>RF-ADM-03</td></tr>
+    <tr><td>PATCH /admin/consultations/:id</td><td>RF-ADM-03</td></tr>
+    <tr><td>PUT /admin/consultations/:id</td><td>RF-ADM-03</td></tr>
+    <tr><td>DELETE /admin/consultations/:id</td><td>RF-ADM-03</td></tr>
+    <tr class="grp"><td colspan="2">admin/prescriptions (consultations anidadas)</td></tr>
+    <tr><td>GET .../prescriptions</td><td>RF-ADM-04</td></tr>
+    <tr><td>GET .../prescriptions/:id</td><td>RF-ADM-04</td></tr>
+    <tr><td>POST .../prescriptions</td><td>RF-ADM-04</td></tr>
+    <tr><td>PATCH .../prescriptions/:id</td><td>RF-ADM-04</td></tr>
+    <tr><td>PUT .../prescriptions/:id</td><td>RF-ADM-04</td></tr>
+    <tr><td>DELETE .../prescriptions/:id</td><td>RF-ADM-04</td></tr>
+    <tr class="grp"><td colspan="2">admin/lab_exams (consultations anidadas)</td></tr>
+    <tr><td>GET .../lab_exams</td><td>RF-ADM-04</td></tr>
+    <tr><td>GET .../lab_exams/:id</td><td>RF-ADM-04</td></tr>
+    <tr><td>POST .../lab_exams</td><td>RF-ADM-04</td></tr>
+    <tr><td>POST .../lab_exams/:id/files</td><td>RF-ADM-04</td></tr>
+    <tr><td>PATCH .../lab_exams/:id</td><td>RF-ADM-04</td></tr>
+    <tr><td>PUT .../lab_exams/:id</td><td>RF-ADM-04</td></tr>
+    <tr><td>DELETE .../lab_exams/:id</td><td>RF-ADM-04</td></tr>
+    <tr><td>DELETE .../lab_exams/:id/files/:file_id</td><td>RF-ADM-04</td></tr>
+    <tr class="grp"><td colspan="2">admin/vaccinations</td></tr>
+    <tr><td>GET /admin/vaccinations-list</td><td>RF-ADM-05</td></tr>
+    <tr><td>GET /admin/vaccinations/:id</td><td>RF-ADM-05</td></tr>
+    <tr><td>POST /admin/vaccinations</td><td>RF-ADM-05</td></tr>
+    <tr><td>PATCH /admin/vaccinations/:id</td><td>RF-ADM-05</td></tr>
+    <tr><td>PUT /admin/vaccinations/:id</td><td>RF-ADM-05</td></tr>
+    <tr><td>DELETE /admin/vaccinations/:id</td><td>RF-ADM-05</td></tr>
+    <tr class="grp"><td colspan="2">admin/dewormings</td></tr>
+    <tr><td>GET /admin/dewormings-list</td><td>RF-ADM-05</td></tr>
+    <tr><td>GET /admin/dewormings/:id</td><td>RF-ADM-05</td></tr>
+    <tr><td>POST /admin/dewormings</td><td>RF-ADM-05</td></tr>
+    <tr><td>PATCH /admin/dewormings/:id</td><td>RF-ADM-05</td></tr>
+    <tr><td>PUT /admin/dewormings/:id</td><td>RF-ADM-05</td></tr>
+    <tr><td>DELETE /admin/dewormings/:id</td><td>RF-ADM-05</td></tr>
+    <tr class="grp"><td colspan="2">admin/vaccination_schedules</td></tr>
+    <tr><td>GET /admin/vaccination-schedules-list</td><td>RF-ADM-05</td></tr>
+    <tr><td>GET /admin/vaccination_schedules/:id</td><td>RF-ADM-05</td></tr>
+    <tr><td>POST /admin/vaccination_schedules</td><td>RF-ADM-05</td></tr>
+    <tr><td>POST /admin/vaccination_schedules/:id/complete_item</td><td>RF-ADM-05</td></tr>
+    <tr><td>PATCH /admin/vaccination_schedules/:id</td><td>RF-ADM-05</td></tr>
+    <tr><td>PUT /admin/vaccination_schedules/:id</td><td>RF-ADM-05</td></tr>
+    <tr><td>DELETE /admin/vaccination_schedules/:id</td><td>RF-ADM-05</td></tr>
+    <tr class="grp"><td colspan="2">admin/appointments</td></tr>
+    <tr><td>GET /admin/appointments-list</td><td>RF-ADM-06</td></tr>
+    <tr><td>GET /admin/appointments/:id</td><td>RF-ADM-06</td></tr>
+    <tr><td>GET /admin/appointments/available-days</td><td>RF-ADM-06</td></tr>
+    <tr><td>GET /admin/appointments/available-vets</td><td>RF-ADM-06</td></tr>
+    <tr><td>GET /admin/appointments/time-slots</td><td>RF-ADM-06</td></tr>
+    <tr><td>POST /admin/appointments</td><td>RF-ADM-06</td></tr>
+    <tr><td>PATCH /admin/appointments/:id</td><td>RF-ADM-06</td></tr>
+    <tr><td>PUT /admin/appointments/:id</td><td>RF-ADM-06</td></tr>
+    <tr><td>DELETE /admin/appointments/:id</td><td>RF-ADM-06</td></tr>
+    <tr class="grp"><td colspan="2">admin/payments</td></tr>
+    <tr><td>GET /admin/payments-list</td><td>RF-ADM-07</td></tr>
+    <tr><td>GET /admin/payments/:id</td><td>RF-ADM-07</td></tr>
+    <tr><td>POST /admin/payments/:id/register</td><td>RF-ADM-07</td></tr>
+    <tr><td>PATCH /admin/payments/:id</td><td>RF-ADM-07</td></tr>
+    <tr><td>PUT /admin/payments/:id</td><td>RF-ADM-07</td></tr>
+    <tr class="grp"><td colspan="2">admin/medical_profiles</td></tr>
+    <tr><td>GET /admin/pets/:pet_id/medical_profile</td><td>RF-ADM-08</td></tr>
+    <tr><td>PATCH /admin/pets/:pet_id/medical_profile</td><td>RF-ADM-08</td></tr>
+    <tr><td>PUT /admin/pets/:pet_id/medical_profile</td><td>RF-ADM-08</td></tr>
+    <tr class="grp"><td colspan="2">admin/owner_pets</td></tr>
+    <tr><td>GET /admin/owners/:owner_id/pets/:id</td><td>RF-ADM-09</td></tr>
+    <tr><td>POST /admin/owners/:owner_id/pets</td><td>RF-ADM-09</td></tr>
+    <tr><td>PATCH /admin/owners/:owner_id/pets/:id</td><td>RF-ADM-09</td></tr>
+    <tr><td>PUT /admin/owners/:owner_id/pets/:id</td><td>RF-ADM-09</td></tr>
+    <tr><td>POST /admin/owners/:owner_id/pets/:id/photo</td><td>RF-ADM-09</td></tr>
+    <tr><td>DELETE /admin/owners/:owner_id/pets/:id/photo</td><td>RF-ADM-09</td></tr>
+    <tr class="grp"><td colspan="2">admin/medical_reports</td></tr>
+    <tr><td>GET /admin/medical_reports</td><td>RF-ADM-10</td></tr>
+    <tr><td>GET /admin/medical_reports/:id</td><td>RF-ADM-10</td></tr>
+    <tr><td>GET /admin/medical_reports/:id/export_csv</td><td>RF-ADM-10</td></tr>
+    <tr><td>GET /admin/medical_reports/:id/export_json</td><td>RF-ADM-10</td></tr>
+    <tr><td>GET /admin/medical_reports/:id/export_pdf</td><td>RF-ADM-10</td></tr>
+    <tr><td>GET /admin/medical_reports/generate_pdf</td><td>RF-ADM-10</td></tr>
+    <tr><td>POST /admin/medical_reports</td><td>RF-ADM-10</td></tr>
+    <tr><td>POST /admin/medical_reports/:id/email</td><td>RF-ADM-10</td></tr>
+    <tr><td>POST /admin/medical_reports/import</td><td>RF-ADM-10</td></tr>
+  </tbody>
+</table>
+
+<footer>
+  <span>PawCare Mobile &mdash; Requisitos (alcance movil Android) · v1.0</span>
+  <span>Fuente: docs/mobile-requirements.md</span>
+</footer>
+
+</body>
+</html>
