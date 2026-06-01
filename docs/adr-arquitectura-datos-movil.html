@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADR 0001 — Arquitectura de datos móvil (offline-first híbrido)</title>
+<style>
+  :root{
+    --primary:#2563eb; --secondary:#7c3aed; --success:#059669; --warning:#d97706; --danger:#dc2626;
+    --line:#94a3b8; --line-soft:#cbd5e1; --text:#1f2937; --muted:#64748b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    color:var(--text); line-height:1.45; max-width:1180px; margin:0 auto; padding:28px; background:#fff;
+  }
+  h1{font-size:25px;color:var(--primary);}
+  .subtitle{color:var(--muted);font-size:13.5px;margin:3px 0 12px;}
+  h2{font-size:18px;margin:0 0 6px;color:#0f172a;border-bottom:2px solid var(--primary);padding-bottom:5px;}
+  .legend{font-size:12px;color:var(--muted);margin-bottom:16px;}
+  p.body{font-size:13px;margin:8px 0;}
+  .status{display:inline-block;background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;font-size:11.5px;margin:10px 0 16px;}
+  .meta span{background:#f1f5f9;color:#475569;padding:3px 9px;border-radius:4px;}
+
+  /* nodes */
+  .node{display:inline-block;border:1.5px solid var(--line);border-radius:8px;padding:7px 12px;background:#fff;font-size:12px;font-weight:600;text-align:center;}
+  .node small{display:block;font-weight:400;color:var(--muted);font-size:10px;margin-top:2px;}
+  .n-primary{border-color:var(--primary);background:#eff6ff;color:var(--primary);}
+  .n-secondary{border-color:var(--secondary);background:#f5f3ff;color:var(--secondary);}
+  .n-success{border-color:var(--success);background:#ecfdf5;color:var(--success);}
+  .n-warning{border-color:var(--warning);background:#fffbeb;color:var(--warning);}
+  .n-danger{border-color:var(--danger);background:#fef2f2;color:var(--danger);}
+  .n-muted{border-color:var(--line-soft);background:#f8fafc;color:var(--muted);}
+
+  /* layered bands */
+  .layers{display:flex;flex-direction:column;align-items:center;}
+  .layer-band{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 14px 12px;position:relative;background:#fff;}
+  .band-title{position:absolute;top:-10px;left:18px;background:#fff;padding:0 8px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+  .band-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding-top:6px;}
+  .v-arrow{font-size:22px;color:var(--line);line-height:1;margin:3px 0;}
+  .v-arrow small{display:block;font-size:10px;color:var(--muted);font-weight:600;margin-top:-2px;}
+  .band-primary{border-color:var(--primary);} .band-primary .band-title{color:var(--primary);}
+  .band-secondary{border-color:var(--secondary);} .band-secondary .band-title{color:var(--secondary);}
+  .band-success{border-color:var(--success);} .band-success .band-title{color:var(--success);}
+  .band-warning{border-color:var(--warning);background:#fffdf7;} .band-warning .band-title{color:var(--warning);}
+  .band-danger{border-color:var(--danger);background:#fffafa;} .band-danger .band-title{color:var(--danger);}
+
+  /* side note */
+  .aside-note{border:1.5px dashed var(--secondary);background:#f5f3ff;border-radius:8px;padding:8px 12px;font-size:11.5px;color:var(--secondary);margin-top:12px;text-align:center;}
+
+  /* buckets */
+  .buckets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .bucket{border:1.5px solid var(--line);border-radius:10px;padding:12px;}
+  .bucket h3{font-size:13px;margin-bottom:3px;}
+  .bucket .tag{font-size:10.5px;color:var(--muted);display:block;margin-bottom:10px;}
+  .b-green{border-color:var(--success);background:#f6fefb;} .b-green h3{color:var(--success);}
+  .b-blue{border-color:var(--primary);background:#f7faff;} .b-blue h3{color:var(--primary);}
+  .b-gray{border-color:var(--line-soft);background:#fafafa;} .b-gray h3{color:var(--muted);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:11px;background:#fff;border:1px solid var(--line-soft);border-radius:14px;padding:4px 10px;}
+  .chip.hot{background:#fee2e2;border-color:#fca5a5;color:#b91c1c;font-weight:700;}
+  .chip.b{font-weight:600;}
+
+  /* generic cards row */
+  .cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .card{border:1.5px solid var(--line);border-radius:10px;padding:12px;}
+  .card h3{font-size:13px;margin-bottom:8px;}
+  .card.c-amber{border-color:var(--warning);} .card.c-amber h3{color:var(--warning);}
+  .card.c-purple{border-color:var(--secondary);} .card.c-purple h3{color:var(--secondary);}
+  .card.c-red{border-color:var(--danger);} .card.c-red h3{color:var(--danger);}
+
+  .rule{border:1px solid #bfdbfe;background:#eff6ff;border-radius:8px;padding:10px 14px;font-size:12.5px;margin-top:14px;}
+  .rule strong{color:var(--primary);}
+
+  svg{width:100%;height:auto;display:block;}
+  svg text{font-family:-apple-system,'Segoe UI',sans-serif;}
+  .figcaption{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;}
+  .no-break{page-break-inside:avoid;}
+
+  .print-btn{position:fixed;top:16px;right:16px;z-index:50;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);}
+  .print-btn:hover{background:#1d4ed8;}
+
+  .sheet{margin-bottom:46px;}
+  @media print{
+    body{padding:0;}
+    .print-btn{display:none !important;}
+    .sheet{page-break-after:always;break-after:page;page-break-inside:avoid;break-inside:avoid;margin-bottom:0;padding:45px;}
+    .sheet:last-of-type{page-break-after:auto;break-after:auto;}
+  }
+  @page{size:A4;margin:0;}
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
+
+<!-- ===== Sheet 1: Portada / contexto ===== -->
+<section class="sheet">
+  <h1>ADR 0001 — Arquitectura de datos móvil</h1>
+  <p class="subtitle">Estrategia <strong>offline-first híbrida</strong> · Pawcare — App móvil para atención veterinaria a domicilio</p>
+  <div class="meta">
+    <span class="status">Aceptado</span>
+    <span>2026-05-31</span><span>Expo SDK 56 · React Native · TypeScript</span>
+    <span>SQLite (expo-sqlite + Drizzle)</span><span>redux-persist</span><span>API REST Rails</span>
+  </div>
+
+  <h2 style="margin-top:8px;">Contexto y decisión</h2>
+  <p class="body">La app habilita <strong>atención veterinaria a domicilio</strong>: la conexión es
+  mala justo donde ocurre el trabajo (la casa del paciente). No todo necesita operar sin red, pero
+  los flujos de la visita —<strong>registrar la consulta</strong> y <strong>registrar el pago
+  recibido</strong>— deben funcionar offline. Se adopta una arquitectura por capas con
+  <strong>Repository pattern</strong> como costura entre la UI y las fuentes de datos, con una
+  clasificación de datos en tres niveles.</p>
+
+  <div class="rule no-break">
+    <strong>Regla de oro:</strong> no duplicar el mismo dato. &nbsp;
+    <strong>SQLite</strong> = datos relacionales/consultables/grandes + verdad offline + copias de
+    lectura + <em>outbox</em>. &nbsp;
+    <strong>redux-persist</strong> = estado de UI y server-state pequeño (sesión, tema, filtros,
+    opt-in). &nbsp;
+    <strong>SecureStore</strong> = tokens y secretos.
+  </div>
+
+  <div class="legend" style="margin-top:14px;">Este documento explica, con diagramas: (2) las capas
+  de datos, (3) la clasificación en 3 niveles, (4) el "bundle de visita" y la escritura offline,
+  (5) el flujo del outbox/sincronización y (6) el reparto de almacenamiento.</div>
+</section>
+
+<!-- ===== Sheet 2: Capas ===== -->
+<section class="sheet">
+  <h2>1. Capas de datos</h2>
+  <p class="legend">La UI nunca llama al API directamente: pide al repositorio, que decide local vs remoto.</p>
+  <div class="layers no-break">
+    <div class="layer-band band-primary">
+      <span class="band-title">Presentación</span>
+      <div class="band-row">
+        <span class="node n-primary">Screens / Components<small>solo presentan</small></span>
+      </div>
+    </div>
+    <div class="v-arrow">&darr;</div>
+    <div class="layer-band band-secondary">
+      <span class="band-title">ViewModel</span>
+      <div class="band-row">
+        <span class="node n-secondary">Hooks por feature<small>useConsultas · usePagos · useCitas…</small></span>
+      </div>
+    </div>
+    <div class="v-arrow">&darr;</div>
+    <div class="layer-band band-warning">
+      <span class="band-title">Repository (la costura)</span>
+      <div class="band-row">
+        <span class="node n-success">offlineFirstRepo<small>lee SQLite · escribe SQLite + outbox</small></span>
+        <span class="node n-primary">onlineFirstRepo<small>fetch API · cachea copia de lectura</small></span>
+      </div>
+    </div>
+    <div class="v-arrow">&darr;</div>
+    <div class="layer-band band-success">
+      <span class="band-title">Fuentes de datos</span>
+      <div class="band-row">
+        <span class="node n-success">SQLite — verdad offline<small>consultas · pagos · recetas</small></span>
+        <span class="node n-primary">SQLite — copia lectura<small>bundle de visita</small></span>
+        <span class="node n-warning">Outbox (tabla)<small>mutaciones pendientes</small></span>
+        <span class="node n-danger">SecureStore<small>tokens</small></span>
+      </div>
+    </div>
+    <div class="v-arrow"><small>opt-in del usuario</small>&darr;</div>
+    <div class="layer-band band-secondary">
+      <span class="band-title">Sync engine</span>
+      <div class="band-row">
+        <span class="node n-secondary">Concilia outbox &harr; API<small>FIFO · al recuperar red</small></span>
+      </div>
+    </div>
+    <div class="v-arrow">&darr; HTTPS · JSON</div>
+    <div class="layer-band band-danger">
+      <span class="band-title">Backend</span>
+      <div class="band-row">
+        <span class="node n-danger">API REST (Rails)<small>created_at/updated_at · soft delete</small></span>
+      </div>
+    </div>
+  </div>
+  <div class="aside-note no-break">redux-persist vive al lado: persiste <strong>estado de UI y sesión</strong>
+  (rol, tema, filtros, opt-in de sync), no los datos de negocio.</div>
+</section>
+
+<!-- ===== Sheet 3: Clasificación 3 niveles ===== -->
+<section class="sheet">
+  <h2>2. Clasificación de datos en tres niveles</h2>
+  <p class="legend">Qué se puede escribir offline, qué solo se cachea para lectura y qué exige conexión.</p>
+  <div class="buckets no-break">
+    <div class="bucket b-green">
+      <h3>Nivel 1 · Offline-first</h3>
+      <span class="tag">SQLite (fuente de verdad) + outbox · escritura offline</span>
+      <div class="chips">
+        <span class="chip b">Consultas</span>
+        <span class="chip b">Recetas</span>
+        <span class="chip b">Vacunas</span>
+        <span class="chip b">Desparasitaciones</span>
+        <span class="chip b">Exámenes lab</span>
+        <span class="chip b">Adjuntos médicos</span>
+        <span class="chip hot">Pagos recibidos ★</span>
+        <span class="chip b">Estado de cita (en visita)</span>
+        <span class="chip b">Borradores</span>
+      </div>
+    </div>
+    <div class="bucket b-blue">
+      <h3>Nivel 2 · Online-first + copia</h3>
+      <span class="tag">API; copia de solo-lectura en SQLite; escritura requiere red</span>
+      <div class="chips">
+        <span class="chip">Citas (listado)</span>
+        <span class="chip">Pagos (listado)</span>
+        <span class="chip">Productos</span>
+        <span class="chip">Dashboard</span>
+        <span class="chip">Perfil</span>
+        <span class="chip">Pacientes / Owners</span>
+        <span class="chip">Servicios</span>
+        <span class="chip b">Bundle de visita</span>
+      </div>
+    </div>
+    <div class="bucket b-gray">
+      <h3>Nivel 3 · Online-only</h3>
+      <span class="tag">Sin valor offline; no se cachea</span>
+      <div class="chips">
+        <span class="chip">Login / Registro</span>
+        <span class="chip">Recuperar contraseña</span>
+        <span class="chip">Generar reportes</span>
+        <span class="chip">Exportar (CSV/PDF/JSON)</span>
+        <span class="chip">Enviar por email</span>
+      </div>
+    </div>
+  </div>
+  <p class="figcaption">★ El <strong>registro de pago recibido</strong> fuera de la clínica es offline-first,
+  igual que la consulta: el cobro ocurre en la casa.</p>
+</section>
+
+<!-- ===== Sheet 4: Bundle de visita + escritura offline ===== -->
+<section class="sheet">
+  <h2>3. "Bundle de visita" y escritura offline</h2>
+  <p class="legend">Antes de la visita se replica a SQLite solo lo necesario (lectura). En la casa se
+  crea consulta y pago (verdad local + outbox).</p>
+  <div class="no-break">
+  <svg viewBox="0 0 820 470" role="img" aria-label="Bundle de visita y escritura offline">
+    <defs>
+      <marker id="arB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker>
+    </defs>
+
+    <!-- Paso 1: con conexion -->
+    <rect x="20" y="20" width="250" height="40" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="145" y="38" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">1 · Con conexión (al confirmar cita)</text>
+    <text x="145" y="52" text-anchor="middle" font-size="10" fill="#64748b">se descarga el paquete de la visita</text>
+
+    <line x1="145" y1="60" x2="145" y2="92" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arB)"/>
+
+    <!-- copia lectura SQLite -->
+    <rect x="20" y="94" width="250" height="150" rx="10" fill="#f7faff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="145" y="114" text-anchor="middle" font-size="12" font-weight="700" fill="#2563eb">SQLite · copia de solo-lectura</text>
+    <text x="40" y="134" font-size="11" fill="#1f2937">• La cita a atender</text>
+    <text x="40" y="152" font-size="11" fill="#1f2937">• Mascota + perfil médico</text>
+    <text x="40" y="170" font-size="11" fill="#1f2937">• Historial reciente</text>
+    <text x="40" y="188" font-size="11" fill="#1f2937">• Servicios y productos</text>
+    <text x="40" y="206" font-size="11" fill="#1f2937">• Datos del dueño</text>
+    <text x="40" y="228" font-size="10" fill="#64748b">solo lectura · contexto para la visita</text>
+
+    <!-- Paso 2: en la casa offline -->
+    <rect x="540" y="20" width="260" height="40" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="670" y="38" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">2 · En la casa (offline)</text>
+    <text x="670" y="52" text-anchor="middle" font-size="10" fill="#64748b">el veterinario registra lo realizado</text>
+
+    <line x1="670" y1="60" x2="670" y2="92" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arB)"/>
+
+    <rect x="540" y="94" width="260" height="150" rx="10" fill="#f6fefb" stroke="#059669" stroke-width="1.5"/>
+    <text x="670" y="114" text-anchor="middle" font-size="12" font-weight="700" fill="#059669">SQLite · verdad offline + outbox</text>
+    <text x="560" y="136" font-size="11" fill="#1f2937">• Consulta + diagnóstico</text>
+    <text x="560" y="154" font-size="11" fill="#1f2937">• Receta / tratamiento</text>
+    <text x="560" y="173" font-size="11" font-weight="700" fill="#b91c1c">• Pago recibido ★</text>
+    <text x="560" y="191" font-size="11" fill="#1f2937">• Estado de la cita</text>
+    <text x="560" y="213" font-size="10" fill="#64748b">UI optimista: lee de SQLite al instante</text>
+    <text x="560" y="231" font-size="10" fill="#64748b">cada escritura → fila en el outbox</text>
+
+    <!-- la copia de lectura alimenta el contexto de la escritura -->
+    <line x1="270" y1="169" x2="538" y2="169" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arB)"/>
+    <text x="404" y="161" text-anchor="middle" font-size="10" fill="#64748b">da contexto</text>
+
+    <!-- Paso 3: sync -->
+    <rect x="160" y="300" width="500" height="44" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="410" y="320" text-anchor="middle" font-size="12.5" font-weight="700" fill="#7c3aed">3 · Recupera red + opt-in → Sync engine procesa el outbox (FIFO)</text>
+    <text x="410" y="336" text-anchor="middle" font-size="10" fill="#64748b">envía al API · mapea id local → id servidor · marca "sincronizado"</text>
+
+    <line x1="670" y1="244" x2="670" y2="300" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arB)"/>
+
+    <rect x="300" y="392" width="220" height="44" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="410" y="412" text-anchor="middle" font-size="12" font-weight="700" fill="#dc2626">API REST (Rails)</text>
+    <text x="410" y="428" text-anchor="middle" font-size="10" fill="#64748b">confirma; refresca copias de lectura</text>
+    <line x1="410" y1="344" x2="410" y2="390" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arB)"/>
+  </svg>
+  </div>
+  <p class="figcaption">Hasta que el outbox sincroniza, la consulta y el pago se muestran como
+  <strong>"pendientes de sincronización"</strong>; no se simula éxito en el servidor.</p>
+</section>
+
+<!-- ===== Sheet 5: Outbox / sync flowchart ===== -->
+<section class="sheet">
+  <h2>4. Flujo del outbox y la sincronización</h2>
+  <p class="legend">Mismo camino para una consulta o un pago recibido. Rombos = decisión.</p>
+  <div class="no-break">
+  <svg viewBox="0 0 800 640" role="img" aria-label="Flujo del outbox y sincronización">
+    <defs><marker id="arS" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker></defs>
+
+    <rect x="290" y="12" width="220" height="42" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="400" y="32" text-anchor="middle" font-size="12" fill="#1f2937">Guardar consulta / pago</text>
+    <text x="400" y="47" text-anchor="middle" font-size="10" fill="#64748b">acción del usuario (offline u online)</text>
+
+    <rect x="290" y="84" width="220" height="46" rx="8" fill="#f6fefb" stroke="#059669" stroke-width="1.5"/>
+    <text x="400" y="104" text-anchor="middle" font-size="11.5" fill="#1f2937">SQLite: INSERT entidad + outbox</text>
+    <text x="400" y="120" text-anchor="middle" font-size="10" fill="#64748b">misma transacción · UI optimista</text>
+
+    <polygon points="330,196 400,160 470,196 400,232" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="400" y="200" text-anchor="middle" font-size="11" fill="#1f2937">¿Hay conexión?</text>
+    <rect x="600" y="174" width="180" height="44" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="690" y="192" text-anchor="middle" font-size="11" fill="#1f2937">Queda pendiente</text>
+    <text x="690" y="207" text-anchor="middle" font-size="10" fill="#64748b">badge "pendiente"</text>
+
+    <polygon points="330,300 400,264 470,300 400,336" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="400" y="304" text-anchor="middle" font-size="11" fill="#1f2937">¿Sync opt-in?</text>
+    <rect x="600" y="278" width="180" height="44" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="690" y="296" text-anchor="middle" font-size="11" fill="#1f2937">Espera sync manual</text>
+    <text x="690" y="311" text-anchor="middle" font-size="10" fill="#64748b">iniciado por el usuario</text>
+
+    <rect x="290" y="362" width="220" height="42" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="400" y="387" text-anchor="middle" font-size="12" fill="#1f2937">Procesar outbox (FIFO)</text>
+    <rect x="290" y="430" width="220" height="42" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="400" y="455" text-anchor="middle" font-size="12" fill="#1f2937">Enviar al API (HTTPS)</text>
+
+    <polygon points="330,540 400,504 470,540 400,576" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="400" y="544" text-anchor="middle" font-size="11" fill="#1f2937">¿Respuesta?</text>
+
+    <rect x="280" y="600" width="240" height="34" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="400" y="621" text-anchor="middle" font-size="11" fill="#1f2937">Mapear id local→servidor · "al día"</text>
+    <rect x="30" y="518" width="210" height="44" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="135" y="536" text-anchor="middle" font-size="11" fill="#1f2937">Resolver conflicto</text>
+    <text x="135" y="551" text-anchor="middle" font-size="10" fill="#64748b">last-write-wins (append-only)</text>
+    <rect x="600" y="518" width="180" height="44" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="690" y="536" text-anchor="middle" font-size="11" fill="#1f2937">Marcar error</text>
+    <text x="690" y="551" text-anchor="middle" font-size="10" fill="#64748b">reintentar luego</text>
+
+    <!-- arrows -->
+    <line x1="400" y1="54" x2="400" y2="84" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+    <line x1="400" y1="130" x2="400" y2="158" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+    <line x1="470" y1="196" x2="598" y2="196" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+    <text x="534" y="189" text-anchor="middle" font-size="10" fill="#64748b">No</text>
+    <line x1="400" y1="232" x2="400" y2="262" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+    <text x="410" y="254" font-size="10" fill="#64748b">Sí</text>
+    <line x1="470" y1="300" x2="598" y2="300" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+    <text x="534" y="293" text-anchor="middle" font-size="10" fill="#64748b">No</text>
+    <line x1="400" y1="336" x2="400" y2="362" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+    <text x="410" y="356" font-size="10" fill="#64748b">Sí</text>
+    <line x1="400" y1="404" x2="400" y2="430" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+    <line x1="400" y1="472" x2="400" y2="502" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+    <line x1="400" y1="576" x2="400" y2="600" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+    <text x="410" y="594" font-size="10" fill="#64748b">Éxito</text>
+    <line x1="330" y1="540" x2="242" y2="540" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+    <text x="286" y="533" text-anchor="middle" font-size="10" fill="#64748b">409</text>
+    <line x1="470" y1="540" x2="598" y2="540" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+    <text x="534" y="533" text-anchor="middle" font-size="10" fill="#64748b">error</text>
+    <polyline points="135,518 135,451 288,451" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+    <text x="170" y="443" font-size="10" fill="#64748b">reintenta</text>
+  </svg>
+  </div>
+</section>
+
+<!-- ===== Sheet 6: Reparto de almacenamiento ===== -->
+<section class="sheet">
+  <h2>5. Reparto de almacenamiento</h2>
+  <p class="legend">Cada almacén tiene un trabajo distinto. La disciplina evita duplicar datos.</p>
+  <div class="cards no-break">
+    <div class="card c-amber">
+      <h3>SQLite (expo-sqlite + Drizzle)</h3>
+      <div class="chips">
+        <span class="chip b">Entidades offline-first</span>
+        <span class="chip">consultas · recetas · vacunas</span>
+        <span class="chip hot">pagos recibidos</span>
+        <span class="chip b">Copias de lectura (bundle)</span>
+        <span class="chip b">Outbox (tabla)</span>
+        <span class="chip">migraciones tipadas</span>
+      </div>
+    </div>
+    <div class="card c-purple">
+      <h3>redux-persist</h3>
+      <div class="chips">
+        <span class="chip">sesión / rol</span>
+        <span class="chip">tema claro/oscuro</span>
+        <span class="chip">filtros · paso del wizard</span>
+        <span class="chip">opt-in de sync</span>
+        <span class="chip">resumen del dashboard</span>
+        <span class="chip" style="border-style:dashed;">nada de listas grandes</span>
+      </div>
+    </div>
+    <div class="card c-red">
+      <h3>SecureStore</h3>
+      <div class="chips">
+        <span class="chip">access token</span>
+        <span class="chip">refresh token</span>
+        <span class="chip">secretos</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule no-break" style="margin-top:18px;">
+    <strong>Si lo vas a consultar/filtrar o es grande → SQLite.</strong>
+    Si es estado de pantalla pequeño → redux-persist. Si es un secreto → SecureStore.
+  </div>
+
+  <div style="margin-top:30px;padding-top:14px;border-top:1px solid var(--line-soft);font-size:11px;color:var(--muted);display:flex;justify-content:space-between;">
+    <span>ADR 0001 — Arquitectura de datos móvil (offline-first híbrido) · v1.0</span>
+    <span>Fuente: docs/adr/0001-arquitectura-datos-movil.md</span>
+  </div>
+</section>
+
+</body>
+</html>
