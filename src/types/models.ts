@@ -66,13 +66,31 @@ export const ADOPTION_STATUS_LABEL: Record<AdoptionStatus, string> = {
   adopted: 'Adoptado',
 };
 
-export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
+// Enum del backend (app/models/appointment.rb).
+export type AppointmentStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
+  | 'rescheduled';
 export const APPOINTMENT_STATUS_LABEL: Record<AppointmentStatus, string> = {
   pending: 'Pendiente',
   confirmed: 'Confirmada',
+  in_progress: 'En curso',
   completed: 'Completada',
   cancelled: 'Cancelada',
+  rescheduled: 'Reagendada',
 };
+
+// payment_status de la cita (distinto del estado del modelo Payment).
+export type AppointmentPaymentStatus = 'unpaid' | 'paid' | 'refunded';
+export const APPOINTMENT_PAYMENT_STATUS_LABEL: Record<AppointmentPaymentStatus, string> =
+  {
+    unpaid: 'Sin pagar',
+    paid: 'Pagado',
+    refunded: 'Reembolsado',
+  };
 
 export type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'cancelled';
 export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = {
@@ -157,23 +175,58 @@ export interface PetMedicalProfile {
 export interface Service {
   id: number;
   name: string;
-  description?: string;
-  price?: number;
-  currency?: string;
-  duration_minutes?: number;
-  requires_appointment?: boolean;
+  description?: string | null;
+  price?: number | null;
+  price_cents?: number | null;
+  currency?: string | null;
+  duration_minutes?: number | null;
 }
 
+/** Vet disponible para una fecha (de owner-available-vets). */
+export interface AvailableVet {
+  id: number;
+  first_name: string;
+  last_name: string;
+  start_time: string | null; // "HH:MM"
+  end_time: string | null;
+}
+
+/** Mini-objetos anidados que devuelve appointment_json. */
+export interface AppointmentPet {
+  id: number;
+  name: string;
+  species: Species;
+  breed?: string | null;
+}
+export interface AppointmentVet {
+  id: number;
+  first_name: string;
+  last_name: string;
+  role?: StaffRole;
+}
+export interface AppointmentService {
+  id: number;
+  name: string;
+  price?: number | null;
+  price_cents?: number | null;
+}
+
+// Espejo de appointment_json (owner_appointments_controller).
 export interface Appointment {
   id: number;
+  pet_id: number;
+  service_id: number;
+  owner_id: number;
+  assigned_to_id: number | null;
   scheduled_at: string;
-  duration_minutes?: number;
+  duration_minutes?: number | null;
   status: AppointmentStatus;
-  payment_status?: PaymentStatus;
-  notes?: string;
-  service_name?: string;
-  vet_name?: string;
-  pet_name?: string;
+  payment_status: AppointmentPaymentStatus;
+  notes?: string | null;
+  cancellation_reason?: string | null;
+  pet: AppointmentPet | null;
+  service: AppointmentService | null;
+  assigned_to: AppointmentVet | null;
 }
 
 export interface Payment {

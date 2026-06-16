@@ -34,13 +34,11 @@ export function ServicesScreen() {
       ) : (
         mockServices.map((service) => {
           const priceLabel =
-            service.price !== undefined
-              ? formatMoney(service.price, service.currency)
+            service.price != null
+              ? formatMoney(service.price, service.currency ?? undefined)
               : 'Consultar';
           const duration =
-            service.duration_minutes !== undefined
-              ? ` · ${service.duration_minutes} min`
-              : '';
+            service.duration_minutes != null ? ` · ${service.duration_minutes} min` : '';
           return (
             <ListRow
               key={service.id}

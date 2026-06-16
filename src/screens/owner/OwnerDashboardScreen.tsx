@@ -60,9 +60,13 @@ export function OwnerDashboardScreen() {
         <View style={{ gap: 8 }}>
           <SectionTitle>Próxima cita</SectionTitle>
           <AppointmentCard
-            petName={nextAppointment.pet_name ?? 'Mascota'}
+            petName={nextAppointment.pet?.name ?? 'Mascota'}
             dateLabel={formatDateTime(nextAppointment.scheduled_at)}
-            vetName={nextAppointment.vet_name}
+            vetName={
+              nextAppointment.assigned_to
+                ? `${nextAppointment.assigned_to.first_name} ${nextAppointment.assigned_to.last_name}`
+                : undefined
+            }
             statusLabel={APPOINTMENT_STATUS_LABEL[nextAppointment.status]}
             statusVariant={nextAppointment.status === 'confirmed' ? 'success' : 'warning'}
           />

@@ -89,7 +89,6 @@ export const mockServices: Service[] = [
     price: 45000,
     currency: 'COP',
     duration_minutes: 30,
-    requires_appointment: true,
   },
   {
     id: 2,
@@ -98,7 +97,6 @@ export const mockServices: Service[] = [
     price: 30000,
     currency: 'COP',
     duration_minutes: 20,
-    requires_appointment: true,
   },
   {
     id: 3,
@@ -118,36 +116,45 @@ export const mockServices: Service[] = [
   },
 ];
 
+const mockAppointmentVet = {
+  id: 10,
+  first_name: 'Carlos',
+  last_name: 'Pérez',
+  role: 'vet' as const,
+};
+
 export const mockAppointments: Appointment[] = [
   {
     id: 1,
+    pet_id: 1,
+    service_id: 1,
+    owner_id: 1,
+    assigned_to_id: 10,
     scheduled_at: '2026-06-16T10:30:00',
     duration_minutes: 30,
     status: 'confirmed',
-    payment_status: 'pending',
-    service_name: 'Consulta general',
-    vet_name: 'Dr. Carlos Pérez',
-    pet_name: 'Firulais',
+    payment_status: 'unpaid',
+    notes: null,
+    cancellation_reason: null,
+    pet: { id: 1, name: 'Firulais', species: 'dog', breed: 'Labrador' },
+    service: { id: 1, name: 'Consulta general', price: 45000 },
+    assigned_to: mockAppointmentVet,
   },
   {
     id: 2,
+    pet_id: 2,
+    service_id: 2,
+    owner_id: 1,
+    assigned_to_id: 10,
     scheduled_at: '2026-06-20T14:00:00',
     duration_minutes: 20,
     status: 'pending',
-    payment_status: 'pending',
-    service_name: 'Vacunación',
-    vet_name: 'Dra. Ana López',
-    pet_name: 'Michi',
-  },
-  {
-    id: 3,
-    scheduled_at: '2026-05-30T09:00:00',
-    duration_minutes: 30,
-    status: 'completed',
-    payment_status: 'paid',
-    service_name: 'Consulta general',
-    vet_name: 'Dr. Carlos Pérez',
-    pet_name: 'Firulais',
+    payment_status: 'unpaid',
+    notes: null,
+    cancellation_reason: null,
+    pet: { id: 2, name: 'Michi', species: 'cat', breed: 'Siamés' },
+    service: { id: 2, name: 'Vacunación', price: 30000 },
+    assigned_to: mockAppointmentVet,
   },
 ];
 

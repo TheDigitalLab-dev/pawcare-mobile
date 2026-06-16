@@ -14,8 +14,10 @@ type Nav = NativeStackNavigationProp<AdminAgendaStackParamList>;
 const STATUS_VARIANT: Record<AppointmentStatus, BadgeVariant> = {
   pending: 'warning',
   confirmed: 'success',
+  in_progress: 'info',
   completed: 'info',
   cancelled: 'destructive',
+  rescheduled: 'warning',
 };
 
 const FILTERS: { id: string; label: string }[] = [
@@ -59,9 +61,13 @@ export function AdminAppointmentsListScreen() {
         appointments.map((a) => (
           <AppointmentCard
             key={a.id}
-            petName={a.pet_name ?? 'Mascota'}
+            petName={a.pet?.name ?? 'Mascota'}
             dateLabel={formatDateTime(a.scheduled_at)}
-            vetName={a.vet_name}
+            vetName={
+              a.assigned_to
+                ? `${a.assigned_to.first_name} ${a.assigned_to.last_name}`
+                : undefined
+            }
             statusLabel={APPOINTMENT_STATUS_LABEL[a.status]}
             statusVariant={STATUS_VARIANT[a.status]}
             onPress={() => navigation.navigate('AdminAppointmentDetail', { id: a.id })}

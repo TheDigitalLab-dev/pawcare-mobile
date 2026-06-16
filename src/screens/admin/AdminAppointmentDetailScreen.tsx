@@ -15,8 +15,10 @@ type Rt = RouteProp<AdminAgendaStackParamList, 'AdminAppointmentDetail'>;
 const STATUS_VARIANT: Record<AppointmentStatus, BadgeVariant> = {
   pending: 'warning',
   confirmed: 'success',
+  in_progress: 'info',
   completed: 'info',
   cancelled: 'destructive',
+  rescheduled: 'warning',
 };
 
 export function AdminAppointmentDetailScreen() {
@@ -66,7 +68,7 @@ export function AdminAppointmentDetailScreen() {
       contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
       <DetailHero
-        title={appointment.pet_name ?? 'Mascota'}
+        title={appointment.pet?.name ?? 'Mascota'}
         subtitle={formatDateTime(appointment.scheduled_at)}
       >
         <Badge
@@ -77,9 +79,16 @@ export function AdminAppointmentDetailScreen() {
 
       <ListRow
         title="Servicio"
-        subtitle={appointment.service_name ?? 'Sin especificar'}
+        subtitle={appointment.service?.name ?? 'Sin especificar'}
       />
-      <ListRow title="Veterinario" subtitle={appointment.vet_name ?? 'Sin asignar'} />
+      <ListRow
+        title="Veterinario"
+        subtitle={
+          appointment.assigned_to
+            ? `${appointment.assigned_to.first_name} ${appointment.assigned_to.last_name}`
+            : 'Sin asignar'
+        }
+      />
       <ListRow title="Duración" subtitle={`${appointment.duration_minutes ?? 0} min`} />
       <ListRow title="Notas" subtitle={appointment.notes ?? 'Sin notas'} />
 

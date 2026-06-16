@@ -1,39 +1,62 @@
-import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { EmptyState, Fab, FilterChips, type BadgeVariant } from '@/components/ui';
+import { AsyncBoundary, Fab, FilterChips, type BadgeVariant } from '@/components/ui';
 import { AppointmentCard } from '@/components/domain';
 import type { OwnerAppointmentsStackParamList } from '@/navigation/types';
-import { formatDateTime, mockAppointments } from '@/data/mock';
-import { APPOINTMENT_STATUS_LABEL, type AppointmentStatus } from '@/types/models';
+import { useAsync } from '@/hooks/useAsync';
+import { listAppointments } from '@/services/appointments';
+import { formatDateTime } from '@/utils/format';
+import {
+  APPOINTMENT_STATUS_LABEL,
+  type Appointment,
+  type AppointmentStatus,
+} from '@/types/models';
 
 type Nav = NativeStackNavigationProp<OwnerAppointmentsStackParamList>;
 type Filter = 'upcoming' | 'past';
 
 const STATUS_VARIANT: Record<AppointmentStatus, BadgeVariant> = {
-  confirmed: 'success',
   pending: 'warning',
+  confirmed: 'success',
+  in_progress: 'primary',
   completed: 'primary',
   cancelled: 'destructive',
+  rescheduled: 'warning',
 };
+
+const UPCOMING: AppointmentStatus[] = ['pending', 'confirmed', 'in_progress'];
 
 const FILTERS = [
   { id: 'upcoming', label: 'Próximas' },
   { id: 'past', label: 'Pasadas' },
 ];
 
+function vetName(a: Appointment): string | undefined {
+  if (!a.assigned_to) return undefined;
+  return `${a.assigned_to.first_name} ${a.assigned_to.last_name}`.trim();
+}
+
 export function AppointmentsListScreen() {
   const navigation = useNavigation<Nav>();
   const [filter, setFilter] = useState<Filter>('upcoming');
+  const { data, loading, error, reload } = useAsync(() => listAppointments());
 
-  const appointments = mockAppointments.filter((a) =>
-    filter === 'upcoming'
-      ? a.status === 'pending' || a.status === 'confirmed'
-      : a.status === 'completed' || a.status === 'cancelled',
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+    }, [reload]),
   );
+
+  const appointments = useMemo(() => {
+    const list = data ?? [];
+    return list.filter((a) =>
+      filter === 'upcoming' ? UPCOMING.includes(a.status) : !UPCOMING.includes(a.status),
+    );
+  }, [data, filter]);
 
   return (
     <MobileShell
@@ -54,27 +77,33 @@ export function AppointmentsListScreen() {
         onSelect={(id) => setFilter(id as Filter)}
       />
 
-      {appointments.length === 0 ? (
-        <EmptyState
-          icon="calendar"
-          title="Sin citas"
-          description="No hay citas en esta categoría."
-        />
-      ) : (
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={appointments.length === 0}
+        emptyIcon="calendar"
+        emptyTitle="Sin citas"
+        emptyDescription={
+          filter === 'upcoming'
+            ? 'No tienes citas próximas. Agenda una con el botón +.'
+            : 'No hay citas pasadas.'
+        }
+      >
         <View style={{ gap: 12 }}>
           {appointments.map((a) => (
             <AppointmentCard
               key={a.id}
-              petName={a.pet_name ?? 'Mascota'}
+              petName={a.pet?.name ?? 'Mascota'}
               dateLabel={formatDateTime(a.scheduled_at)}
-              vetName={a.vet_name}
+              vetName={vetName(a)}
               statusLabel={APPOINTMENT_STATUS_LABEL[a.status]}
               statusVariant={STATUS_VARIANT[a.status]}
               onPress={() => navigation.navigate('AppointmentDetail', { id: a.id })}
             />
           ))}
         </View>
-      )}
+      </AsyncBoundary>
     </MobileShell>
   );
 }
