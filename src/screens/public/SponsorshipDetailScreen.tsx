@@ -1,114 +1,84 @@
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Badge, Button, Card, EmptyState } from '@/components';
-import { formatDate, formatMoney, mockSponsorships } from '@/data/mock';
+import { AsyncBoundary, Avatar, Button, Card, DetailHero } from '@/components';
+import { useAsync } from '@/hooks/useAsync';
+import { getAdoptionPet } from '@/services/public';
+import { SPECIES_EMOJI, SPECIES_LABEL, type AdoptionPet } from '@/types/models';
 import type { PublicStackParamList } from '@/navigation/types';
 
-/** Detalle de un patrocinio con su progreso. */
-export function SponsorshipDetailScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<PublicStackParamList>>();
-  const route = useRoute<RouteProp<PublicStackParamList, 'SponsorshipDetail'>>();
+type Nav = NativeStackNavigationProp<PublicStackParamList>;
+
+function Body({ pet }: { pet: AdoptionPet }) {
   const { colors } = useTheme();
+  const navigation = useNavigation<Nav>();
 
-  const sponsorship = mockSponsorships.find((s) => s.id === route.params.id);
-
-  if (!sponsorship) {
-    return (
-      <MobileShell
-        header={
-          <AppHeader
-            title="Patrocinio"
-            onBack={navigation.canGoBack() ? navigation.goBack : undefined}
+  return (
+    <>
+      <DetailHero
+        title={pet.name}
+        subtitle={[SPECIES_LABEL[pet.species], pet.breed, pet.age_display]
+          .filter(Boolean)
+          .join(' · ')}
+        avatar={
+          <Avatar
+            uri={pet.photo_url ?? undefined}
+            fallback={SPECIES_EMOJI[pet.species]}
+            size="lg"
           />
         }
-      >
-        <EmptyState
-          icon="gift"
-          title="Patrocinio no encontrado"
-          description="Este patrocinio ya no está disponible."
-        />
-      </MobileShell>
-    );
-  }
+      />
 
-  // Progreso presentacional (sin meta real en el modelo): valor fijo de ejemplo.
-  const progress = 0.6;
+      <Card style={styles.card}>
+        <Text style={[styles.title, { color: colors.foreground }]}>
+          Patrocinio responsable
+        </Text>
+        <Text style={[styles.body, { color: colors.mutedForeground }]}>
+          {pet.name} tiene {pet.active_sponsors_count ?? 0} padrino(s). Al patrocinar
+          ayudas a cubrir su alimentación y atención veterinaria.
+        </Text>
+        {pet.distinctive_features ? (
+          <Text style={[styles.body, { color: colors.foreground }]}>
+            {pet.distinctive_features}
+          </Text>
+        ) : null}
+      </Card>
+
+      <Button
+        label="Quiero patrocinar"
+        fullWidth
+        onPress={() => navigation.navigate('Contact')}
+      />
+    </>
+  );
+}
+
+export function SponsorshipDetailScreen() {
+  const navigation = useNavigation<Nav>();
+  const route = useRoute<RouteProp<PublicStackParamList, 'SponsorshipDetail'>>();
+  const id = route.params.id;
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
+
+  const { data, loading, error, reload } = useAsync(() => getAdoptionPet(id));
 
   return (
     <MobileShell
       scroll
-      header={
-        <AppHeader
-          title="Patrocinio"
-          onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-        />
-      }
+      header={<AppHeader title={data?.name ?? 'Patrocinio'} onBack={back} />}
       contentStyle={{ gap: 12 }}
     >
-      <Card style={styles.card}>
-        <View style={styles.headerRow}>
-          <Text style={[styles.amount, { color: colors.primary }]}>
-            {formatMoney(sponsorship.amount)}
-          </Text>
-          {sponsorship.status === 'active' ? (
-            <Badge label="Activo" variant="success" />
-          ) : (
-            <Badge label={sponsorship.status} variant="primary" />
-          )}
-        </View>
-
-        {sponsorship.pet_name ? (
-          <Text style={[styles.meta, { color: colors.foreground }]}>
-            Mascota: {sponsorship.pet_name}
-          </Text>
-        ) : null}
-        {sponsorship.start_date ? (
-          <Text style={[styles.meta, { color: colors.mutedForeground }]}>
-            Inicio: {formatDate(sponsorship.start_date)}
-          </Text>
-        ) : null}
-
-        <View style={styles.progressBlock}>
-          <Text style={[styles.meta, { color: colors.mutedForeground }]}>
-            Progreso de la meta
-          </Text>
-          <View style={[styles.track, { backgroundColor: colors.muted }]}>
-            <View
-              style={[
-                styles.fill,
-                {
-                  backgroundColor: colors.primary,
-                  width: `${Math.round(progress * 100)}%`,
-                },
-              ]}
-            />
-          </View>
-        </View>
-      </Card>
-
-      <Button
-        label="Patrocinar"
-        fullWidth
-        onPress={() => navigation.navigate('Contact')}
-      />
+      <AsyncBoundary loading={loading && data === null} error={error} onRetry={reload}>
+        {data ? <Body pet={data} /> : null}
+      </AsyncBoundary>
     </MobileShell>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { gap: 10 },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  amount: { fontSize: 22, fontWeight: '700' },
-  meta: { fontSize: 14 },
-  progressBlock: { gap: 6, marginTop: 4 },
-  track: { height: 8, borderRadius: 9999, overflow: 'hidden' },
-  fill: { height: 8, borderRadius: 9999 },
+  card: { gap: 8 },
+  title: { fontSize: 16, fontWeight: '700' },
+  body: { fontSize: 14, lineHeight: 20 },
 });

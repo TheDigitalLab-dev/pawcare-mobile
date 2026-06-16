@@ -1,31 +1,18 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
 
-import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Badge, EmptyState, ListRow, type BadgeVariant } from '@/components';
-import { formatMoney, mockSponsorships } from '@/data/mock';
+import { AsyncBoundary, Avatar, Badge, ListRow } from '@/components';
+import { useAsync } from '@/hooks/useAsync';
+import { listAdoptionPets } from '@/services/public';
+import { SPECIES_EMOJI, SPECIES_LABEL } from '@/types/models';
 import type { PublicStackParamList } from '@/navigation/types';
 
-const STATUS_LABEL: Record<string, string> = {
-  active: 'Activo',
-  pending: 'Pendiente',
-  completed: 'Completado',
-  cancelled: 'Cancelado',
-};
-
-const STATUS_VARIANT: Record<string, BadgeVariant> = {
-  active: 'success',
-  pending: 'warning',
-  completed: 'info',
-  cancelled: 'destructive',
-};
-
-/** Listado de patrocinios disponibles. */
+/** Mascotas que puedes patrocinar (datos públicos reales del portal). */
 export function SponsorshipsListScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<PublicStackParamList>>();
-  const { colors } = useTheme();
+  const { data, loading, error, reload } = useAsync(() => listAdoptionPets());
+  const items = data ?? [];
 
   return (
     <MobileShell
@@ -38,35 +25,36 @@ export function SponsorshipsListScreen() {
       }
       contentStyle={{ gap: 12 }}
     >
-      {mockSponsorships.length === 0 ? (
-        <EmptyState
-          icon="gift"
-          title="Sin patrocinios"
-          description="Aún no hay patrocinios activos."
-        />
-      ) : (
-        mockSponsorships.map((sponsorship) => {
-          const label = STATUS_LABEL[sponsorship.status] ?? sponsorship.status;
-          const variant: BadgeVariant = STATUS_VARIANT[sponsorship.status] ?? 'primary';
-          const subtitle = sponsorship.pet_name
-            ? `Mascota: ${sponsorship.pet_name}`
-            : undefined;
-          return (
-            <ListRow
-              key={sponsorship.id}
-              title={formatMoney(sponsorship.amount)}
-              subtitle={subtitle}
-              leading={<Ionicons name="gift" size={22} color={colors.primary} />}
-              trailing={<Badge label={label} variant={variant} />}
-              onPress={() =>
-                navigation.navigate('SponsorshipDetail', {
-                  id: sponsorship.id,
-                })
-              }
-            />
-          );
-        })
-      )}
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={items.length === 0}
+        emptyIcon="gift"
+        emptyTitle="Sin mascotas para patrocinar"
+        emptyDescription="Vuelve pronto: aún no hay mascotas disponibles."
+      >
+        {items.map((pet) => (
+          <ListRow
+            key={pet.id}
+            title={pet.name}
+            subtitle={`${SPECIES_LABEL[pet.species]}${pet.age_display ? ` · ${pet.age_display}` : ''}`}
+            leading={
+              <Avatar
+                uri={pet.photo_url ?? undefined}
+                fallback={SPECIES_EMOJI[pet.species]}
+              />
+            }
+            trailing={
+              <Badge
+                label={`${pet.active_sponsors_count ?? 0} padrinos`}
+                variant="info"
+              />
+            }
+            onPress={() => navigation.navigate('SponsorshipDetail', { id: pet.id })}
+          />
+        ))}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

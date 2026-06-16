@@ -400,13 +400,26 @@ export interface LandingService {
   category_name?: string | null;
 }
 
+export interface SponsorshipPet {
+  id: number;
+  name: string;
+  species: Species;
+  photo_url?: string | null;
+  breed?: string | null;
+}
+
+// Espejo de sponsorship_json (sponsorships_controller).
 export interface Sponsorship {
   id: number;
   amount: number;
+  amount_cents?: number | null;
+  recurrence?: string | null;
   status: string;
-  start_date?: string;
-  end_date?: string;
-  pet_name?: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  notes?: string | null;
+  sponsor_id?: number;
+  pet: SponsorshipPet | null;
 }
 
 // Espejo de public_pet_json (adoption_controller).

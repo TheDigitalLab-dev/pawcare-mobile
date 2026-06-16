@@ -343,10 +343,6 @@ export const mockAdoptionPets: AdoptionPet[] = [
   },
 ];
 
-export const mockSponsorships: Sponsorship[] = [
-  { id: 1, amount: 50000, status: 'active', start_date: '2026-01-01', pet_name: 'Luna' },
-];
-
 /** Formatea un monto en moneda local (presentacional). */
 // Los formateadores reales viven en utils/format; se re-exportan para no romper
 // imports existentes mientras se migra cada dominio fuera de este mock.
