@@ -1,16 +1,27 @@
-import { useNavigation } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { EmptyState, Fab } from '@/components/ui';
+import { AsyncBoundary, Fab } from '@/components/ui';
 import { TimelineItem } from '@/components/domain';
 import type { AdminMoreStackParamList } from '@/navigation/types';
-import { formatDate, mockVaccinations } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { listAdminVaccinations } from '@/services/admin';
+import { formatDate } from '@/utils/format';
 
 type Nav = NativeStackNavigationProp<AdminMoreStackParamList>;
 
 export function AdminVaccinationsListScreen() {
   const navigation = useNavigation<Nav>();
+  const { data, loading, error, reload } = useAsync(() => listAdminVaccinations());
+  const items = data ?? [];
+
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+    }, [reload]),
+  );
 
   return (
     <MobileShell
@@ -29,23 +40,25 @@ export function AdminVaccinationsListScreen() {
         />
       }
     >
-      {mockVaccinations.length === 0 ? (
-        <EmptyState
-          icon="bandage"
-          title="Sin vacunas"
-          description="No hay vacunas registradas."
-        />
-      ) : (
-        mockVaccinations.map((v, index) => (
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={items.length === 0}
+        emptyIcon="bandage"
+        emptyTitle="Sin vacunas"
+        emptyDescription="No hay vacunas registradas."
+      >
+        {items.map((v, index) => (
           <TimelineItem
             key={v.id}
             title={v.vaccine_name}
             date={`Aplicada: ${formatDate(v.application_date)}`}
             description={`${v.manufacturer ?? 'Fabricante desconocido'} · Próxima: ${formatDate(v.next_due_date)}`}
-            last={index === mockVaccinations.length - 1}
+            last={index === items.length - 1}
           />
-        ))
-      )}
+        ))}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

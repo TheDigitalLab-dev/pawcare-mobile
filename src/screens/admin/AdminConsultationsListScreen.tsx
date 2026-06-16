@@ -1,16 +1,27 @@
-import { useNavigation } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Badge, EmptyState, Fab } from '@/components/ui';
+import { AsyncBoundary, Badge, Fab } from '@/components/ui';
 import { ListRow } from '@/components/domain';
 import type { AdminMoreStackParamList } from '@/navigation/types';
-import { formatDateTime, mockConsultations } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { listAdminConsultations } from '@/services/admin';
+import { formatDateTime } from '@/utils/format';
 
 type Nav = NativeStackNavigationProp<AdminMoreStackParamList>;
 
 export function AdminConsultationsListScreen() {
   const navigation = useNavigation<Nav>();
+  const { data, loading, error, reload } = useAsync(() => listAdminConsultations());
+  const items = data ?? [];
+
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+    }, [reload]),
+  );
 
   return (
     <MobileShell
@@ -29,14 +40,16 @@ export function AdminConsultationsListScreen() {
         />
       }
     >
-      {mockConsultations.length === 0 ? (
-        <EmptyState
-          icon="medkit"
-          title="Sin consultas"
-          description="No hay consultas registradas."
-        />
-      ) : (
-        mockConsultations.map((c) => (
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={items.length === 0}
+        emptyIcon="medkit"
+        emptyTitle="Sin consultas"
+        emptyDescription="No hay consultas registradas."
+      >
+        {items.map((c) => (
           <ListRow
             key={c.id}
             title={c.diagnosis ?? 'Consulta'}
@@ -50,8 +63,8 @@ export function AdminConsultationsListScreen() {
             }
             onPress={() => navigation.navigate('AdminConsultationDetail', { id: c.id })}
           />
-        ))
-      )}
+        ))}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

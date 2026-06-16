@@ -1,12 +1,14 @@
-import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { EmptyState, Fab, FilterChips, type BadgeVariant } from '@/components/ui';
+import { AsyncBoundary, Fab, FilterChips, type BadgeVariant } from '@/components/ui';
 import { AppointmentCard } from '@/components/domain';
 import type { AdminAgendaStackParamList } from '@/navigation/types';
-import { formatDateTime, mockAppointments } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { listAdminAppointments } from '@/services/admin';
+import { formatDateTime } from '@/utils/format';
 import { APPOINTMENT_STATUS_LABEL, type AppointmentStatus } from '@/types/models';
 
 type Nav = NativeStackNavigationProp<AdminAgendaStackParamList>;
@@ -31,11 +33,18 @@ const FILTERS: { id: string; label: string }[] = [
 export function AdminAppointmentsListScreen() {
   const navigation = useNavigation<Nav>();
   const [filter, setFilter] = useState('all');
+  const { data, loading, error, reload } = useAsync(() => listAdminAppointments());
 
-  const appointments =
-    filter === 'all'
-      ? mockAppointments
-      : mockAppointments.filter((a) => a.status === filter);
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+    }, [reload]),
+  );
+
+  const appointments = useMemo(() => {
+    const list = data ?? [];
+    return filter === 'all' ? list : list.filter((a) => a.status === filter);
+  }, [data, filter]);
 
   return (
     <MobileShell
@@ -51,14 +60,16 @@ export function AdminAppointmentsListScreen() {
     >
       <FilterChips options={FILTERS} selectedId={filter} onSelect={setFilter} />
 
-      {appointments.length === 0 ? (
-        <EmptyState
-          icon="calendar"
-          title="Sin citas"
-          description="No hay citas para este filtro."
-        />
-      ) : (
-        appointments.map((a) => (
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={appointments.length === 0}
+        emptyIcon="calendar"
+        emptyTitle="Sin citas"
+        emptyDescription="No hay citas para este filtro."
+      >
+        {appointments.map((a) => (
           <AppointmentCard
             key={a.id}
             petName={a.pet?.name ?? 'Mascota'}
@@ -72,8 +83,8 @@ export function AdminAppointmentsListScreen() {
             statusVariant={STATUS_VARIANT[a.status]}
             onPress={() => navigation.navigate('AdminAppointmentDetail', { id: a.id })}
           />
-        ))
-      )}
+        ))}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

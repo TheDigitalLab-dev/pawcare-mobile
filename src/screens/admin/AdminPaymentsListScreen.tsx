@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { EmptyState, FilterChips, type BadgeVariant } from '@/components/ui';
+import { AsyncBoundary, FilterChips, type BadgeVariant } from '@/components/ui';
 import { PaymentCard } from '@/components/domain';
 import type { AdminMoreStackParamList } from '@/navigation/types';
-import { formatDate, formatMoney, mockPayments } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { listAdminPayments } from '@/services/admin';
+import { formatDate, formatMoney } from '@/utils/format';
 import { PAYMENT_STATUS_LABEL, type PaymentStatus } from '@/types/models';
 
 type Nav = NativeStackNavigationProp<AdminMoreStackParamList>;
@@ -23,7 +25,7 @@ const STATUS_VARIANT: Record<PaymentStatus, BadgeVariant> = {
 const FILTERS: { id: string; label: string }[] = [
   { id: 'all', label: 'Todos' },
   { id: 'pending', label: 'Pendientes' },
-  { id: 'paid', label: 'Pagados' },
+  { id: 'completed', label: 'Pagados' },
   { id: 'overdue', label: 'Vencidos' },
   { id: 'cancelled', label: 'Cancelados' },
 ];
@@ -31,9 +33,18 @@ const FILTERS: { id: string; label: string }[] = [
 export function AdminPaymentsListScreen() {
   const navigation = useNavigation<Nav>();
   const [filter, setFilter] = useState('all');
+  const { data, loading, error, reload } = useAsync(() => listAdminPayments());
 
-  const payments =
-    filter === 'all' ? mockPayments : mockPayments.filter((p) => p.status === filter);
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+    }, [reload]),
+  );
+
+  const payments = useMemo(() => {
+    const list = data ?? [];
+    return filter === 'all' ? list : list.filter((p) => p.status === filter);
+  }, [data, filter]);
 
   return (
     <MobileShell
@@ -48,14 +59,16 @@ export function AdminPaymentsListScreen() {
     >
       <FilterChips options={FILTERS} selectedId={filter} onSelect={setFilter} />
 
-      {payments.length === 0 ? (
-        <EmptyState
-          icon="card"
-          title="Sin pagos"
-          description="No hay pagos para este filtro."
-        />
-      ) : (
-        payments.map((p) => (
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={payments.length === 0}
+        emptyIcon="card"
+        emptyTitle="Sin pagos"
+        emptyDescription="No hay pagos para este filtro."
+      >
+        {payments.map((p) => (
           <Pressable
             key={p.id}
             accessibilityRole="button"
@@ -75,8 +88,8 @@ export function AdminPaymentsListScreen() {
               }
             />
           </Pressable>
-        ))
-      )}
+        ))}
+      </AsyncBoundary>
     </MobileShell>
   );
 }
