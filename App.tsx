@@ -1,20 +1,44 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+import { ThemeProvider, type ThemePreference } from '@/theme';
+import { SessionProvider } from '@/session/SessionProvider';
+import { RootNavigator } from '@/navigation/RootNavigator';
+
+const THEME_KEY = 'pawcare.theme_preference';
+
+function isThemePreference(value: string | null): value is ThemePreference {
+  return value === 'system' || value === 'light' || value === 'dark';
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+  // Preferencia de tema hidratada desde almacenamiento (persistente entre sesiones).
+  // `null` mientras carga: evita un parpadeo claro→oscuro al arrancar.
+  const [preference, setPreference] = useState<ThemePreference | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem(THEME_KEY).then((stored) => {
+      setPreference(isThemePreference(stored) ? stored : 'system');
+    });
+  }, []);
+
+  if (preference === null) return null;
+
+  const handlePreferenceChange = (next: ThemePreference) => {
+    void AsyncStorage.setItem(THEME_KEY, next);
+  };
+
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider
+        initialPreference={preference}
+        onPreferenceChange={handlePreferenceChange}
+      >
+        <SessionProvider>
+          <RootNavigator />
+        </SessionProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
+  );
+}

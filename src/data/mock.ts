@@ -1,0 +1,367 @@
+/**
+ * Datos mock para las pantallas presentacionales (mientras no hay servicios
+ * cableados). Se reemplazan por llamadas reales al API en cada módulo de dominio.
+ */
+import type {
+  AdoptionPet,
+  Appointment,
+  Consultation,
+  Deworming,
+  LabExam,
+  MedicalReport,
+  Owner,
+  Payment,
+  Pet,
+  PetMedicalProfile,
+  Prescription,
+  Product,
+  Service,
+  Sponsorship,
+  StaffUser,
+  Vaccination,
+} from '@/types/models';
+
+export const mockOwner: Owner = {
+  id: 1,
+  type: 'Owner',
+  first_name: 'María',
+  last_name: 'González',
+  full_name: 'María González',
+  email: 'maria@example.com',
+  username: 'maria',
+  identity_document: 'V-12345678',
+  address: 'Av. Principal 123',
+  sex: 'female',
+  phone: '+58 412 1234567',
+  phone_type: 'whatsapp',
+  active: true,
+};
+
+export const mockStaff: StaffUser = {
+  id: 9,
+  type: 'User',
+  first_name: 'Carlos',
+  last_name: 'Pérez',
+  full_name: 'Dr. Carlos Pérez',
+  email: 'carlos@pawcare.com',
+  username: 'cperez',
+  role: 'vet',
+  specialty: 'Medicina general',
+};
+
+export const mockPets: Pet[] = [
+  {
+    id: 1,
+    name: 'Firulais',
+    species: 'dog',
+    breed: 'Labrador',
+    sex: 'male',
+    birth_date: '2022-03-10',
+    adoption_status: 'not_in_adoption',
+    photo_url: null,
+    proprietary_id: 1,
+  },
+  {
+    id: 2,
+    name: 'Michi',
+    species: 'cat',
+    breed: 'Siamés',
+    sex: 'female',
+    birth_date: '2021-07-22',
+    adoption_status: 'not_in_adoption',
+    photo_url: null,
+    proprietary_id: 1,
+  },
+];
+
+export const mockMedicalProfile: PetMedicalProfile = {
+  chronic_diseases: [],
+  allergies: ['Polen'],
+  blood_type: 'DEA 1.1+',
+  notes: 'Sin observaciones relevantes.',
+};
+
+export const mockServices: Service[] = [
+  {
+    id: 1,
+    name: 'Consulta general',
+    description: 'Revisión clínica completa',
+    price: 45000,
+    currency: 'COP',
+    duration_minutes: 30,
+    requires_appointment: true,
+  },
+  {
+    id: 2,
+    name: 'Vacunación',
+    description: 'Aplicación de vacunas',
+    price: 30000,
+    currency: 'COP',
+    duration_minutes: 20,
+    requires_appointment: true,
+  },
+  {
+    id: 3,
+    name: 'Desparasitación',
+    description: 'Tratamiento antiparasitario',
+    price: 25000,
+    currency: 'COP',
+    duration_minutes: 15,
+  },
+  {
+    id: 4,
+    name: 'Peluquería',
+    description: 'Baño y corte',
+    price: 40000,
+    currency: 'COP',
+    duration_minutes: 60,
+  },
+];
+
+export const mockAppointments: Appointment[] = [
+  {
+    id: 1,
+    scheduled_at: '2026-06-16T10:30:00',
+    duration_minutes: 30,
+    status: 'confirmed',
+    payment_status: 'pending',
+    service_name: 'Consulta general',
+    vet_name: 'Dr. Carlos Pérez',
+    pet_name: 'Firulais',
+  },
+  {
+    id: 2,
+    scheduled_at: '2026-06-20T14:00:00',
+    duration_minutes: 20,
+    status: 'pending',
+    payment_status: 'pending',
+    service_name: 'Vacunación',
+    vet_name: 'Dra. Ana López',
+    pet_name: 'Michi',
+  },
+  {
+    id: 3,
+    scheduled_at: '2026-05-30T09:00:00',
+    duration_minutes: 30,
+    status: 'completed',
+    payment_status: 'paid',
+    service_name: 'Consulta general',
+    vet_name: 'Dr. Carlos Pérez',
+    pet_name: 'Firulais',
+  },
+];
+
+export const mockPayments: Payment[] = [
+  {
+    id: 1,
+    amount: 45000,
+    currency: 'COP',
+    status: 'pending',
+    concept: 'Consulta general',
+    due_date: '2026-06-25',
+    pet_name: 'Firulais',
+    owner_name: 'María González',
+  },
+  {
+    id: 2,
+    amount: 30000,
+    currency: 'COP',
+    status: 'paid',
+    concept: 'Vacunación',
+    paid_at: '2026-05-31',
+    pet_name: 'Michi',
+    owner_name: 'María González',
+  },
+  {
+    id: 3,
+    amount: 25000,
+    currency: 'COP',
+    status: 'overdue',
+    concept: 'Desparasitación',
+    due_date: '2026-06-01',
+    pet_name: 'Firulais',
+    owner_name: 'María González',
+  },
+];
+
+export const mockConsultations: Consultation[] = [
+  {
+    id: 1,
+    consultation_date: '2026-05-30T09:00:00',
+    diagnosis: 'Dermatitis leve',
+    treatment: 'Antihistamínico 7 días',
+    weight: 28.5,
+    temperature: 38.4,
+    vet_name: 'Dr. Carlos Pérez',
+    pet_name: 'Firulais',
+    treatment_completed_at: null,
+  },
+  {
+    id: 2,
+    consultation_date: '2026-03-12T11:00:00',
+    diagnosis: 'Control sano',
+    treatment: 'Ninguno',
+    weight: 27.9,
+    temperature: 38.2,
+    vet_name: 'Dra. Ana López',
+    pet_name: 'Firulais',
+    treatment_completed_at: '2026-03-20T00:00:00',
+  },
+];
+
+export const mockVaccinations: Vaccination[] = [
+  {
+    id: 1,
+    vaccine_name: 'Antirrábica',
+    manufacturer: 'Zoetis',
+    dose: '1 ml',
+    application_date: '2026-04-10',
+    next_due_date: '2027-04-10',
+  },
+  {
+    id: 2,
+    vaccine_name: 'Quíntuple',
+    manufacturer: 'MSD',
+    dose: '1 ml',
+    application_date: '2026-01-15',
+    next_due_date: '2026-07-15',
+  },
+];
+
+export const mockDewormings: Deworming[] = [
+  {
+    id: 1,
+    product_name: 'Drontal Plus',
+    dose: '1 tableta',
+    application_date: '2026-05-01',
+    next_due_date: '2026-08-01',
+  },
+];
+
+export const mockLabExams: LabExam[] = [
+  {
+    id: 1,
+    exam_name: 'Hemograma completo',
+    status: 'completed',
+    results: 'Valores dentro de rango normal.',
+  },
+  { id: 2, exam_name: 'Perfil renal', status: 'pending' },
+];
+
+export const mockPrescriptions: Prescription[] = [
+  {
+    id: 1,
+    diagnosis: 'Dermatitis leve',
+    general_instructions: 'Mantener la piel seca.',
+    items: [
+      {
+        id: 1,
+        medication_name: 'Cetirizina',
+        dose: '10 mg',
+        frequency: 'cada 24h',
+        duration: '7 días',
+        completed_at: null,
+      },
+    ],
+  },
+];
+
+export const mockReports: MedicalReport[] = [
+  {
+    id: 1,
+    title: 'Informe clínico — Firulais',
+    content: 'Resumen de la consulta del 30/05.',
+    generated_at: '2026-05-30T12:00:00',
+  },
+];
+
+export const mockProducts: Product[] = [
+  {
+    id: 1,
+    name: 'Alimento Premium 2kg',
+    description: 'Croquetas para perro adulto',
+    sale_price: 30000,
+    currency: 'COP',
+    current_stock: 12,
+    requires_prescription: false,
+    photo_url: null,
+  },
+  {
+    id: 2,
+    name: 'Juguete mordedor',
+    description: 'Caucho resistente',
+    sale_price: 12000,
+    currency: 'COP',
+    current_stock: 0,
+    requires_prescription: false,
+    photo_url: null,
+  },
+  {
+    id: 3,
+    name: 'Antipulgas',
+    description: 'Pipeta mensual',
+    sale_price: 18000,
+    currency: 'COP',
+    current_stock: 30,
+    requires_prescription: true,
+    photo_url: null,
+  },
+];
+
+export const mockAdoptionPets: AdoptionPet[] = [
+  {
+    id: 10,
+    name: 'Luna',
+    species: 'dog',
+    breed: 'Mestiza',
+    sex: 'female',
+    adoption_status: 'available',
+    age_label: '2 años',
+    description: 'Cariñosa y sociable.',
+    photo_url: null,
+  },
+  {
+    id: 11,
+    name: 'Simba',
+    species: 'cat',
+    breed: 'Naranja',
+    sex: 'male',
+    adoption_status: 'available',
+    age_label: '1 año',
+    description: 'Juguetón.',
+    photo_url: null,
+  },
+];
+
+export const mockSponsorships: Sponsorship[] = [
+  { id: 1, amount: 50000, status: 'active', start_date: '2026-01-01', pet_name: 'Luna' },
+];
+
+/** Formatea un monto en moneda local (presentacional). */
+export function formatMoney(amount: number, currency = 'COP'): string {
+  return `${currency === 'COP' ? '$' : currency + ' '}${amount.toLocaleString('es-CO')}`;
+}
+
+/** Formatea una fecha ISO a algo legible en español (corto). */
+export function formatDate(iso?: string): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+export function formatDateTime(iso?: string): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}

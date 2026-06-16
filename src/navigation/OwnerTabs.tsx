@@ -1,0 +1,163 @@
+import { Ionicons } from '@expo/vector-icons';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import { useTheme } from '@/theme';
+import {
+  AppointmentDetailScreen,
+  AppointmentsListScreen,
+  AppointmentWizardScreen,
+  ChangePasswordScreen,
+  ConsultationDetailScreen,
+  ConsultationsScreen,
+  DewormingsScreen,
+  EditProfileScreen,
+  LabExamsScreen,
+  MedicalProfileScreen,
+  MedicalReportDetailScreen,
+  MedicalReportsScreen,
+  OwnerDashboardScreen,
+  OwnerMedicalHistoryScreen,
+  OwnerPaymentRegisterScreen,
+  OwnerPaymentsScreen,
+  OwnerSponsorshipDetailScreen,
+  OwnerSponsorshipsScreen,
+  PetDetailScreen,
+  PetFormScreen,
+  PetMedicalHubScreen,
+  PetsListScreen,
+  ProfileScreen,
+  VaccinationsScreen,
+} from '@/screens/owner';
+import type {
+  OwnerAppointmentsStackParamList,
+  OwnerHomeStackParamList,
+  OwnerPetsStackParamList,
+  OwnerProfileStackParamList,
+  OwnerTabParamList,
+} from './types';
+
+const HomeStack = createNativeStackNavigator<OwnerHomeStackParamList>();
+function OwnerHomeStack() {
+  return (
+    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStack.Screen name="OwnerDashboard" component={OwnerDashboardScreen} />
+      <HomeStack.Screen name="OwnerPayments" component={OwnerPaymentsScreen} />
+      <HomeStack.Screen
+        name="OwnerPaymentRegister"
+        component={OwnerPaymentRegisterScreen}
+      />
+      <HomeStack.Screen
+        name="OwnerMedicalHistory"
+        component={OwnerMedicalHistoryScreen}
+      />
+      <HomeStack.Screen name="OwnerSponsorships" component={OwnerSponsorshipsScreen} />
+      <HomeStack.Screen
+        name="OwnerSponsorshipDetail"
+        component={OwnerSponsorshipDetailScreen}
+      />
+    </HomeStack.Navigator>
+  );
+}
+
+const PetsStack = createNativeStackNavigator<OwnerPetsStackParamList>();
+function OwnerPetsStack() {
+  return (
+    <PetsStack.Navigator screenOptions={{ headerShown: false }}>
+      <PetsStack.Screen name="PetsList" component={PetsListScreen} />
+      <PetsStack.Screen name="PetDetail" component={PetDetailScreen} />
+      <PetsStack.Screen name="PetForm" component={PetFormScreen} />
+      <PetsStack.Screen name="PetMedicalHub" component={PetMedicalHubScreen} />
+      <PetsStack.Screen name="MedicalProfile" component={MedicalProfileScreen} />
+      <PetsStack.Screen name="Vaccinations" component={VaccinationsScreen} />
+      <PetsStack.Screen name="Dewormings" component={DewormingsScreen} />
+      <PetsStack.Screen name="Consultations" component={ConsultationsScreen} />
+      <PetsStack.Screen name="ConsultationDetail" component={ConsultationDetailScreen} />
+      <PetsStack.Screen name="MedicalReports" component={MedicalReportsScreen} />
+      <PetsStack.Screen
+        name="MedicalReportDetail"
+        component={MedicalReportDetailScreen}
+      />
+      <PetsStack.Screen name="LabExams" component={LabExamsScreen} />
+    </PetsStack.Navigator>
+  );
+}
+
+const ApptStack = createNativeStackNavigator<OwnerAppointmentsStackParamList>();
+function OwnerAppointmentsStack() {
+  return (
+    <ApptStack.Navigator screenOptions={{ headerShown: false }}>
+      <ApptStack.Screen name="AppointmentsList" component={AppointmentsListScreen} />
+      <ApptStack.Screen name="AppointmentDetail" component={AppointmentDetailScreen} />
+      <ApptStack.Screen name="AppointmentWizard" component={AppointmentWizardScreen} />
+    </ApptStack.Navigator>
+  );
+}
+
+const ProfileStack = createNativeStackNavigator<OwnerProfileStackParamList>();
+function OwnerProfileStack() {
+  return (
+    <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
+      <ProfileStack.Screen name="Profile" component={ProfileScreen} />
+      <ProfileStack.Screen name="EditProfile" component={EditProfileScreen} />
+      <ProfileStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+    </ProfileStack.Navigator>
+  );
+}
+
+const Tab = createBottomTabNavigator<OwnerTabParamList>();
+
+export function OwnerTabs() {
+  const { colors } = useTheme();
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.mutedForeground,
+        tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border },
+      }}
+    >
+      <Tab.Screen
+        name="HomeTab"
+        component={OwnerHomeStack}
+        options={{
+          title: 'Inicio',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="PetsTab"
+        component={OwnerPetsStack}
+        options={{
+          title: 'Mascotas',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="paw" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="AppointmentsTab"
+        component={OwnerAppointmentsStack}
+        options={{
+          title: 'Citas',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="calendar" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="ProfileTab"
+        component={OwnerProfileStack}
+        options={{
+          title: 'Perfil',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" color={color} size={size} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
