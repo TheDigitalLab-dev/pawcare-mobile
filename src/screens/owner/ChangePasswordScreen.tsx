@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Button, TextField } from '@/components/ui';
+import { Button, InfoBanner, TextField } from '@/components/ui';
 import type { OwnerProfileStackParamList } from '@/navigation/types';
+import { changePassword } from '@/services/profile';
+import { ApiError } from '@/types/api';
 
 const MIN_PASSWORD = 8;
 
@@ -17,10 +20,30 @@ export function ChangePasswordScreen() {
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string>();
 
   const nextValid = next.length >= MIN_PASSWORD;
   const match = next === confirm;
-  const canSubmit = current.length > 0 && nextValid && match;
+  const canSubmit = current.length > 0 && nextValid && match && !submitting;
+
+  const onSubmit = async () => {
+    setSubmitting(true);
+    setError(undefined);
+    try {
+      await changePassword({
+        current_password: current,
+        password: next,
+        password_confirmation: confirm,
+      });
+      Alert.alert('Listo', 'Tu contraseña se actualizó correctamente.');
+      if (back) back();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : 'No se pudo cambiar la contraseña.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <MobileShell
@@ -28,6 +51,8 @@ export function ChangePasswordScreen() {
       header={<AppHeader title="Cambiar contraseña" onBack={back} />}
       contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
+      {error ? <InfoBanner tone="destructive" message={error} /> : null}
+
       <TextField
         label="Contraseña actual"
         value={current}
@@ -57,9 +82,9 @@ export function ChangePasswordScreen() {
       <Button
         label="Guardar"
         fullWidth
+        loading={submitting}
         disabled={!canSubmit}
-        // TODO: actualizar contraseña en el backend
-        onPress={back}
+        onPress={onSubmit}
         style={{ marginTop: 8 }}
       />
     </MobileShell>

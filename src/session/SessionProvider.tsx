@@ -35,6 +35,8 @@ export interface SessionContextValue {
     passwordConfirmation: string,
   ) => Promise<void>;
   signOut: () => Promise<void>;
+  /** Re-lee el usuario de sesión desde /me (tras editar el perfil). */
+  refreshUser: () => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextValue | undefined>(undefined);
@@ -103,6 +105,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         await authService.logout();
         setUser(null);
         setRole('public');
+      },
+      refreshUser: async () => {
+        const fresh = await authService.fetchCurrentUser();
+        setUser(fresh);
+        setRole(roleForUser(fresh));
       },
     }),
     [status, role, user],

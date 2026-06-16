@@ -19,5 +19,6 @@ export function useAuth() {
     forgotPassword: session.forgotPassword,
     resetPassword: session.resetPassword,
     signOut: session.signOut,
+    refreshUser: session.refreshUser,
   };
 }
