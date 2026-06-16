@@ -41,7 +41,7 @@ export function AdminPaymentRegisterScreen() {
     >
       {payment ? (
         <InfoBanner
-          message={`${payment.concept ?? 'Pago'} · ${formatMoney(payment.amount, payment.currency)}`}
+          message={`${payment.pet_name ?? 'Pago'} · ${formatMoney(payment.amount, payment.currency)}`}
           tone="info"
         />
       ) : null}

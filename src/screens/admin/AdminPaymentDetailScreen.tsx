@@ -13,8 +13,9 @@ type Nav = NativeStackNavigationProp<AdminMoreStackParamList>;
 type Rt = RouteProp<AdminMoreStackParamList, 'AdminPaymentDetail'>;
 
 const STATUS_VARIANT: Record<PaymentStatus, BadgeVariant> = {
+  draft: 'outline',
   pending: 'warning',
-  paid: 'success',
+  completed: 'success',
   overdue: 'destructive',
   cancelled: 'outline',
 };
@@ -43,7 +44,7 @@ export function AdminPaymentDetailScreen() {
     );
   }
 
-  const settled = payment.status === 'paid' || payment.status === 'cancelled';
+  const settled = payment.status === 'completed' || payment.status === 'cancelled';
 
   return (
     <MobileShell
@@ -58,7 +59,7 @@ export function AdminPaymentDetailScreen() {
     >
       <DetailHero
         title={formatMoney(payment.amount, payment.currency)}
-        subtitle={payment.concept ?? 'Pago'}
+        subtitle={payment.pet_name ?? 'Pago'}
       >
         <Badge
           label={PAYMENT_STATUS_LABEL[payment.status]}

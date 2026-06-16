@@ -1,18 +1,21 @@
-import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { EmptyState, FilterChips, type BadgeVariant } from '@/components/ui';
+import { AsyncBoundary, FilterChips, type BadgeVariant } from '@/components/ui';
 import { PaymentCard } from '@/components/domain';
 import type { OwnerHomeStackParamList } from '@/navigation/types';
-import { formatDate, formatMoney, mockPayments } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { listPayments } from '@/services/payments';
+import { formatDate, formatMoney } from '@/utils/format';
 import { PAYMENT_STATUS_LABEL, type PaymentStatus } from '@/types/models';
 
 const STATUS_VARIANT: Record<PaymentStatus, BadgeVariant> = {
+  draft: 'outline',
   pending: 'warning',
-  paid: 'success',
+  completed: 'success',
   overdue: 'destructive',
   cancelled: 'outline',
 };
@@ -26,15 +29,25 @@ const FILTERS = [
   { id: 'paid', label: 'Pagados' },
 ];
 
+const PENDING: PaymentStatus[] = ['pending', 'overdue'];
+
 export function OwnerPaymentsScreen() {
   const navigation = useNavigation<Nav>();
   const [filter, setFilter] = useState<Filter>('all');
+  const { data, loading, error, reload } = useAsync(() => listPayments());
 
-  const payments = mockPayments.filter((p) => {
-    if (filter === 'pending') return p.status === 'pending' || p.status === 'overdue';
-    if (filter === 'paid') return p.status === 'paid';
-    return true;
-  });
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+    }, [reload]),
+  );
+
+  const payments = useMemo(() => {
+    const list = data ?? [];
+    if (filter === 'pending') return list.filter((p) => PENDING.includes(p.status));
+    if (filter === 'paid') return list.filter((p) => p.status === 'completed');
+    return list;
+  }, [data, filter]);
 
   return (
     <MobileShell
@@ -53,35 +66,37 @@ export function OwnerPaymentsScreen() {
         onSelect={(id) => setFilter(id as Filter)}
       />
 
-      {payments.length === 0 ? (
-        <EmptyState
-          icon="card"
-          title="Sin pagos"
-          description="No hay pagos en esta categoría."
-        />
-      ) : (
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={payments.length === 0}
+        emptyIcon="card"
+        emptyTitle="Sin pagos"
+        emptyDescription="No hay pagos en esta categoría."
+      >
         <View style={{ gap: 12 }}>
           {payments.map((p) => (
             <PaymentCard
               key={p.id}
-              concept={p.concept ?? 'Pago'}
+              concept={p.pet_name ?? 'Pago'}
               amountLabel={formatMoney(p.amount, p.currency)}
               statusLabel={PAYMENT_STATUS_LABEL[p.status]}
               statusVariant={STATUS_VARIANT[p.status]}
               dueLabel={
-                p.status === 'paid'
+                p.status === 'completed'
                   ? `Pagado: ${formatDate(p.paid_at)}`
                   : `Vence: ${formatDate(p.due_date)}`
               }
               onRegister={
-                p.status === 'pending' || p.status === 'overdue'
+                PENDING.includes(p.status)
                   ? () => navigation.navigate('OwnerPaymentRegister', { id: p.id })
                   : undefined
               }
             />
           ))}
         </View>
-      )}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

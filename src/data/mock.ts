@@ -161,30 +161,30 @@ export const mockAppointments: Appointment[] = [
 export const mockPayments: Payment[] = [
   {
     id: 1,
+    owner_id: 1,
     amount: 45000,
     currency: 'COP',
     status: 'pending',
-    concept: 'Consulta general',
     due_date: '2026-06-25',
     pet_name: 'Firulais',
     owner_name: 'María González',
   },
   {
     id: 2,
+    owner_id: 1,
     amount: 30000,
     currency: 'COP',
-    status: 'paid',
-    concept: 'Vacunación',
+    status: 'completed',
     paid_at: '2026-05-31',
     pet_name: 'Michi',
     owner_name: 'María González',
   },
   {
     id: 3,
+    owner_id: 1,
     amount: 25000,
     currency: 'COP',
     status: 'overdue',
-    concept: 'Desparasitación',
     due_date: '2026-06-01',
     pet_name: 'Firulais',
     owner_name: 'María González',
@@ -345,11 +345,6 @@ export const mockSponsorships: Sponsorship[] = [
 ];
 
 /** Formatea un monto en moneda local (presentacional). */
-export function formatMoney(amount: number, currency = 'COP'): string {
-  return `${currency === 'COP' ? '$' : currency + ' '}${amount.toLocaleString('es-CO')}`;
-}
-
-/** Formatea una fecha ISO a algo legible en español (corto). */
 // Los formateadores reales viven en utils/format; se re-exportan para no romper
 // imports existentes mientras se migra cada dominio fuera de este mock.
-export { formatDate, formatDateTime } from '@/utils/format';
+export { formatDate, formatDateTime, formatMoney } from '@/utils/format';

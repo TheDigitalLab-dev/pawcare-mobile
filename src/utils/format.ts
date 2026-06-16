@@ -13,6 +13,11 @@ export function formatDate(iso?: string | null): string {
   });
 }
 
+export function formatMoney(amount: number, currency = 'COP'): string {
+  const prefix = currency === 'COP' ? '$' : `${currency} `;
+  return `${prefix}${amount.toLocaleString('es-CO')}`;
+}
+
 export function formatDateTime(iso?: string | null): string {
   if (!iso) return '—';
   const d = new Date(iso);

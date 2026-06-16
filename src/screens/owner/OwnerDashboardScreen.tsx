@@ -77,7 +77,7 @@ export function OwnerDashboardScreen() {
         <View style={{ gap: 8 }}>
           <SectionTitle>Pagos pendientes</SectionTitle>
           <PaymentCard
-            concept={firstPending.concept ?? 'Pago'}
+            concept={firstPending.pet_name ?? 'Pago'}
             amountLabel={formatMoney(firstPending.amount, firstPending.currency)}
             statusLabel={PAYMENT_STATUS_LABEL[firstPending.status]}
             statusVariant="warning"

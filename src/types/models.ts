@@ -92,12 +92,22 @@ export const APPOINTMENT_PAYMENT_STATUS_LABEL: Record<AppointmentPaymentStatus, 
     refunded: 'Reembolsado',
   };
 
-export type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'cancelled';
+// Enum del backend (app/models/payment.rb).
+export type PaymentStatus = 'draft' | 'pending' | 'completed' | 'overdue' | 'cancelled';
 export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = {
+  draft: 'Borrador',
   pending: 'Pendiente',
-  paid: 'Pagado',
+  completed: 'Pagado',
   overdue: 'Vencido',
   cancelled: 'Cancelado',
+};
+
+export type PaymentMethod = 'cash' | 'card' | 'transfer' | 'online';
+export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
+  cash: 'Efectivo',
+  card: 'Tarjeta',
+  transfer: 'Transferencia',
+  online: 'En línea',
 };
 
 export type StaffRole =
@@ -229,18 +239,36 @@ export interface Appointment {
   assigned_to: AppointmentVet | null;
 }
 
+export interface PaymentItem {
+  id: number;
+  service_id?: number | null;
+  description?: string | null;
+  quantity?: number | null;
+  unit_price?: number | null;
+  total_price?: number | null;
+  notes?: string | null;
+}
+
+// Espejo de payment_json (owner_payments_controller).
 export interface Payment {
   id: number;
-  amount: number;
-  currency: string;
+  owner_id: number;
+  appointment_id?: number | null;
   status: PaymentStatus;
-  payment_method?: string;
-  due_date?: string;
-  paid_at?: string;
-  notes?: string;
-  pet_name?: string;
-  owner_name?: string;
-  concept?: string;
+  amount: number;
+  amount_cents?: number | null;
+  currency: string;
+  due_date?: string | null;
+  due_days?: number | null;
+  payment_method?: PaymentMethod | null;
+  paid_at?: string | null;
+  transaction_id?: string | null;
+  provider?: string | null;
+  payment_reference?: string | null;
+  pet_name?: string | null;
+  owner_name?: string | null;
+  notes?: string | null;
+  items?: PaymentItem[];
 }
 
 export interface Consultation {

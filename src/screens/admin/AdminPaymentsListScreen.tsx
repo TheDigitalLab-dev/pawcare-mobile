@@ -13,8 +13,9 @@ import { PAYMENT_STATUS_LABEL, type PaymentStatus } from '@/types/models';
 type Nav = NativeStackNavigationProp<AdminMoreStackParamList>;
 
 const STATUS_VARIANT: Record<PaymentStatus, BadgeVariant> = {
+  draft: 'outline',
   pending: 'warning',
-  paid: 'success',
+  completed: 'success',
   overdue: 'destructive',
   cancelled: 'outline',
 };
@@ -58,11 +59,11 @@ export function AdminPaymentsListScreen() {
           <Pressable
             key={p.id}
             accessibilityRole="button"
-            accessibilityLabel={`Ver pago ${p.concept ?? ''}`}
+            accessibilityLabel={`Ver pago ${p.pet_name ?? ''}`}
             onPress={() => navigation.navigate('AdminPaymentDetail', { id: p.id })}
           >
             <PaymentCard
-              concept={p.concept ?? 'Pago'}
+              concept={p.pet_name ?? 'Pago'}
               amountLabel={formatMoney(p.amount, p.currency)}
               statusLabel={PAYMENT_STATUS_LABEL[p.status]}
               statusVariant={STATUS_VARIANT[p.status]}
