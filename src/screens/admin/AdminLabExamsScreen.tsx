@@ -1,68 +1,65 @@
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Badge, EmptyState, Fab, UploadZone } from '@/components/ui';
+import { AsyncBoundary, Badge, type BadgeVariant } from '@/components/ui';
 import { ListRow } from '@/components/domain';
 import type { AdminMoreStackParamList } from '@/navigation/types';
-import { mockLabExams } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { getAdminConsultation } from '@/services/admin';
 
-type Nav = NativeStackNavigationProp<AdminMoreStackParamList>;
 type Rt = RouteProp<AdminMoreStackParamList, 'AdminLabExams'>;
 
+const STATUS_LABEL: Record<string, string> = {
+  pending: 'Pendiente',
+  in_progress: 'En proceso',
+  completed: 'Completado',
+};
+const STATUS_VARIANT: Record<string, BadgeVariant> = {
+  pending: 'warning',
+  in_progress: 'info',
+  completed: 'success',
+};
+
 export function AdminLabExamsScreen() {
-  const navigation = useNavigation<Nav>();
-  useRoute<Rt>();
+  const navigation = useNavigation();
+  const { params } = useRoute<Rt>();
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
+
+  const { data, loading, error, reload } = useAsync(() =>
+    getAdminConsultation(params.consultationId),
+  );
+  const exams = data?.lab_exams ?? [];
 
   return (
     <MobileShell
       scroll
-      header={
-        <AppHeader
-          title="Exámenes de laboratorio"
-          onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-        />
-      }
-      contentStyle={{ gap: 12, paddingBottom: 96 }}
-      fab={
-        <Fab
-          accessibilityLabel="Agregar examen"
-          // No-op: sin backend.
-          onPress={() => {}}
-        />
-      }
+      header={<AppHeader title="Exámenes de laboratorio" onBack={back} />}
+      contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
-      <UploadZone
-        label="Adjuntar resultado"
-        hint="Toca para subir PDF o imagen del examen"
-        // No-op: sin backend.
-        onPress={() => {}}
-      />
-
-      {mockLabExams.length === 0 ? (
-        <EmptyState
-          icon="flask"
-          title="Sin exámenes"
-          description="No hay exámenes de laboratorio registrados."
-        />
-      ) : (
-        mockLabExams.map((exam) => {
-          const completed = exam.status === 'completed';
-          return (
-            <ListRow
-              key={exam.id}
-              title={exam.exam_name}
-              subtitle={exam.results ?? 'Resultados pendientes'}
-              trailing={
-                <Badge
-                  label={completed ? 'Completado' : 'Pendiente'}
-                  variant={completed ? 'success' : 'warning'}
-                />
-              }
-            />
-          );
-        })
-      )}
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={data !== null && exams.length === 0}
+        emptyIcon="flask"
+        emptyTitle="Sin exámenes"
+        emptyDescription="Esta consulta no tiene exámenes de laboratorio."
+      >
+        {exams.map((e) => (
+          <ListRow
+            key={e.id}
+            title={e.exam_name}
+            subtitle={e.results ?? undefined}
+            showChevron={false}
+            trailing={
+              <Badge
+                label={STATUS_LABEL[e.status] ?? e.status}
+                variant={STATUS_VARIANT[e.status] ?? 'outline'}
+              />
+            }
+          />
+        ))}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

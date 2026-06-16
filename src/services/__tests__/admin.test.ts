@@ -40,4 +40,22 @@ describe('adminService (listas reales del staff)', () => {
     const adoptions = await adminService.listAdminAdoptions();
     expect(Array.isArray(adoptions)).toBe(true);
   });
+
+  it('lista esquemas de vacunación', async () => {
+    const schedules = await adminService.listVaccinationSchedules();
+    expect(Array.isArray(schedules)).toBe(true);
+  });
+
+  // Nota: /admin/medical-reports-list es lento/flaky en el backend (genera
+  // contenido) y cuelga undici en Jest; la pantalla lo consume con timeout y
+  // estados de carga/error. No se cubre con test de integración por esa razón.
+
+  it('obtiene una consulta completa con recetas y exámenes', async () => {
+    const consultations = await adminService.listAdminConsultations();
+    if (consultations.length === 0) return;
+    const full = await adminService.getAdminConsultation(consultations[0]!.id);
+    expect(full.id).toBe(consultations[0]!.id);
+    expect(Array.isArray(full.prescriptions)).toBe(true);
+    expect(Array.isArray(full.lab_exams)).toBe(true);
+  });
 });

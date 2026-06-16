@@ -1,60 +1,55 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { EmptyState, Fab, SearchBar } from '@/components/ui';
+import { AsyncBoundary, SearchBar } from '@/components/ui';
 import { ListRow } from '@/components/domain';
 import type { AdminMoreStackParamList } from '@/navigation/types';
-import { formatDateTime, mockReports } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { listAdminMedicalReports } from '@/services/admin';
+import { formatDate } from '@/utils/format';
 
 type Nav = NativeStackNavigationProp<AdminMoreStackParamList>;
 
 export function AdminMedicalReportsListScreen() {
   const navigation = useNavigation<Nav>();
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
   const [query, setQuery] = useState('');
+  const { data, loading, error, reload } = useAsync(() => listAdminMedicalReports());
 
-  const term = query.trim().toLowerCase();
-  const reports = term
-    ? mockReports.filter((r) => r.title.toLowerCase().includes(term))
-    : mockReports;
+  const reports = useMemo(() => {
+    const list = data ?? [];
+    const q = query.trim().toLowerCase();
+    return q ? list.filter((r) => r.title.toLowerCase().includes(q)) : list;
+  }, [data, query]);
 
   return (
     <MobileShell
       scroll
-      header={
-        <AppHeader
-          title="Reportes médicos"
-          onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-        />
-      }
-      contentStyle={{ gap: 12, paddingBottom: 96 }}
-      fab={
-        <Fab
-          accessibilityLabel="Generar reporte"
-          // No-op: sin backend.
-          onPress={() => {}}
-        />
-      }
+      header={<AppHeader title="Reportes médicos" onBack={back} />}
+      contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
       <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar reporte…" />
 
-      {reports.length === 0 ? (
-        <EmptyState
-          icon="document-text"
-          title="Sin reportes"
-          description="No se encontraron reportes médicos."
-        />
-      ) : (
-        reports.map((r) => (
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={reports.length === 0}
+        emptyIcon="document-text"
+        emptyTitle="Sin reportes"
+        emptyDescription="No hay reportes médicos."
+      >
+        {reports.map((r) => (
           <ListRow
             key={r.id}
             title={r.title}
-            subtitle={formatDateTime(r.generated_at)}
+            subtitle={formatDate(r.generated_at ?? r.created_at)}
             onPress={() => navigation.navigate('AdminMedicalReportDetail', { id: r.id })}
           />
-        ))
-      )}
+        ))}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

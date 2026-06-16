@@ -1,102 +1,74 @@
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import { StyleSheet, Text, View } from 'react-native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Text } from 'react-native';
 
 import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Button, EmptyState, SectionTitle } from '@/components/ui';
-import { DetailHero } from '@/components/domain';
+import { AsyncBoundary, Card, SectionTitle } from '@/components/ui';
 import type { AdminMoreStackParamList } from '@/navigation/types';
-import { formatDateTime, mockReports } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { getAdminMedicalReport } from '@/services/admin';
+import { formatDate } from '@/utils/format';
+import type { MedicalReport } from '@/types/models';
 
-type Nav = NativeStackNavigationProp<AdminMoreStackParamList>;
 type Rt = RouteProp<AdminMoreStackParamList, 'AdminMedicalReportDetail'>;
 
-export function AdminMedicalReportDetailScreen() {
+function Body({ report }: { report: MedicalReport }) {
   const { colors } = useTheme();
-  const navigation = useNavigation<Nav>();
-  const { params } = useRoute<Rt>();
-  const report = mockReports.find((r) => r.id === params.id);
+  return (
+    <>
+      <Card style={{ gap: 6 }}>
+        <Text style={{ fontSize: 18, fontWeight: '700', color: colors.foreground }}>
+          {report.title}
+        </Text>
+        <Text style={{ fontSize: 13, color: colors.mutedForeground }}>
+          {formatDate(report.generated_at ?? report.created_at)} ·{' '}
+          {report.created_by.full_name}
+        </Text>
+      </Card>
 
-  if (!report) {
-    return (
-      <MobileShell
-        header={
-          <AppHeader
-            title="Reporte"
-            onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-          />
-        }
-      >
-        <EmptyState
-          icon="document-text"
-          title="Reporte no encontrado"
-          description="No existe un reporte con ese identificador."
-        />
-      </MobileShell>
-    );
-  }
+      {report.current_observations ? (
+        <>
+          <SectionTitle>Observaciones</SectionTitle>
+          <Card>
+            <Text style={{ fontSize: 15, color: colors.foreground }}>
+              {report.current_observations}
+            </Text>
+          </Card>
+        </>
+      ) : null}
+
+      {report.content ? (
+        <>
+          <SectionTitle>Contenido</SectionTitle>
+          <Card>
+            <Text style={{ fontSize: 15, color: colors.foreground }}>
+              {report.content}
+            </Text>
+          </Card>
+        </>
+      ) : null}
+    </>
+  );
+}
+
+export function AdminMedicalReportDetailScreen() {
+  const navigation = useNavigation();
+  const { params } = useRoute<Rt>();
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
+
+  const { data, loading, error, reload } = useAsync(() =>
+    getAdminMedicalReport(params.id),
+  );
 
   return (
     <MobileShell
       scroll
-      header={
-        <AppHeader
-          title="Reporte médico"
-          onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-        />
-      }
+      header={<AppHeader title="Reporte médico" onBack={back} />}
       contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
-      <DetailHero
-        title={report.title}
-        subtitle={`Generado: ${formatDateTime(report.generated_at)}`}
-      />
-
-      <SectionTitle>Contenido</SectionTitle>
-      <Text style={[styles.body, { color: colors.foreground }]}>
-        {report.content ?? 'Sin contenido.'}
-      </Text>
-
-      <SectionTitle>Exportar</SectionTitle>
-      <View style={styles.exportRow}>
-        {/* No-op TODO: generar archivo sin backend. */}
-        <Button
-          label="CSV"
-          variant="outline"
-          onPress={() => {}}
-          style={styles.exportBtn}
-        />
-        <Button
-          label="JSON"
-          variant="outline"
-          onPress={() => {}}
-          style={styles.exportBtn}
-        />
-        <Button
-          label="PDF"
-          variant="outline"
-          onPress={() => {}}
-          style={styles.exportBtn}
-        />
-      </View>
-
-      <View style={{ gap: 8, marginTop: 8 }}>
-        {/* No-op TODO: sin backend. */}
-        <Button
-          label="Enviar por correo"
-          variant="secondary"
-          fullWidth
-          onPress={() => {}}
-        />
-        <Button label="Generar PDF" variant="primary" fullWidth onPress={() => {}} />
-      </View>
+      <AsyncBoundary loading={loading && data === null} error={error} onRetry={reload}>
+        {data ? <Body report={data} /> : null}
+      </AsyncBoundary>
     </MobileShell>
   );
 }
-
-const styles = StyleSheet.create({
-  body: { fontSize: 15, lineHeight: 22 },
-  exportRow: { flexDirection: 'row', gap: 8 },
-  exportBtn: { flex: 1 },
-});

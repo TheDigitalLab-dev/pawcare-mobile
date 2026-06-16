@@ -7,6 +7,7 @@ import type {
   Appointment,
   Consultation,
   Deworming,
+  MedicalReport,
   Payment,
   Pet,
   Vaccination,
@@ -20,6 +21,45 @@ export interface AdoptionRecord {
   notes?: string | null;
   pet: { id: number; name: string; species: string } | null;
   adopter?: { id: number; full_name?: string } | null;
+}
+
+/** Esquema de vacunación (admin vaccination-schedules-list). */
+export interface VaccinationSchedule {
+  id: number;
+  pet_id: number;
+  schedule_type: string;
+  start_date?: string | null;
+  status: string;
+  pet: { id: number; name: string; species: string } | null;
+}
+
+/** Consulta completa (con recetas y exámenes) — /admin/consultations/:id. */
+export async function getAdminConsultation(id: number): Promise<Consultation> {
+  const { consultation } = await api.get<{ consultation: Consultation }>(
+    `/admin/consultations/${id}`,
+  );
+  return consultation;
+}
+
+export async function listVaccinationSchedules(): Promise<VaccinationSchedule[]> {
+  const { schedules } = await api.get<{ schedules: VaccinationSchedule[] }>(
+    '/admin/vaccination-schedules-list',
+  );
+  return schedules;
+}
+
+export async function listAdminMedicalReports(): Promise<MedicalReport[]> {
+  const { medical_reports } = await api.get<{ medical_reports: MedicalReport[] }>(
+    '/admin/medical-reports-list',
+  );
+  return medical_reports;
+}
+
+export async function getAdminMedicalReport(id: number): Promise<MedicalReport> {
+  const { medical_report } = await api.get<{ medical_report: MedicalReport }>(
+    `/admin/medical_reports/${id}`,
+  );
+  return medical_report;
 }
 
 export async function listAdminPets(): Promise<Pet[]> {

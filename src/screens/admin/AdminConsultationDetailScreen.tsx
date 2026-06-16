@@ -7,7 +7,7 @@ import { AsyncBoundary, Badge, Card, SectionTitle } from '@/components/ui';
 import { DetailHero, ListRow } from '@/components/domain';
 import type { AdminMoreStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
-import { listAdminConsultations } from '@/services/admin';
+import { getAdminConsultation } from '@/services/admin';
 import { formatDateTime } from '@/utils/format';
 import type { Consultation } from '@/types/models';
 
@@ -59,8 +59,10 @@ export function AdminConsultationDetailScreen() {
   const { params } = useRoute<Rt>();
   const back = navigation.canGoBack() ? navigation.goBack : undefined;
 
-  const { data, loading, error, reload } = useAsync(() => listAdminConsultations());
-  const consultation = (data ?? []).find((c) => c.id === params.id) ?? null;
+  const { data, loading, error, reload } = useAsync(() =>
+    getAdminConsultation(params.id),
+  );
+  const consultation = data;
 
   return (
     <MobileShell
