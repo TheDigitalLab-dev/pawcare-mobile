@@ -29,3 +29,8 @@ export async function updateProfile(input: ProfileInput): Promise<void> {
 export async function changePassword(input: ChangePasswordInput): Promise<void> {
   await api.patch('/profile/password', input);
 }
+
+/** Elimina la cuenta del usuario autenticado (acción permanente). */
+export async function deleteAccount(): Promise<void> {
+  await api.delete('/profile');
+}

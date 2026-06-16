@@ -28,3 +28,37 @@ describe('profileService.updateProfile', () => {
     await profileService.updateProfile({ address: original });
   });
 });
+
+describe('profileService.deleteAccount', () => {
+  it('elimina una cuenta recién registrada (real, autocontenido)', async () => {
+    // Cuenta desechable única para no tocar las cuentas sembradas.
+    const suffix = String(Date.now()).slice(-8);
+    const email = `qa-delete-${suffix}@example.com`;
+    const password = 'password123';
+
+    await authService.register({
+      first_name: 'QA',
+      last_name: 'Delete',
+      identity_document: `V${suffix}`,
+      email,
+      username: `qadelete${suffix}`,
+      password,
+      password_confirmation: password,
+      address: 'Calle QA 1',
+      sex: 'other',
+      phone: '04140000000',
+      phone_type: 'regular',
+    });
+
+    // La sesión activa es ya la del usuario recién creado.
+    const before = await authService.fetchCurrentUser();
+    expect(before).toMatchObject({ email });
+    expect((before as unknown as Record<string, unknown>).deleted_at).toBeFalsy();
+
+    // El backend hace *soft delete*: responde 204 y marca `deleted_at`.
+    await expect(profileService.deleteAccount()).resolves.toBeUndefined();
+
+    const after = await authService.login(email, password);
+    expect((after as unknown as Record<string, unknown>).deleted_at).toBeTruthy();
+  }, 30000);
+});

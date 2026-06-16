@@ -7,6 +7,8 @@ import { Avatar, Button, EmptyState, SectionTitle } from '@/components/ui';
 import { DetailHero, ListRow } from '@/components/domain';
 import type { OwnerProfileStackParamList } from '@/navigation/types';
 import { useAuth } from '@/hooks/useAuth';
+import { deleteAccount } from '@/services/profile';
+import { ApiError } from '@/types/api';
 import { useTheme, type ThemePreference } from '@/theme';
 
 type Nav = NativeStackNavigationProp<OwnerProfileStackParamList>;
@@ -23,16 +25,6 @@ const THEME_ICON: Record<ThemePreference, string> = {
   dark: '🌙',
 };
 
-// Función pura (no depende de props/estado): se define a nivel de módulo para no
-// reconstruirla en cada render.
-function confirmDelete() {
-  Alert.alert('Eliminar cuenta', 'Esta acción es permanente. ¿Deseas continuar?', [
-    { text: 'Cancelar', style: 'cancel' },
-    // TODO: eliminar cuenta en el backend
-    { text: 'Eliminar', style: 'destructive', onPress: () => undefined },
-  ]);
-}
-
 export function ProfileScreen() {
   const navigation = useNavigation<Nav>();
   const { user, signOut } = useAuth();
@@ -41,6 +33,26 @@ export function ProfileScreen() {
   const cycleTheme = () => {
     const next = THEME_ORDER[(THEME_ORDER.indexOf(preference) + 1) % THEME_ORDER.length];
     if (next) setPreference(next);
+  };
+
+  const runDelete = async () => {
+    try {
+      await deleteAccount();
+      // La cuenta queda eliminada: cierra sesión y vuelve al público.
+      await signOut();
+    } catch (e) {
+      Alert.alert(
+        'No se pudo eliminar la cuenta',
+        e instanceof ApiError ? e.message : 'Inténtalo de nuevo más tarde.',
+      );
+    }
+  };
+
+  const confirmDelete = () => {
+    Alert.alert('Eliminar cuenta', 'Esta acción es permanente. ¿Deseas continuar?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Eliminar', style: 'destructive', onPress: () => void runDelete() },
+    ]);
   };
 
   const confirmLogout = () => {
