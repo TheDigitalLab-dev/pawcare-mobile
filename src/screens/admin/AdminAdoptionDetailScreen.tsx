@@ -42,7 +42,7 @@ export function AdminAdoptionDetailScreen() {
     );
   }
 
-  const status: AdoptionStatus = pet.adoption_status ?? 'available_for_adoption';
+  const status: AdoptionStatus = 'available_for_adoption';
 
   return (
     <MobileShell
@@ -63,9 +63,12 @@ export function AdminAdoptionDetailScreen() {
         <Badge label={ADOPTION_STATUS_LABEL[status]} variant="info" />
       </DetailHero>
 
-      <ListRow title="Edad" subtitle={pet.age_label ?? 'Desconocida'} />
+      <ListRow title="Edad" subtitle={pet.age_display ?? 'Desconocida'} />
       <ListRow title="Sexo" subtitle={pet.sex ? SEX_LABEL[pet.sex] : 'Sin especificar'} />
-      <ListRow title="Descripción" subtitle={pet.description ?? 'Sin descripción'} />
+      <ListRow
+        title="Características"
+        subtitle={pet.distinctive_features ?? 'Sin descripción'}
+      />
 
       <View style={{ gap: 8, marginTop: 8 }}>
         {/* No-op: sin backend. */}

@@ -1,59 +1,31 @@
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Badge, Button, Card, EmptyState } from '@/components';
-import { formatMoney, mockProducts } from '@/data/mock';
+import { AsyncBoundary, Badge, Button, Card } from '@/components';
+import { useAsync } from '@/hooks/useAsync';
+import { getProduct } from '@/services/public';
+import { formatMoney } from '@/utils/format';
+import type { Product } from '@/types/models';
 import type { PublicStackParamList } from '@/navigation/types';
 
-/** Detalle de un producto de la tienda. */
-export function ProductDetailScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<PublicStackParamList>>();
-  const route = useRoute<RouteProp<PublicStackParamList, 'ProductDetail'>>();
+type Nav = NativeStackNavigationProp<PublicStackParamList>;
+
+function Body({ product }: { product: Product }) {
   const { colors } = useTheme();
-
-  const product = mockProducts.find((p) => p.id === route.params.id);
-
-  if (!product) {
-    return (
-      <MobileShell
-        header={
-          <AppHeader
-            title="Producto"
-            onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-          />
-        }
-      >
-        <EmptyState
-          icon="cart"
-          title="Producto no encontrado"
-          description="Este producto ya no está disponible."
-        />
-      </MobileShell>
-    );
-  }
-
-  const stock = product.current_stock ?? 0;
-  const inStock = stock > 0;
-  const priceLabel =
-    product.sale_price !== undefined
-      ? formatMoney(product.sale_price, product.currency)
-      : 'Consultar';
+  const navigation = useNavigation<Nav>();
+  const stock = product.stock_quantity ?? 0;
+  const inStock = product.in_stock ?? stock > 0;
 
   return (
-    <MobileShell
-      scroll
-      header={
-        <AppHeader
-          title={product.name}
-          onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-        />
-      }
-      contentStyle={{ gap: 12 }}
-    >
-      <View style={[styles.thumb, { backgroundColor: colors.muted }]} />
+    <>
+      {product.image_url ? (
+        <Image source={{ uri: product.image_url }} style={styles.thumb} />
+      ) : (
+        <View style={[styles.thumb, { backgroundColor: colors.muted }]} />
+      )}
 
       <Card style={styles.card}>
         <Text style={[styles.name, { color: colors.foreground }]}>{product.name}</Text>
@@ -62,15 +34,14 @@ export function ProductDetailScreen() {
             {product.description}
           </Text>
         ) : null}
-        <Text style={[styles.price, { color: colors.primary }]}>{priceLabel}</Text>
+        <Text style={[styles.price, { color: colors.primary }]}>
+          {formatMoney(Number(product.sale_price))}
+        </Text>
         <View style={styles.badges}>
           <Badge
             label={inStock ? `En stock (${stock})` : 'Agotado'}
             variant={inStock ? 'success' : 'destructive'}
           />
-          {product.requires_prescription ? (
-            <Badge label="Requiere receta" variant="warning" />
-          ) : null}
         </View>
       </Card>
 
@@ -80,6 +51,27 @@ export function ProductDetailScreen() {
         disabled={!inStock}
         onPress={() => navigation.navigate('Checkout')}
       />
+    </>
+  );
+}
+
+export function ProductDetailScreen() {
+  const navigation = useNavigation<Nav>();
+  const route = useRoute<RouteProp<PublicStackParamList, 'ProductDetail'>>();
+  const id = route.params.id;
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
+
+  const { data, loading, error, reload } = useAsync(() => getProduct(id));
+
+  return (
+    <MobileShell
+      scroll
+      header={<AppHeader title={data?.name ?? 'Producto'} onBack={back} />}
+      contentStyle={{ gap: 12 }}
+    >
+      <AsyncBoundary loading={loading && data === null} error={error} onRetry={reload}>
+        {data ? <Body product={data} /> : null}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

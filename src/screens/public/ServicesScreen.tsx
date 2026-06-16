@@ -1,18 +1,18 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
-import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
-import { EmptyState, ListRow } from '@/components';
-import { formatMoney, mockServices } from '@/data/mock';
+import { AsyncBoundary, ListRow } from '@/components';
+import { useAsync } from '@/hooks/useAsync';
+import { listPublicServices } from '@/services/public';
+import { formatMoney } from '@/utils/format';
 import type { PublicStackParamList } from '@/navigation/types';
 
-/** Catálogo de servicios disponibles. */
 export function ServicesScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<PublicStackParamList>>();
-  const { colors } = useTheme();
+  const { data, loading, error, reload } = useAsync(() => listPublicServices());
+  const items = data ?? [];
 
   return (
     <MobileShell
@@ -25,35 +25,30 @@ export function ServicesScreen() {
       }
       contentStyle={{ gap: 12 }}
     >
-      {mockServices.length === 0 ? (
-        <EmptyState
-          icon="medkit"
-          title="Sin servicios"
-          description="Aún no hay servicios publicados."
-        />
-      ) : (
-        mockServices.map((service) => {
-          const priceLabel =
-            service.price != null
-              ? formatMoney(service.price, service.currency ?? undefined)
-              : 'Consultar';
-          const duration =
-            service.duration_minutes != null ? ` · ${service.duration_minutes} min` : '';
-          return (
-            <ListRow
-              key={service.id}
-              title={service.name}
-              subtitle={`${priceLabel}${duration}`}
-              leading={
-                <View>
-                  <Ionicons name="medkit" size={22} color={colors.primary} />
-                </View>
-              }
-              showChevron={false}
-            />
-          );
-        })
-      )}
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={items.length === 0}
+        emptyIcon="medkit"
+        emptyTitle="Sin servicios"
+        emptyDescription="Aún no hay servicios publicados."
+      >
+        <View style={{ gap: 8 }}>
+          {items.map((s) => {
+            const price = s.price != null ? formatMoney(Number(s.price)) : 'Consultar';
+            const duration = s.duration_minutes ? ` · ${s.duration_minutes} min` : '';
+            return (
+              <ListRow
+                key={s.id}
+                title={s.name}
+                subtitle={`${price}${duration}`}
+                showChevron={false}
+              />
+            );
+          })}
+        </View>
+      </AsyncBoundary>
     </MobileShell>
   );
 }

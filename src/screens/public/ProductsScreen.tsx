@@ -4,20 +4,22 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StyleSheet, View } from 'react-native';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { EmptyState, ProductCard, SearchBar } from '@/components';
-import { formatMoney, mockProducts } from '@/data/mock';
+import { AsyncBoundary, ProductCard, SearchBar } from '@/components';
+import { useAsync } from '@/hooks/useAsync';
+import { listProducts } from '@/services/public';
+import { formatMoney } from '@/utils/format';
 import type { PublicStackParamList } from '@/navigation/types';
 
-/** Tienda: búsqueda + grid de productos. */
 export function ProductsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<PublicStackParamList>>();
   const [query, setQuery] = useState('');
+  const { data, loading, error, reload } = useAsync(() => listProducts());
 
   const filtered = useMemo(() => {
+    const list = data ?? [];
     const q = query.trim().toLowerCase();
-    if (!q) return mockProducts;
-    return mockProducts.filter((p) => p.name.toLowerCase().includes(q));
-  }, [query]);
+    return q ? list.filter((p) => p.name.toLowerCase().includes(q)) : list;
+  }, [data, query]);
 
   return (
     <MobileShell
@@ -32,33 +34,30 @@ export function ProductsScreen() {
     >
       <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar productos…" />
 
-      {filtered.length === 0 ? (
-        <EmptyState
-          icon="cart"
-          title="Sin resultados"
-          description="No encontramos productos para tu búsqueda."
-        />
-      ) : (
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={filtered.length === 0}
+        emptyIcon="cart"
+        emptyTitle={query ? 'Sin resultados' : 'Sin productos'}
+        emptyDescription={
+          query ? 'No encontramos productos para tu búsqueda.' : 'Aún no hay productos.'
+        }
+      >
         <View style={styles.grid}>
-          {filtered.map((product) => {
-            const priceLabel =
-              product.sale_price !== undefined
-                ? formatMoney(product.sale_price, product.currency)
-                : 'Consultar';
-            const inStock = (product.current_stock ?? 0) > 0;
-            return (
-              <ProductCard
-                key={product.id}
-                name={product.name}
-                priceLabel={priceLabel}
-                imageUri={product.photo_url}
-                inStock={inStock}
-                onPress={() => navigation.navigate('ProductDetail', { id: product.id })}
-              />
-            );
-          })}
+          {filtered.map((product) => (
+            <ProductCard
+              key={product.id}
+              name={product.name}
+              priceLabel={formatMoney(Number(product.sale_price))}
+              imageUri={product.image_url ?? undefined}
+              inStock={product.in_stock ?? false}
+              onPress={() => navigation.navigate('ProductDetail', { id: product.id })}
+            />
+          ))}
         </View>
-      )}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

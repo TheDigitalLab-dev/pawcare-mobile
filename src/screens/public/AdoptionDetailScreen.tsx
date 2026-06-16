@@ -5,10 +5,13 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Avatar, Button, Card, DetailHero, EmptyState } from '@/components';
-import { mockAdoptionPets } from '@/data/mock';
-import { SPECIES_EMOJI, SPECIES_LABEL } from '@/types/models';
+import { AsyncBoundary, Avatar, Button, Card, DetailHero } from '@/components';
+import { useAsync } from '@/hooks/useAsync';
+import { getAdoptionPet } from '@/services/public';
+import { SPECIES_EMOJI, SPECIES_LABEL, type AdoptionPet } from '@/types/models';
 import type { PublicStackParamList } from '@/navigation/types';
+
+type Nav = NativeStackNavigationProp<PublicStackParamList>;
 
 const REQUISITOS = [
   'Ser mayor de edad y presentar documento de identidad.',
@@ -17,56 +20,29 @@ const REQUISITOS = [
   'Firmar el acuerdo de adopción responsable.',
 ];
 
-/** Detalle de una mascota en adopción + requisitos. */
-export function AdoptionDetailScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<PublicStackParamList>>();
-  const route = useRoute<RouteProp<PublicStackParamList, 'AdoptionDetail'>>();
+function Body({ pet }: { pet: AdoptionPet }) {
   const { colors } = useTheme();
+  const navigation = useNavigation<Nav>();
+  const subtitle = [SPECIES_LABEL[pet.species], pet.breed, pet.age_display]
+    .filter(Boolean)
+    .join(' · ');
 
-  const pet = mockAdoptionPets.find((p) => p.id === route.params.id);
-
-  if (!pet) {
-    return (
-      <MobileShell
-        header={
-          <AppHeader
-            title="Adopción"
-            onBack={navigation.canGoBack() ? navigation.goBack : undefined}
+  return (
+    <>
+      <DetailHero
+        title={pet.name}
+        subtitle={subtitle}
+        avatar={
+          <Avatar
+            uri={pet.photo_url ?? undefined}
+            fallback={SPECIES_EMOJI[pet.species]}
+            size="lg"
           />
         }
       >
-        <EmptyState
-          icon="paw"
-          title="Mascota no encontrada"
-          description="Esta mascota ya no está disponible."
-        />
-      </MobileShell>
-    );
-  }
-
-  const subtitleParts = [SPECIES_LABEL[pet.species], pet.breed, pet.age_label].filter(
-    Boolean,
-  );
-
-  return (
-    <MobileShell
-      scroll
-      header={
-        <AppHeader
-          title={pet.name}
-          onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-        />
-      }
-      contentStyle={{ gap: 12 }}
-    >
-      <DetailHero
-        title={pet.name}
-        subtitle={subtitleParts.join(' · ')}
-        avatar={<Avatar fallback={SPECIES_EMOJI[pet.species]} size="lg" />}
-      >
-        {pet.description ? (
+        {pet.distinctive_features ? (
           <Text style={[styles.desc, { color: colors.mutedForeground }]}>
-            {pet.description}
+            {pet.distinctive_features}
           </Text>
         ) : null}
       </DetailHero>
@@ -88,6 +64,27 @@ export function AdoptionDetailScreen() {
         fullWidth
         onPress={() => navigation.navigate('Contact')}
       />
+    </>
+  );
+}
+
+export function AdoptionDetailScreen() {
+  const navigation = useNavigation<Nav>();
+  const route = useRoute<RouteProp<PublicStackParamList, 'AdoptionDetail'>>();
+  const id = route.params.id;
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
+
+  const { data, loading, error, reload } = useAsync(() => getAdoptionPet(id));
+
+  return (
+    <MobileShell
+      scroll
+      header={<AppHeader title={data?.name ?? 'Adopción'} onBack={back} />}
+      contentStyle={{ gap: 12 }}
+    >
+      <AsyncBoundary loading={loading && data === null} error={error} onRetry={reload}>
+        {data ? <Body pet={data} /> : null}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

@@ -18,10 +18,9 @@ export function CheckoutScreen() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
 
-  // Resumen mock: tomamos los primeros productos como items del carrito.
+  // Resumen de ejemplo: primeros productos como items del carrito.
   const items = mockProducts.slice(0, 2);
-  const total = items.reduce((sum, item) => sum + (item.sale_price ?? 0), 0);
-  const currency = items[0]?.currency;
+  const total = items.reduce((sum, item) => sum + Number(item.sale_price), 0);
 
   const canSubmit =
     name.trim().length > 0 && email.trim().length > 0 && phone.trim().length > 0;
@@ -45,9 +44,7 @@ export function CheckoutScreen() {
               {item.name}
             </Text>
             <Text style={{ color: colors.mutedForeground }}>
-              {item.sale_price !== undefined
-                ? formatMoney(item.sale_price, item.currency)
-                : '—'}
+              {formatMoney(Number(item.sale_price))}
             </Text>
           </View>
         ))}
@@ -55,7 +52,7 @@ export function CheckoutScreen() {
         <View style={styles.row}>
           <Text style={[styles.total, { color: colors.foreground }]}>Total</Text>
           <Text style={[styles.total, { color: colors.primary }]}>
-            {formatMoney(total, currency)}
+            {formatMoney(total)}
           </Text>
         </View>
       </Card>

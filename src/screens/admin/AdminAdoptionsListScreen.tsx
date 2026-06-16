@@ -44,12 +44,12 @@ export function AdminAdoptionsListScreen() {
         />
       ) : (
         mockAdoptionPets.map((pet) => {
-          const status: AdoptionStatus = pet.adoption_status ?? 'available_for_adoption';
+          const status: AdoptionStatus = 'available_for_adoption';
           return (
             <ListRow
               key={pet.id}
               title={pet.name}
-              subtitle={`${SPECIES_LABEL[pet.species]} · ${pet.age_label ?? 'Edad desconocida'}`}
+              subtitle={`${SPECIES_LABEL[pet.species]} · ${pet.age_display ?? 'Edad desconocida'}`}
               leading={<PetAvatar fallback={SPECIES_EMOJI[pet.species]} size="md" />}
               trailing={
                 <Badge

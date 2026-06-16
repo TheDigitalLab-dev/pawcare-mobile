@@ -373,15 +373,31 @@ export interface MedicalReport {
   created_by: MedicalVet;
 }
 
+// Espejo de product_json (public/products_controller). sale_price es string.
 export interface Product {
   id: number;
   name: string;
-  description?: string;
-  sale_price?: number;
-  currency?: string;
-  current_stock?: number;
-  requires_prescription?: boolean;
-  photo_url?: string | null;
+  description?: string | null;
+  category?: string | null;
+  sale_price: string;
+  sale_price_cents?: number | null;
+  image_url?: string | null;
+  in_stock?: boolean;
+  stock_quantity?: number | null;
+  species_applicable?: string | null;
+  sku?: string | null;
+  expiration_date?: string | null;
+}
+
+// Servicio del landing público (price es string).
+export interface LandingService {
+  id: number;
+  name: string;
+  description?: string | null;
+  price: string;
+  price_cents?: number | null;
+  duration_minutes?: number | null;
+  category_name?: string | null;
 }
 
 export interface Sponsorship {
@@ -393,7 +409,16 @@ export interface Sponsorship {
   pet_name?: string;
 }
 
-export interface AdoptionPet extends Pet {
-  age_label?: string;
-  description?: string;
+// Espejo de public_pet_json (adoption_controller).
+export interface AdoptionPet {
+  id: number;
+  name: string;
+  species: Species;
+  sex?: PetSex | null;
+  age_display?: string | null;
+  photo_url?: string | null;
+  active_sponsors_count?: number;
+  breed?: string | null;
+  distinctive_features?: string | null;
+  birth_date?: string | null;
 }
