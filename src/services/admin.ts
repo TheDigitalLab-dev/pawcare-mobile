@@ -114,3 +114,79 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
   const res = await api.get<{ data: AdminMetrics }>('/admin/metrics/dashboard');
   return res.data;
 }
+
+// --- Dueños (para selección en formularios) --------------------------------
+
+export interface AdminOwner {
+  id: number;
+  first_name: string;
+  last_name: string;
+  full_name?: string;
+  email: string;
+}
+
+export async function listAdminOwners(): Promise<AdminOwner[]> {
+  const res = await api.get<{ owners: AdminOwner[] }>('/admin/owners-list');
+  return res.owners;
+}
+
+// --- Escritura de pacientes (admin) ----------------------------------------
+
+export interface AdminPetInput {
+  name: string;
+  species: string;
+  breed?: string;
+  sex?: string;
+  birth_date?: string;
+  distinctive_features?: string;
+  proprietary_id: number;
+}
+
+export async function getAdminPet(id: number): Promise<Pet> {
+  const { pet } = await api.get<{ pet: Pet }>(`/admin/pets/${id}`);
+  return pet;
+}
+
+export async function createAdminPet(input: AdminPetInput): Promise<Pet> {
+  // El dueño es siempre un Owner; el backend exige proprietary_type explícito
+  // (si no, queda null y la mascota no se asocia al dueño).
+  const { pet } = await api.post<{ pet: Pet }>('/admin/pets', {
+    pet: { ...input, proprietary_type: 'Owner' },
+  });
+  return pet;
+}
+
+export async function updateAdminPet(
+  id: number,
+  input: Partial<AdminPetInput>,
+): Promise<Pet> {
+  const { pet } = await api.patch<{ pet: Pet }>(`/admin/pets/${id}`, { pet: input });
+  return pet;
+}
+
+// --- Registro de pago (admin) ----------------------------------------------
+
+export interface AdminRegisterPaymentInput {
+  payment_method: string;
+  paid_at?: string;
+  transaction_id?: string;
+  provider?: string;
+  payment_reference?: string;
+  notes?: string;
+}
+
+export async function getAdminPayment(id: number): Promise<Payment> {
+  const { payment } = await api.get<{ payment: Payment }>(`/admin/payments/${id}`);
+  return payment;
+}
+
+export async function registerAdminPayment(
+  id: number,
+  input: AdminRegisterPaymentInput,
+): Promise<Payment> {
+  const { payment } = await api.post<{ payment: Payment }>(
+    `/admin/payments/${id}/register`,
+    input,
+  );
+  return payment;
+}

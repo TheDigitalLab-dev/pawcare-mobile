@@ -35,7 +35,13 @@ function Body({ pet }: { pet: Pet }) {
 
       <View style={{ gap: 8, marginTop: 8 }}>
         <Button
+          label="Editar paciente"
+          fullWidth
+          onPress={() => navigation.navigate('AdminPetForm', { id: pet.id })}
+        />
+        <Button
           label="Perfil médico"
+          variant="secondary"
           fullWidth
           onPress={() => navigation.navigate('AdminMedicalProfile', { petId: pet.id })}
         />

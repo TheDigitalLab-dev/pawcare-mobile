@@ -3,6 +3,7 @@
  */
 import * as authService from '@/services/auth';
 import * as adminService from '@/services/admin';
+import * as petsService from '@/services/pets';
 import * as secureStore from '@/utils/secureStore';
 
 beforeAll(async () => {
@@ -58,4 +59,25 @@ describe('adminService (listas reales del staff)', () => {
     expect(Array.isArray(full.prescriptions)).toBe(true);
     expect(Array.isArray(full.lab_exams)).toBe(true);
   });
+
+  it('crea un paciente para un dueño y lo limpia (real)', async () => {
+    // Id real de owner1 (la lista de dueños es paginada y puede no incluirlo).
+    await authService.login('owner1@example.com', 'password123');
+    const ownerId = (await authService.fetchCurrentUser()).id;
+
+    await authService.login('admin@pawcare.com', 'password123');
+    const created = await adminService.createAdminPet({
+      name: 'QA-Admin-Pet',
+      species: 'dog',
+      sex: 'male',
+      proprietary_id: ownerId,
+    });
+    expect(created.id).toEqual(expect.any(Number));
+    expect(created.name).toBe('QA-Admin-Pet');
+    expect(created.proprietary_id).toBe(ownerId);
+
+    // Limpieza: el dueño borra su propia mascota recién creada.
+    await authService.login('owner1@example.com', 'password123');
+    await petsService.deletePet(created.id);
+  }, 20000);
 });
