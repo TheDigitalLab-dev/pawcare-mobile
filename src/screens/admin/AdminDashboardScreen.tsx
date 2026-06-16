@@ -1,26 +1,22 @@
 import { useNavigation } from '@react-navigation/native';
 import { View } from 'react-native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { SectionTitle } from '@/components/ui';
+import { AsyncBoundary, SectionTitle } from '@/components/ui';
 import { AdminModuleGrid, HeroCard, StatCard } from '@/components/domain';
-import type { AdminHomeStackParamList } from '@/navigation/types';
-import { mockAppointments, mockPayments, mockPets, mockStaff } from '@/data/mock';
-
-type Nav = NativeStackNavigationProp<AdminHomeStackParamList>;
+import type { AdminTabParamList } from '@/navigation/types';
+import { useAuth } from '@/hooks/useAuth';
+import { useAsync } from '@/hooks/useAsync';
+import { getAdminMetrics } from '@/services/admin';
 
 export function AdminDashboardScreen() {
-  // El stack Home solo contiene AdminDashboard; el resto de módulos viven en
-  // otros tabs/stacks (Pacientes, Agenda, Más). Esa navegación cruzada queda
-  // como TODO porque requiere acceso al navigator raíz.
-  useNavigation<Nav>();
+  const navigation = useNavigation();
+  const { user } = useAuth();
+  const { data, loading, error, reload } = useAsync(() => getAdminMetrics());
 
-  const today = new Date().toISOString().slice(0, 10);
-  const todaysAppointments = mockAppointments.filter((a) =>
-    a.scheduled_at.startsWith(today),
-  );
-  const pendingPayments = mockPayments.filter((p) => p.status === 'pending');
+  const goToTab = (tab: keyof AdminTabParamList) =>
+    navigation.getParent<BottomTabNavigationProp<AdminTabParamList>>()?.navigate(tab);
 
   return (
     <MobileShell
@@ -29,15 +25,17 @@ export function AdminDashboardScreen() {
       contentStyle={{ gap: 16, paddingBottom: 32 }}
     >
       <HeroCard
-        title={`Hola, ${mockStaff.full_name ?? mockStaff.first_name}`}
-        subtitle="Panel del personal de Pawcare. Resumen de la jornada."
+        title={`Hola, ${user?.first_name ?? ''}`.trim()}
+        subtitle="Panel del personal de Pawcare. Resumen del periodo."
       />
 
-      <View style={{ flexDirection: 'row', gap: 12 }}>
-        <StatCard value={mockPets.length} label="Pacientes" />
-        <StatCard value={todaysAppointments.length} label="Citas hoy" />
-        <StatCard value={pendingPayments.length} label="Pagos pendientes" />
-      </View>
+      <AsyncBoundary loading={loading && data === null} error={error} onRetry={reload}>
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <StatCard value={data?.new_patients ?? 0} label="Pacientes" />
+          <StatCard value={data?.consultations ?? 0} label="Consultas" />
+          <StatCard value={data?.completed_appointments ?? 0} label="Citas hechas" />
+        </View>
+      </AsyncBoundary>
 
       <View style={{ gap: 8 }}>
         <SectionTitle>Módulos</SectionTitle>
@@ -47,46 +45,19 @@ export function AdminDashboardScreen() {
               id: 'patients',
               label: 'Pacientes',
               icon: 'paw',
-              badge: mockPets.length,
-              // TODO: cross-tab nav al stack de Pacientes (PatientsTab)
-              onPress: undefined,
+              onPress: () => goToTab('PatientsTab'),
             },
             {
               id: 'agenda',
               label: 'Agenda',
               icon: 'calendar',
-              badge: todaysAppointments.length,
-              // TODO: cross-tab nav al stack de Agenda (AgendaTab)
-              onPress: undefined,
+              onPress: () => goToTab('AgendaTab'),
             },
             {
-              id: 'consultations',
-              label: 'Consultas',
-              icon: 'medkit',
-              // TODO: cross-tab nav al stack Más (MoreTab → AdminConsultationsList)
-              onPress: undefined,
-            },
-            {
-              id: 'vaccinations',
-              label: 'Vacunas',
-              icon: 'bandage',
-              // TODO: cross-tab nav al stack Más (MoreTab → AdminVaccinationsList)
-              onPress: undefined,
-            },
-            {
-              id: 'payments',
-              label: 'Pagos',
-              icon: 'card',
-              badge: pendingPayments.length,
-              // TODO: cross-tab nav al stack Más (MoreTab → AdminPaymentsList)
-              onPress: undefined,
-            },
-            {
-              id: 'reports',
-              label: 'Reportes',
-              icon: 'document-text',
-              // TODO: cross-tab nav al stack Más (MoreTab → AdminMedicalReportsList)
-              onPress: undefined,
+              id: 'more',
+              label: 'Más módulos',
+              icon: 'grid',
+              onPress: () => goToTab('MoreTab'),
             },
           ]}
         />

@@ -60,9 +60,17 @@ export async function listAdminAdoptions(): Promise<AdoptionRecord[]> {
 }
 
 export interface AdminMetrics {
-  [key: string]: unknown;
+  consultations?: number;
+  revenue?: number;
+  completed_appointments?: number;
+  cancelled_appointments?: number;
+  new_patients?: number;
+  vaccinations?: number;
+  adoptions?: number;
+  active_sponsorships?: number;
 }
 
 export async function getAdminMetrics(): Promise<AdminMetrics> {
-  return api.get<AdminMetrics>('/admin/metrics/dashboard');
+  const res = await api.get<{ data: AdminMetrics }>('/admin/metrics/dashboard');
+  return res.data;
 }
