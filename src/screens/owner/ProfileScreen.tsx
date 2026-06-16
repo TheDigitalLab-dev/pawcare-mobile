@@ -3,12 +3,11 @@ import { Alert, View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Avatar, Button, SectionTitle } from '@/components/ui';
+import { Avatar, Button, EmptyState, SectionTitle } from '@/components/ui';
 import { DetailHero, ListRow } from '@/components/domain';
 import type { OwnerProfileStackParamList } from '@/navigation/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme, type ThemePreference } from '@/theme';
-import { mockOwner } from '@/data/mock';
 
 type Nav = NativeStackNavigationProp<OwnerProfileStackParamList>;
 
@@ -38,10 +37,6 @@ export function ProfileScreen() {
   const navigation = useNavigation<Nav>();
   const { user, signOut } = useAuth();
   const { preference, setPreference } = useTheme();
-  // Usuario real de sesión; fallback al mock para el dev role switcher.
-  const owner = user?.type === 'Owner' ? user : mockOwner;
-  const initials =
-    `${owner.first_name.charAt(0)}${owner.last_name.charAt(0)}`.toUpperCase();
 
   const cycleTheme = () => {
     const next = THEME_ORDER[(THEME_ORDER.indexOf(preference) + 1) % THEME_ORDER.length];
@@ -55,6 +50,17 @@ export function ProfileScreen() {
       { text: 'Cerrar sesión', style: 'destructive', onPress: () => void signOut() },
     ]);
   };
+
+  if (user?.type !== 'Owner') {
+    return (
+      <MobileShell header={<AppHeader title="Perfil" />}>
+        <EmptyState icon="person" title="Sin sesión de dueño" />
+      </MobileShell>
+    );
+  }
+  const owner = user;
+  const initials =
+    `${owner.first_name.charAt(0)}${owner.last_name.charAt(0)}`.toUpperCase();
 
   return (
     <MobileShell
