@@ -58,13 +58,7 @@ export function AdminPrescriptionsScreen() {
             key={item.id}
             title={item.medication_name}
             subtitle={`${item.dose ?? ''} · ${item.frequency ?? ''} · ${item.duration ?? ''}`}
-            trailing={
-              item.completed_at ? (
-                <Badge label="Tomado" variant="success" />
-              ) : (
-                <Badge label="Activo" variant="warning" />
-              )
-            }
+            trailing={<Badge label="Activo" variant="warning" />}
           />
         ))
       )}

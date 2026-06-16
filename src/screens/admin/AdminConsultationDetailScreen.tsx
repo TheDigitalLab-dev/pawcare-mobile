@@ -65,7 +65,7 @@ export function AdminConsultationDetailScreen() {
     >
       <DetailHero
         title={consultation.diagnosis ?? 'Consulta'}
-        subtitle={`${consultation.pet_name ?? 'Mascota'} · ${formatDateTime(consultation.consultation_date)}`}
+        subtitle={formatDateTime(consultation.consultation_date)}
       >
         <Badge
           label={completed ? 'Tratamiento completado' : 'En curso'}
@@ -73,7 +73,7 @@ export function AdminConsultationDetailScreen() {
         />
       </DetailHero>
 
-      <ListRow title="Veterinario" subtitle={consultation.vet_name ?? 'Sin asignar'} />
+      <ListRow title="Veterinario" subtitle={consultation.veterinarian.full_name} />
       <ListRow
         title="Tratamiento"
         subtitle={consultation.treatment ?? 'Sin tratamiento'}

@@ -1,34 +1,99 @@
-import { useState } from 'react';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { Text, View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Badge, Button, Card, EmptyState, SectionTitle } from '@/components/ui';
+import { AsyncBoundary, Button, Card, SectionTitle } from '@/components/ui';
 import type { OwnerPetsStackParamList } from '@/navigation/types';
-import { formatDateTime, mockConsultations } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { listConsultations } from '@/services/medical';
+import { formatDate } from '@/utils/format';
+import type { Consultation } from '@/types/models';
 
 type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
 
-export function ConsultationDetailScreen() {
+function Field({ label, value }: { label: string; value: string }) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ gap: 2 }}>
+      <Text style={{ fontSize: 13, color: colors.mutedForeground }}>{label}</Text>
+      <Text style={{ fontSize: 15, color: colors.foreground }}>{value}</Text>
+    </View>
+  );
+}
+
+function Body({ consultation, petId }: { consultation: Consultation; petId: number }) {
   const { colors } = useTheme();
   const navigation = useNavigation<Nav>();
+  const vitals = [
+    consultation.weight != null ? `Peso: ${consultation.weight} kg` : null,
+    consultation.temperature != null ? `Temp: ${consultation.temperature}°` : null,
+    consultation.heart_rate != null ? `FC: ${consultation.heart_rate}` : null,
+  ]
+    .filter(Boolean)
+    .join('  ·  ');
+
+  return (
+    <>
+      <Card style={{ gap: 10 }}>
+        <Field label="Fecha" value={formatDate(consultation.consultation_date)} />
+        <Field label="Veterinario" value={consultation.veterinarian.full_name} />
+        {consultation.diagnosis ? (
+          <Field label="Diagnóstico" value={consultation.diagnosis} />
+        ) : null}
+        {consultation.treatment ? (
+          <Field label="Tratamiento" value={consultation.treatment} />
+        ) : null}
+        {vitals ? <Field label="Signos vitales" value={vitals} /> : null}
+        {consultation.notes ? <Field label="Notas" value={consultation.notes} /> : null}
+      </Card>
+
+      {consultation.prescriptions.length > 0 ? (
+        <>
+          <SectionTitle>Recetas</SectionTitle>
+          {consultation.prescriptions.map((p) => (
+            <Card key={p.id} style={{ gap: 6 }}>
+              {p.diagnosis ? (
+                <Text style={{ fontWeight: '600', color: colors.foreground }}>
+                  {p.diagnosis}
+                </Text>
+              ) : null}
+              {p.items.map((it) => (
+                <Text key={it.id} style={{ fontSize: 14, color: colors.foreground }}>
+                  • {it.medication_name}
+                  {it.dose ? ` — ${it.dose}` : ''}
+                  {it.frequency ? `, ${it.frequency}` : ''}
+                  {it.duration ? `, ${it.duration}` : ''}
+                </Text>
+              ))}
+            </Card>
+          ))}
+        </>
+      ) : null}
+
+      {consultation.lab_exams.length > 0 ? (
+        <Button
+          label={`Ver exámenes de laboratorio (${consultation.lab_exams.length})`}
+          variant="outline"
+          fullWidth
+          onPress={() =>
+            navigation.navigate('LabExams', { petId, consultationId: consultation.id })
+          }
+        />
+      ) : null}
+    </>
+  );
+}
+
+export function ConsultationDetailScreen() {
+  const navigation = useNavigation<Nav>();
   const route = useRoute<RouteProp<OwnerPetsStackParamList, 'ConsultationDetail'>>();
-  const consultation = mockConsultations.find((c) => c.id === route.params.id);
+  const { petId, id } = route.params;
   const back = navigation.canGoBack() ? navigation.goBack : undefined;
 
-  const [completed, setCompleted] = useState(
-    consultation?.treatment_completed_at != null,
-  );
-
-  if (!consultation) {
-    return (
-      <MobileShell header={<AppHeader title="Consulta" onBack={back} />}>
-        <EmptyState icon="document-text" title="Consulta no encontrada" />
-      </MobileShell>
-    );
-  }
+  const { data, loading, error, reload } = useAsync(() => listConsultations(petId));
+  const consultation = (data ?? []).find((c) => c.id === id) ?? null;
 
   return (
     <MobileShell
@@ -36,63 +101,16 @@ export function ConsultationDetailScreen() {
       header={<AppHeader title="Consulta" onBack={back} />}
       contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
-      <Card style={{ gap: 8 }}>
-        <Text style={{ fontSize: 13, color: colors.mutedForeground }}>
-          {formatDateTime(consultation.consultation_date)}
-        </Text>
-        <Text style={{ fontSize: 18, fontWeight: '700', color: colors.foreground }}>
-          {consultation.diagnosis ?? 'Sin diagnóstico'}
-        </Text>
-        {consultation.vet_name ? (
-          <Text style={{ fontSize: 14, color: colors.mutedForeground }}>
-            {consultation.vet_name}
-          </Text>
-        ) : null}
-        <Badge
-          label={completed ? 'Tratamiento completado' : 'Tratamiento en curso'}
-          variant={completed ? 'success' : 'warning'}
-        />
-      </Card>
-
-      <SectionTitle>Tratamiento</SectionTitle>
-      <Card>
-        <Text style={{ fontSize: 15, color: colors.foreground }}>
-          {consultation.treatment ?? 'Sin tratamiento indicado.'}
-        </Text>
-      </Card>
-
-      <SectionTitle>Signos vitales</SectionTitle>
-      <View style={{ flexDirection: 'row', gap: 12 }}>
-        <Card style={{ flex: 1, gap: 2 }}>
-          <Text style={{ fontSize: 12, color: colors.mutedForeground }}>Peso</Text>
-          <Text style={{ fontSize: 18, fontWeight: '700', color: colors.foreground }}>
-            {consultation.weight != null ? `${consultation.weight} kg` : '—'}
-          </Text>
-        </Card>
-        <Card style={{ flex: 1, gap: 2 }}>
-          <Text style={{ fontSize: 12, color: colors.mutedForeground }}>Temperatura</Text>
-          <Text style={{ fontSize: 18, fontWeight: '700', color: colors.foreground }}>
-            {consultation.temperature != null ? `${consultation.temperature} °C` : '—'}
-          </Text>
-        </Card>
-      </View>
-
-      <Button
-        label="Exportar receta"
-        variant="outline"
-        fullWidth
-        // TODO: exportar receta a PDF
-        onPress={() => undefined}
-        style={{ marginTop: 8 }}
-      />
-      {!completed ? (
-        <Button
-          label="Marcar tratamiento completado"
-          fullWidth
-          // TODO: marcar tratamiento completado en el backend
-          onPress={() => setCompleted(true)}
-        />
-      ) : null}
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={data !== null && consultation === null}
+        emptyIcon="document-text"
+        emptyTitle="Consulta no encontrada"
+      >
+        {consultation ? <Body consultation={consultation} petId={petId} /> : null}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

@@ -1,34 +1,21 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { Text } from 'react-native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Card, InfoBanner, SectionTitle } from '@/components/ui';
+import { AsyncBoundary, Card, InfoBanner, SectionTitle } from '@/components/ui';
 import type { OwnerPetsStackParamList } from '@/navigation/types';
-import { mockMedicalProfile } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { getMedicalProfile } from '@/services/medical';
+import type { MedicalProfile } from '@/types/models';
 
-type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
-
-export function MedicalProfileScreen() {
+function ProfileBody({ profile }: { profile: MedicalProfile | null }) {
   const { colors } = useTheme();
-  const navigation = useNavigation<Nav>();
-  const profile = mockMedicalProfile;
-
-  const allergies = profile.allergies ?? [];
-  const chronic = profile.chronic_diseases ?? [];
+  const allergies = profile?.allergies ?? [];
+  const chronic = profile?.chronic_diseases ?? [];
 
   return (
-    <MobileShell
-      scroll
-      header={
-        <AppHeader
-          title="Perfil médico"
-          onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-        />
-      }
-      contentStyle={{ gap: 12, paddingBottom: 32 }}
-    >
+    <>
       <SectionTitle>Alergias</SectionTitle>
       {allergies.length === 0 ? (
         <InfoBanner message="Sin alergias registradas." tone="success" />
@@ -58,16 +45,37 @@ export function MedicalProfileScreen() {
       <SectionTitle>Tipo de sangre</SectionTitle>
       <Card>
         <Text style={{ fontSize: 16, fontWeight: '600', color: colors.foreground }}>
-          {profile.blood_type ?? 'No registrado'}
+          {profile?.blood_type ?? 'No registrado'}
         </Text>
       </Card>
 
       <SectionTitle>Notas</SectionTitle>
       <Card>
         <Text style={{ fontSize: 15, color: colors.foreground }}>
-          {profile.notes ?? 'Sin notas.'}
+          {profile?.notes ?? 'Sin notas.'}
         </Text>
       </Card>
+    </>
+  );
+}
+
+export function MedicalProfileScreen() {
+  const navigation = useNavigation();
+  const route = useRoute<RouteProp<OwnerPetsStackParamList, 'MedicalProfile'>>();
+  const { petId } = route.params;
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
+
+  const { data, loading, error, reload } = useAsync(() => getMedicalProfile(petId));
+
+  return (
+    <MobileShell
+      scroll
+      header={<AppHeader title="Perfil médico" onBack={back} />}
+      contentStyle={{ gap: 12, paddingBottom: 32 }}
+    >
+      <AsyncBoundary loading={loading && data === null} error={error} onRetry={reload}>
+        <ProfileBody profile={data} />
+      </AsyncBoundary>
     </MobileShell>
   );
 }

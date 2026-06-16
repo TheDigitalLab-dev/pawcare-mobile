@@ -40,7 +40,7 @@ export function AdminConsultationsListScreen() {
           <ListRow
             key={c.id}
             title={c.diagnosis ?? 'Consulta'}
-            subtitle={`${c.pet_name ?? 'Mascota'} · ${formatDateTime(c.consultation_date)}`}
+            subtitle={`${c.veterinarian.full_name} · ${formatDateTime(c.consultation_date)}`}
             trailing={
               c.treatment_completed_at ? (
                 <Badge label="Completada" variant="success" />

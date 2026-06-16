@@ -1,52 +1,57 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { View } from 'react-native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { EmptyState } from '@/components/ui';
+import { AsyncBoundary } from '@/components/ui';
 import { TimelineItem } from '@/components/domain';
 import type { OwnerPetsStackParamList } from '@/navigation/types';
-import { formatDate, mockDewormings } from '@/data/mock';
-
-type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
+import { useAsync } from '@/hooks/useAsync';
+import { listDewormings } from '@/services/medical';
+import { formatDate } from '@/utils/format';
 
 export function DewormingsScreen() {
-  const navigation = useNavigation<Nav>();
+  const navigation = useNavigation();
+  const route = useRoute<RouteProp<OwnerPetsStackParamList, 'Dewormings'>>();
+  const { petId } = route.params;
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
+
+  const { data, loading, error, reload } = useAsync(() => listDewormings(petId));
+  const items = data ?? [];
 
   return (
     <MobileShell
       scroll
-      header={
-        <AppHeader
-          title="Desparasitaciones"
-          onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-        />
-      }
+      header={<AppHeader title="Desparasitaciones" onBack={back} />}
       contentStyle={{ gap: 8, paddingBottom: 32 }}
     >
-      {mockDewormings.length === 0 ? (
-        <EmptyState
-          icon="flask"
-          title="Sin desparasitaciones"
-          description="No hay desparasitaciones registradas."
-        />
-      ) : (
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={items.length === 0}
+        emptyIcon="flask"
+        emptyTitle="Sin desparasitaciones"
+        emptyDescription="Esta mascota no tiene desparasitaciones registradas."
+      >
         <View>
-          {mockDewormings.map((d, i) => (
+          {items.map((d, i) => (
             <TimelineItem
               key={d.id}
               title={d.product_name}
               date={formatDate(d.application_date)}
               description={
-                d.next_due_date
-                  ? `Próxima dosis: ${formatDate(d.next_due_date)}`
-                  : undefined
+                [
+                  d.next_due_date ? `Próxima: ${formatDate(d.next_due_date)}` : null,
+                  d.veterinarian ? d.veterinarian.full_name : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ') || undefined
               }
-              last={i === mockDewormings.length - 1}
+              last={i === items.length - 1}
             />
           ))}
         </View>
-      )}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

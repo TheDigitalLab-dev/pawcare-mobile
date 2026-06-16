@@ -1,21 +1,12 @@
-import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { View } from 'react-native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import {
-  Badge,
-  EmptyState,
-  SectionTitle,
-  UploadZone,
-  type BadgeVariant,
-} from '@/components/ui';
+import { AsyncBoundary, Badge, type BadgeVariant } from '@/components/ui';
 import { ListRow } from '@/components/domain';
 import type { OwnerPetsStackParamList } from '@/navigation/types';
-import { mockLabExams } from '@/data/mock';
-
-type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
+import { useAsync } from '@/hooks/useAsync';
+import { listConsultations } from '@/services/medical';
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'Pendiente',
@@ -29,33 +20,36 @@ const STATUS_VARIANT: Record<string, BadgeVariant> = {
 };
 
 export function LabExamsScreen() {
-  const navigation = useNavigation<Nav>();
-  const [uploaded, setUploaded] = useState(false);
+  const navigation = useNavigation();
+  const route = useRoute<RouteProp<OwnerPetsStackParamList, 'LabExams'>>();
+  const { petId, consultationId } = route.params;
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
+
+  const { data, loading, error, reload } = useAsync(() => listConsultations(petId));
+  const consultation = (data ?? []).find((c) => c.id === consultationId);
+  const exams = consultation?.lab_exams ?? [];
 
   return (
     <MobileShell
       scroll
-      header={
-        <AppHeader
-          title="Exámenes de laboratorio"
-          onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-        />
-      }
+      header={<AppHeader title="Exámenes de laboratorio" onBack={back} />}
       contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
-      {mockLabExams.length === 0 ? (
-        <EmptyState
-          icon="flask"
-          title="Sin exámenes"
-          description="No hay exámenes de laboratorio."
-        />
-      ) : (
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={exams.length === 0}
+        emptyIcon="flask"
+        emptyTitle="Sin exámenes"
+        emptyDescription="Esta consulta no tiene exámenes de laboratorio."
+      >
         <View style={{ gap: 8 }}>
-          {mockLabExams.map((e) => (
+          {exams.map((e) => (
             <ListRow
               key={e.id}
               title={e.exam_name}
-              subtitle={e.results}
+              subtitle={e.results ?? undefined}
               showChevron={false}
               trailing={
                 <Badge
@@ -66,15 +60,7 @@ export function LabExamsScreen() {
             />
           ))}
         </View>
-      )}
-
-      <SectionTitle>Subir resultados</SectionTitle>
-      <UploadZone
-        label="Adjuntar archivo de laboratorio"
-        hint="Toca para subir el PDF o la imagen del resultado"
-        selectedName={uploaded ? 'resultado.pdf' : undefined}
-        onPress={() => setUploaded(true)}
-      />
+      </AsyncBoundary>
     </MobileShell>
   );
 }

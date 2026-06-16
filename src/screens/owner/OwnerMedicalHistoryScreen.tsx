@@ -46,7 +46,7 @@ export function OwnerMedicalHistoryScreen() {
             key={c.id}
             title={c.diagnosis ?? 'Consulta'}
             date={formatDate(c.consultation_date)}
-            description={c.pet_name}
+            description={c.veterinarian.full_name}
             last={i === mockConsultations.length - 1}
           />
         ))}

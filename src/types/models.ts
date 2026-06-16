@@ -271,64 +271,106 @@ export interface Payment {
   items?: PaymentItem[];
 }
 
+/** Veterinario mínimo embebido en registros médicos. */
+export interface MedicalVet {
+  id: number;
+  full_name: string;
+}
+
+// Espejo de los json médicos del owner (owner_*_controller).
 export interface Consultation {
   id: number;
+  pet_id: number;
   consultation_date: string;
-  diagnosis?: string;
-  treatment?: string;
-  notes?: string;
-  weight?: number;
-  temperature?: number;
-  vet_name?: string;
-  pet_name?: string;
+  anamnesis?: string | null;
+  diagnosis?: string | null;
+  treatment?: string | null;
+  notes?: string | null;
+  weight?: number | null;
+  temperature?: number | null;
+  heart_rate?: number | null;
+  respiratory_rate?: number | null;
+  blood_pressure?: string | null;
   treatment_completed_at?: string | null;
+  veterinarian: MedicalVet;
+  prescriptions: Prescription[];
+  lab_exams: LabExam[];
 }
 
 export interface Vaccination {
   id: number;
+  pet_id?: number;
   vaccine_name: string;
-  manufacturer?: string;
-  dose?: string;
+  vaccine_type?: string | null;
+  manufacturer?: string | null;
+  batch_number?: string | null;
+  dose?: string | null;
+  administration_route?: string | null;
   application_date: string;
-  next_due_date?: string;
+  expiration_date?: string | null;
+  next_due_date?: string | null;
+  observations?: string | null;
+  veterinarian?: MedicalVet;
 }
 
 export interface Deworming {
   id: number;
+  pet_id?: number;
   product_name: string;
-  dose?: string;
+  dose?: string | null;
+  administration_route?: string | null;
   application_date: string;
-  next_due_date?: string;
+  weight_at_application?: number | null;
+  next_due_date?: string | null;
+  observations?: string | null;
+  veterinarian?: MedicalVet;
 }
 
 export interface LabExam {
   id: number;
+  exam_type?: string | null;
   exam_name: string;
   status: string;
-  results?: string;
+  results?: string | null;
 }
 
 export interface Prescription {
   id: number;
-  diagnosis?: string;
-  general_instructions?: string;
-  items?: PrescriptionItem[];
+  diagnosis?: string | null;
+  general_instructions?: string | null;
+  veterinarian?: MedicalVet;
+  items: PrescriptionItem[];
 }
 
 export interface PrescriptionItem {
   id: number;
   medication_name: string;
-  dose?: string;
-  frequency?: string;
-  duration?: string;
-  completed_at?: string | null;
+  dose?: string | null;
+  frequency?: string | null;
+  duration?: string | null;
+  special_instructions?: string | null;
+}
+
+export interface MedicalProfile {
+  id: number;
+  pet_id: number;
+  chronic_diseases: string[];
+  allergies: string[];
+  blood_type?: string | null;
+  notes?: string | null;
 }
 
 export interface MedicalReport {
   id: number;
+  pet_id: number;
   title: string;
-  content?: string;
-  generated_at?: string;
+  content?: string | null;
+  include_records_count?: number | null;
+  current_observations?: string | null;
+  referral_reason?: string | null;
+  generated_at?: string | null;
+  created_at?: string | null;
+  created_by: MedicalVet;
 }
 
 export interface Product {

@@ -70,10 +70,10 @@ export type OwnerPetsStackParamList = {
   Vaccinations: { petId: number };
   Dewormings: { petId: number };
   Consultations: { petId: number };
-  ConsultationDetail: { id: number };
+  ConsultationDetail: { petId: number; id: number };
   MedicalReports: { petId: number };
-  MedicalReportDetail: { id: number };
-  LabExams: { consultationId: number };
+  MedicalReportDetail: { petId: number; id: number };
+  LabExams: { petId: number; consultationId: number };
 };
 
 export type OwnerAppointmentsStackParamList = {

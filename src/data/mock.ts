@@ -191,28 +191,34 @@ export const mockPayments: Payment[] = [
   },
 ];
 
+const mockMedicalVet = { id: 10, full_name: 'Dr. Carlos Pérez' };
+
 export const mockConsultations: Consultation[] = [
   {
     id: 1,
+    pet_id: 1,
     consultation_date: '2026-05-30T09:00:00',
     diagnosis: 'Dermatitis leve',
     treatment: 'Antihistamínico 7 días',
     weight: 28.5,
     temperature: 38.4,
-    vet_name: 'Dr. Carlos Pérez',
-    pet_name: 'Firulais',
     treatment_completed_at: null,
+    veterinarian: mockMedicalVet,
+    prescriptions: [],
+    lab_exams: [],
   },
   {
     id: 2,
+    pet_id: 1,
     consultation_date: '2026-03-12T11:00:00',
     diagnosis: 'Control sano',
     treatment: 'Ninguno',
     weight: 27.9,
     temperature: 38.2,
-    vet_name: 'Dra. Ana López',
-    pet_name: 'Firulais',
     treatment_completed_at: '2026-03-20T00:00:00',
+    veterinarian: mockMedicalVet,
+    prescriptions: [],
+    lab_exams: [],
   },
 ];
 
@@ -267,7 +273,7 @@ export const mockPrescriptions: Prescription[] = [
         dose: '10 mg',
         frequency: 'cada 24h',
         duration: '7 días',
-        completed_at: null,
+        special_instructions: null,
       },
     ],
   },
@@ -276,9 +282,11 @@ export const mockPrescriptions: Prescription[] = [
 export const mockReports: MedicalReport[] = [
   {
     id: 1,
+    pet_id: 1,
     title: 'Informe clínico — Firulais',
     content: 'Resumen de la consulta del 30/05.',
     generated_at: '2026-05-30T12:00:00',
+    created_by: mockMedicalVet,
   },
 ];
 

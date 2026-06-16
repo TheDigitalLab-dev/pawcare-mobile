@@ -1,66 +1,82 @@
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import { Text, View } from 'react-native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Text } from 'react-native';
 
 import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Button, Card, EmptyState } from '@/components/ui';
+import { AsyncBoundary, Card, SectionTitle } from '@/components/ui';
 import type { OwnerPetsStackParamList } from '@/navigation/types';
-import { formatDateTime, mockReports } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { getMedicalReport } from '@/services/medical';
+import { formatDate } from '@/utils/format';
+import type { MedicalReport } from '@/types/models';
 
-type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
+function Body({ report }: { report: MedicalReport }) {
+  const { colors } = useTheme();
+  return (
+    <>
+      <Card style={{ gap: 6 }}>
+        <Text style={{ fontSize: 18, fontWeight: '700', color: colors.foreground }}>
+          {report.title}
+        </Text>
+        <Text style={{ fontSize: 13, color: colors.mutedForeground }}>
+          {formatDate(report.generated_at ?? report.created_at)} ·{' '}
+          {report.created_by.full_name}
+        </Text>
+      </Card>
+
+      {report.current_observations ? (
+        <>
+          <SectionTitle>Observaciones</SectionTitle>
+          <Card>
+            <Text style={{ fontSize: 15, color: colors.foreground }}>
+              {report.current_observations}
+            </Text>
+          </Card>
+        </>
+      ) : null}
+
+      {report.referral_reason ? (
+        <>
+          <SectionTitle>Motivo de remisión</SectionTitle>
+          <Card>
+            <Text style={{ fontSize: 15, color: colors.foreground }}>
+              {report.referral_reason}
+            </Text>
+          </Card>
+        </>
+      ) : null}
+
+      {report.content ? (
+        <>
+          <SectionTitle>Contenido</SectionTitle>
+          <Card>
+            <Text style={{ fontSize: 15, color: colors.foreground }}>
+              {report.content}
+            </Text>
+          </Card>
+        </>
+      ) : null}
+    </>
+  );
+}
 
 export function MedicalReportDetailScreen() {
-  const { colors } = useTheme();
-  const navigation = useNavigation<Nav>();
+  const navigation = useNavigation();
   const route = useRoute<RouteProp<OwnerPetsStackParamList, 'MedicalReportDetail'>>();
-  const report = mockReports.find((r) => r.id === route.params.id);
+  const { petId, id } = route.params;
   const back = navigation.canGoBack() ? navigation.goBack : undefined;
 
-  if (!report) {
-    return (
-      <MobileShell header={<AppHeader title="Reporte" onBack={back} />}>
-        <EmptyState icon="reader" title="Reporte no encontrado" />
-      </MobileShell>
-    );
-  }
+  const { data, loading, error, reload } = useAsync(() => getMedicalReport(petId, id));
 
   return (
     <MobileShell
       scroll
-      header={<AppHeader title="Reporte" onBack={back} />}
-      contentStyle={{ gap: 16, paddingBottom: 32 }}
+      header={<AppHeader title="Reporte médico" onBack={back} />}
+      contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
-      <View style={{ gap: 4 }}>
-        <Text style={{ fontSize: 20, fontWeight: '700', color: colors.foreground }}>
-          {report.title}
-        </Text>
-        <Text style={{ fontSize: 13, color: colors.mutedForeground }}>
-          {formatDateTime(report.generated_at)}
-        </Text>
-      </View>
-
-      <Card>
-        <Text style={{ fontSize: 15, lineHeight: 22, color: colors.foreground }}>
-          {report.content ?? 'Sin contenido.'}
-        </Text>
-      </Card>
-
-      <View style={{ flexDirection: 'row', gap: 12 }}>
-        <Button
-          label="Descargar PDF"
-          // TODO: descargar reporte en PDF
-          onPress={() => undefined}
-          style={{ flex: 1 }}
-        />
-        <Button
-          label="Compartir"
-          variant="outline"
-          // TODO: compartir reporte
-          onPress={() => undefined}
-          style={{ flex: 1 }}
-        />
-      </View>
+      <AsyncBoundary loading={loading && data === null} error={error} onRetry={reload}>
+        {data ? <Body report={data} /> : null}
+      </AsyncBoundary>
     </MobileShell>
   );
 }
