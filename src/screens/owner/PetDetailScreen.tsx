@@ -3,30 +3,24 @@ import { View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Avatar, Button, EmptyState, SectionTitle } from '@/components/ui';
+import { AsyncBoundary, Avatar, Button, SectionTitle } from '@/components/ui';
 import { ActionTileGrid, DetailHero } from '@/components/domain';
 import type { ActionTile } from '@/components/domain';
 import type { OwnerPetsStackParamList } from '@/navigation/types';
-import { mockPets } from '@/data/mock';
-import { SEX_LABEL, SPECIES_EMOJI, SPECIES_LABEL } from '@/types/models';
+import { useAsync } from '@/hooks/useAsync';
+import { getPet } from '@/services/pets';
+import { PET_SEX_LABEL, SPECIES_EMOJI, SPECIES_LABEL } from '@/types/models';
 
 type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
 
 export function PetDetailScreen() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<RouteProp<OwnerPetsStackParamList, 'PetDetail'>>();
-  const pet = mockPets.find((p) => p.id === route.params.id);
+  const petId = route.params.id;
   const back = navigation.canGoBack() ? navigation.goBack : undefined;
 
-  if (!pet) {
-    return (
-      <MobileShell header={<AppHeader title="Mascota" onBack={back} />}>
-        <EmptyState icon="paw" title="Mascota no encontrada" />
-      </MobileShell>
-    );
-  }
+  const { data: pet, loading, error, reload } = useAsync(() => getPet(petId));
 
-  const petId = pet.id;
   const tiles: ActionTile[] = [
     {
       id: 'profile',
@@ -60,43 +54,51 @@ export function PetDetailScreen() {
     },
   ];
 
-  const subtitleParts = [
-    SPECIES_LABEL[pet.species],
-    pet.breed,
-    pet.sex ? SEX_LABEL[pet.sex] : undefined,
-  ].filter(Boolean);
+  const subtitle = pet
+    ? [
+        SPECIES_LABEL[pet.species],
+        pet.breed,
+        pet.sex ? PET_SEX_LABEL[pet.sex] : undefined,
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : '';
 
   return (
     <MobileShell
       scroll
-      header={<AppHeader title={pet.name} onBack={back} />}
+      header={<AppHeader title={pet?.name ?? 'Mascota'} onBack={back} />}
       contentStyle={{ gap: 16, paddingBottom: 32 }}
     >
-      <DetailHero
-        title={pet.name}
-        subtitle={subtitleParts.join(' · ')}
-        avatar={
-          <Avatar uri={pet.photo_url} fallback={SPECIES_EMOJI[pet.species]} size="lg" />
-        }
-      />
+      <AsyncBoundary loading={loading && pet === null} error={error} onRetry={reload}>
+        {pet ? (
+          <>
+            <DetailHero
+              title={pet.name}
+              subtitle={subtitle}
+              avatar={
+                <Avatar
+                  uri={pet.photo_url ?? undefined}
+                  fallback={SPECIES_EMOJI[pet.species]}
+                  size="lg"
+                />
+              }
+            />
 
-      <View style={{ flexDirection: 'row', gap: 12 }}>
-        <Button
-          label="Editar"
-          variant="outline"
-          onPress={() => navigation.navigate('PetForm', { id: petId })}
-          style={{ flex: 1 }}
-        />
-        <Button
-          label="Agendar cita"
-          // TODO: cross-stack nav al wizard de citas (AppointmentsTab)
-          onPress={() => undefined}
-          style={{ flex: 1 }}
-        />
-      </View>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <Button
+                label="Editar"
+                variant="outline"
+                onPress={() => navigation.navigate('PetForm', { id: pet.id })}
+                style={{ flex: 1 }}
+              />
+            </View>
 
-      <SectionTitle>Salud</SectionTitle>
-      <ActionTileGrid tiles={tiles} />
+            <SectionTitle>Salud</SectionTitle>
+            <ActionTileGrid tiles={tiles} />
+          </>
+        ) : null}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

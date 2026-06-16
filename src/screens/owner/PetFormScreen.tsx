@@ -5,10 +5,25 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Button, FilterChips, SectionTitle, TextField } from '@/components/ui';
+import {
+  AsyncBoundary,
+  Button,
+  FilterChips,
+  InfoBanner,
+  SectionTitle,
+  TextField,
+} from '@/components/ui';
 import type { OwnerPetsStackParamList } from '@/navigation/types';
-import { mockPets } from '@/data/mock';
-import { SEX_LABEL, SPECIES_LABEL, type Sex, type Species } from '@/types/models';
+import { useAsync } from '@/hooks/useAsync';
+import { createPet, getPet, updatePet, type PetInput } from '@/services/pets';
+import { ApiError } from '@/types/api';
+import {
+  PET_SEX_LABEL,
+  SPECIES_LABEL,
+  type Pet,
+  type PetSex,
+  type Species,
+} from '@/types/models';
 
 type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
 
@@ -16,101 +31,186 @@ const SPECIES_OPTIONS = (Object.keys(SPECIES_LABEL) as Species[]).map((id) => ({
   id,
   label: SPECIES_LABEL[id],
 }));
-const SEX_OPTIONS = (Object.keys(SEX_LABEL) as Sex[]).map((id) => ({
+const SEX_OPTIONS = (Object.keys(PET_SEX_LABEL) as PetSex[]).map((id) => ({
   id,
-  label: SEX_LABEL[id],
+  label: PET_SEX_LABEL[id],
 }));
 
-export function PetFormScreen() {
+function firstErrors(e: ApiError): Partial<Record<keyof PetInput, string>> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(e.fieldErrors ?? {})) {
+    if (v.length > 0) out[k] = v[0]!;
+  }
+  return out;
+}
+
+function PetFormBody({ initial }: { initial?: Pet }) {
   const { colors } = useTheme();
   const navigation = useNavigation<Nav>();
-  const route = useRoute<RouteProp<OwnerPetsStackParamList, 'PetForm'>>();
-  const editingId = route.params.id;
-  const existing =
-    editingId !== undefined ? mockPets.find((p) => p.id === editingId) : undefined;
   const back = navigation.canGoBack() ? navigation.goBack : undefined;
 
-  const [name, setName] = useState(existing?.name ?? '');
-  const [species, setSpecies] = useState<Species>(existing?.species ?? 'dog');
-  const [breed, setBreed] = useState(existing?.breed ?? '');
-  const [sex, setSex] = useState<Sex>(existing?.sex ?? 'male');
-  const [birthDate, setBirthDate] = useState(existing?.birth_date ?? '');
-  const [features, setFeatures] = useState(existing?.distinctive_features ?? '');
+  const [form, setForm] = useState({
+    name: initial?.name ?? '',
+    species: (initial?.species ?? 'dog') as Species,
+    breed: initial?.breed ?? '',
+    sex: (initial?.sex ?? 'male') as PetSex,
+    birth_date: initial?.birth_date ?? '',
+    distinctive_features: initial?.distinctive_features ?? '',
+  });
+  const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
 
-  const canSubmit = name.trim().length > 0;
+  const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof PetInput, string>>>(
+    {},
+  );
+  const [generalError, setGeneralError] = useState<string>();
+
+  const canSubmit = form.name.trim().length > 0 && !submitting;
+
+  const labelStyle = {
+    fontSize: 14,
+    fontWeight: '500' as const,
+    marginBottom: 6,
+    color: colors.foreground,
+  };
+
+  const onSubmit = async () => {
+    setSubmitting(true);
+    setFieldErrors({});
+    setGeneralError(undefined);
+
+    const input: PetInput = {
+      name: form.name.trim(),
+      species: form.species,
+      sex: form.sex,
+      breed: form.breed.trim() || undefined,
+      birth_date: form.birth_date.trim() || undefined,
+      distinctive_features: form.distinctive_features.trim() || undefined,
+    };
+
+    try {
+      if (initial) {
+        await updatePet(initial.id, input);
+      } else {
+        await createPet(input);
+      }
+      if (back) back();
+    } catch (e) {
+      if (e instanceof ApiError && e.fieldErrors) {
+        setFieldErrors(firstErrors(e));
+      } else {
+        setGeneralError(
+          e instanceof ApiError ? e.message : 'No se pudo guardar la mascota.',
+        );
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <MobileShell
       scroll
       header={
-        <AppHeader title={existing ? 'Editar mascota' : 'Nueva mascota'} onBack={back} />
+        <AppHeader title={initial ? 'Editar mascota' : 'Nueva mascota'} onBack={back} />
       }
       contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
-      <TextField label="Nombre" value={name} onChangeText={setName} />
+      {generalError ? <InfoBanner tone="destructive" message={generalError} /> : null}
+
+      <TextField
+        label="Nombre"
+        value={form.name}
+        onChangeText={(v) => set('name', v)}
+        error={fieldErrors.name}
+        autoCapitalize="words"
+        returnKeyType="next"
+      />
 
       <View>
-        <Text
-          style={{
-            fontSize: 14,
-            fontWeight: '500',
-            marginBottom: 6,
-            color: colors.foreground,
-          }}
-        >
-          Especie
-        </Text>
+        <Text style={labelStyle}>Especie</Text>
         <FilterChips
           options={SPECIES_OPTIONS}
-          selectedId={species}
-          onSelect={(id) => setSpecies(id as Species)}
+          selectedId={form.species}
+          onSelect={(id) => set('species', id as Species)}
         />
       </View>
 
-      <TextField label="Raza" value={breed} onChangeText={setBreed} />
+      <TextField
+        label="Raza"
+        value={form.breed}
+        onChangeText={(v) => set('breed', v)}
+        error={fieldErrors.breed}
+        autoCapitalize="words"
+      />
 
       <View>
-        <Text
-          style={{
-            fontSize: 14,
-            fontWeight: '500',
-            marginBottom: 6,
-            color: colors.foreground,
-          }}
-        >
-          Sexo
-        </Text>
+        <Text style={labelStyle}>Sexo</Text>
         <FilterChips
           options={SEX_OPTIONS}
-          selectedId={sex}
-          onSelect={(id) => setSex(id as Sex)}
+          selectedId={form.sex}
+          onSelect={(id) => set('sex', id as PetSex)}
         />
       </View>
 
       <TextField
         label="Fecha de nacimiento"
         placeholder="AAAA-MM-DD"
-        value={birthDate}
-        onChangeText={setBirthDate}
+        value={form.birth_date}
+        onChangeText={(v) => set('birth_date', v)}
+        keyboardType="numbers-and-punctuation"
+        error={fieldErrors.birth_date}
       />
 
       <SectionTitle>Características</SectionTitle>
       <TextField
         label="Características distintivas"
         placeholder="Color, marcas, temperamento…"
-        value={features}
-        onChangeText={setFeatures}
+        value={form.distinctive_features}
+        onChangeText={(v) => set('distinctive_features', v)}
         multiline
+        error={fieldErrors.distinctive_features}
       />
 
       <Button
-        label="Guardar"
+        label={initial ? 'Guardar cambios' : 'Crear mascota'}
         fullWidth
+        loading={submitting}
         disabled={!canSubmit}
-        // TODO: persistir mascota en el backend
-        onPress={back}
+        onPress={onSubmit}
         style={{ marginTop: 8 }}
       />
+    </MobileShell>
+  );
+}
+
+export function PetFormScreen() {
+  const navigation = useNavigation<Nav>();
+  const route = useRoute<RouteProp<OwnerPetsStackParamList, 'PetForm'>>();
+  const editingId = route.params.id;
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
+
+  const { data, loading, error, reload } = useAsync(() =>
+    editingId !== undefined ? getPet(editingId) : Promise.resolve(null),
+  );
+
+  // Crear: sin datos previos.
+  if (editingId === undefined) {
+    return <PetFormBody />;
+  }
+
+  // Editar: el formulario se monta (con su propio shell) cuando llega la mascota.
+  if (data) {
+    return <PetFormBody initial={data} />;
+  }
+
+  // Cargando / error: shell mínimo con el estado correspondiente.
+  return (
+    <MobileShell scroll header={<AppHeader title="Editar mascota" onBack={back} />}>
+      <AsyncBoundary loading={loading} error={error} onRetry={reload}>
+        {null}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

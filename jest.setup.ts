@@ -14,6 +14,31 @@
 process.env.EXPO_PUBLIC_API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
+// undici captura `performance.markResourceTiming` (de node:perf_hooks) al CARGAR
+// el módulo; en el entorno de Jest ese método no existe. Hay que parchearlo
+// ANTES de requerir undici, o el binding queda en undefined.
+// undici captura `performance.markResourceTiming` (objeto global) al CARGAR el
+// módulo; en el entorno de Jest ese método no existe. Hay que parchear el
+// `performance` global (y el de node:perf_hooks) ANTES de requerir undici, o el
+// binding queda en undefined y todo DELETE/POST falla al reportar timing.
+const noop = () => {};
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const perfHooks = require('node:perf_hooks') as {
+  performance: { markResourceTiming?: () => void };
+};
+if (typeof perfHooks.performance.markResourceTiming !== 'function') {
+  perfHooks.performance.markResourceTiming = noop;
+}
+const globalPerf = globalThis as {
+  performance?: { markResourceTiming?: () => void };
+};
+if (
+  globalPerf.performance &&
+  typeof globalPerf.performance.markResourceTiming !== 'function'
+) {
+  globalPerf.performance.markResourceTiming = noop;
+}
+
 // El preset de React Native reemplaza `fetch` por un polyfill que no hace red
 // real en Node. Restauramos un cliente HTTP real (undici) para que los tests
 // peguen DE VERDAD al backend.
@@ -37,5 +62,6 @@ jest.mock('expo-secure-store', () => {
 
 // Shim de plataforma: AsyncStorage en memoria (mock oficial del paquete).
 jest.mock('@react-native-async-storage/async-storage', () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );

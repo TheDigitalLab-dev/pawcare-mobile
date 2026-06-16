@@ -3,7 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { EmptyState, Fab, SearchBar , PetAvatar } from '@/components/ui';
+import { EmptyState, Fab, SearchBar, PetAvatar } from '@/components/ui';
 import { ListRow } from '@/components/domain';
 import type { AdminPatientsStackParamList } from '@/navigation/types';
 import { formatDate, mockPets } from '@/data/mock';

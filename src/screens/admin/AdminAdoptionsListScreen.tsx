@@ -16,9 +16,9 @@ import {
 type Nav = NativeStackNavigationProp<AdminPatientsStackParamList>;
 
 const STATUS_VARIANT: Record<AdoptionStatus, 'success' | 'info' | 'warning'> = {
-  available: 'success',
+  available_for_adoption: 'success',
   adopted: 'info',
-  not_in_adoption: 'warning',
+  not_for_adoption: 'warning',
 };
 
 export function AdminAdoptionsListScreen() {
@@ -44,7 +44,7 @@ export function AdminAdoptionsListScreen() {
         />
       ) : (
         mockAdoptionPets.map((pet) => {
-          const status: AdoptionStatus = pet.adoption_status ?? 'available';
+          const status: AdoptionStatus = pet.adoption_status ?? 'available_for_adoption';
           return (
             <ListRow
               key={pet.id}

@@ -44,14 +44,16 @@
   "devDependencies": {
     "@react-native/jest-preset": "0.85.3",
     "@testing-library/jest-native": "^5.4.3",
-    "@testing-library/react-native": "^14.0.0",
+    "@testing-library/react-native": "13.3.3",
     "@types/jest": "^30.0.0",
     "@types/react": "^19.2.15",
+    "@types/react-test-renderer": "^19",
     "eslint": "^9.7.0",
     "eslint-config-expo": "^56.0.4",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "prettier": "^3.8.4",
+    "react-test-renderer": "19.2.3",
     "typescript": "^6.0.3",
     "undici": "^8.4.1"
   }

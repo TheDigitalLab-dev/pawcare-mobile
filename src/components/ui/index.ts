@@ -7,6 +7,7 @@ export { Badge, type BadgeProps, type BadgeVariant } from './Badge';
 export { SectionTitle, type SectionTitleProps } from './SectionTitle';
 export { InfoBanner, type InfoBannerProps, type InfoBannerTone } from './InfoBanner';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
+export { AsyncBoundary, type AsyncBoundaryProps } from './AsyncBoundary';
 export { Avatar, PetAvatar, type AvatarProps, type AvatarSize } from './Avatar';
 export { SearchBar, type SearchBarProps } from './SearchBar';
 export { FilterChips, type FilterChipsProps, type FilterChipOption } from './FilterChips';

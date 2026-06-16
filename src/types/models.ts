@@ -6,11 +6,18 @@
 
 // --- Enums + etiquetas -----------------------------------------------------
 
+// Owner.sex admite los tres; Pet.sex (backend) solo male/female.
 export type Sex = 'male' | 'female' | 'other';
 export const SEX_LABEL: Record<Sex, string> = {
   female: 'Femenino',
   male: 'Masculino',
   other: 'Otro',
+};
+
+export type PetSex = 'male' | 'female';
+export const PET_SEX_LABEL: Record<PetSex, string> = {
+  male: 'Macho',
+  female: 'Hembra',
 };
 
 export type PhoneType = 'whatsapp' | 'telegram' | 'regular';
@@ -20,12 +27,24 @@ export const PHONE_TYPE_LABEL: Record<PhoneType, string> = {
   regular: 'Normal',
 };
 
-export type Species = 'dog' | 'cat' | 'bird' | 'rabbit' | 'other';
+// Enum del backend (app/models/pet.rb): 8 especies.
+export type Species =
+  | 'dog'
+  | 'cat'
+  | 'bird'
+  | 'rabbit'
+  | 'hamster'
+  | 'reptile'
+  | 'fish'
+  | 'other';
 export const SPECIES_LABEL: Record<Species, string> = {
   dog: 'Perro',
   cat: 'Gato',
   bird: 'Ave',
   rabbit: 'Conejo',
+  hamster: 'Hámster',
+  reptile: 'Reptil',
+  fish: 'Pez',
   other: 'Otro',
 };
 export const SPECIES_EMOJI: Record<Species, string> = {
@@ -33,13 +52,17 @@ export const SPECIES_EMOJI: Record<Species, string> = {
   cat: '🐱',
   bird: '🐦',
   rabbit: '🐰',
+  hamster: '🐹',
+  reptile: '🦎',
+  fish: '🐟',
   other: '🐾',
 };
 
-export type AdoptionStatus = 'not_in_adoption' | 'available' | 'adopted';
+// Enum del backend: not_for_adoption | available_for_adoption | adopted.
+export type AdoptionStatus = 'not_for_adoption' | 'available_for_adoption' | 'adopted';
 export const ADOPTION_STATUS_LABEL: Record<AdoptionStatus, string> = {
-  not_in_adoption: 'No disponible',
-  available: 'En adopción',
+  not_for_adoption: 'No disponible',
+  available_for_adoption: 'En adopción',
   adopted: 'Adoptado',
 };
 
@@ -107,17 +130,21 @@ export interface StaffUser {
 
 export type AuthUser = Owner | StaffUser;
 
+// Espejo de `pet_json` (app/controllers/concerns/pet_jsonable.rb).
 export interface Pet {
   id: number;
   name: string;
   species: Species;
-  breed?: string;
-  sex?: Sex;
-  birth_date?: string;
-  distinctive_features?: string;
+  breed?: string | null;
+  sex?: PetSex | null;
+  birth_date?: string | null;
+  age_display?: string | null;
+  distinctive_features?: string | null;
   adoption_status?: AdoptionStatus;
+  active?: boolean;
   photo_url?: string | null;
   proprietary_id?: number;
+  proprietary_type?: 'Owner' | 'User';
 }
 
 export interface PetMedicalProfile {

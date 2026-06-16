@@ -42,7 +42,7 @@ export function AdminAdoptionDetailScreen() {
     );
   }
 
-  const status: AdoptionStatus = pet.adoption_status ?? 'available';
+  const status: AdoptionStatus = pet.adoption_status ?? 'available_for_adoption';
 
   return (
     <MobileShell

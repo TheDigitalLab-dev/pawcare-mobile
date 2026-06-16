@@ -1,13 +1,15 @@
-import { useMemo, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Avatar, EmptyState, Fab, SearchBar } from '@/components/ui';
+import { AsyncBoundary, Avatar, Fab, SearchBar } from '@/components/ui';
 import { ListRow } from '@/components/domain';
 import type { OwnerPetsStackParamList } from '@/navigation/types';
-import { formatDate, mockPets } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { listPets } from '@/services/pets';
+import { formatDate } from '@/utils/format';
 import { SPECIES_EMOJI, SPECIES_LABEL } from '@/types/models';
 
 type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
@@ -15,12 +17,20 @@ type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
 export function PetsListScreen() {
   const navigation = useNavigation<Nav>();
   const [query, setQuery] = useState('');
+  const { data, loading, error, reload } = useAsync(listPets);
 
-  const pets = useMemo(() => {
+  // Refresca al volver a la pantalla (p. ej. tras crear/editar una mascota).
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+    }, [reload]),
+  );
+
+  const filtered = useMemo(() => {
+    const list = data ?? [];
     const q = query.trim().toLowerCase();
-    if (!q) return mockPets;
-    return mockPets.filter((p) => p.name.toLowerCase().includes(q));
-  }, [query]);
+    return q ? list.filter((p) => p.name.toLowerCase().includes(q)) : list;
+  }, [data, query]);
 
   return (
     <MobileShell
@@ -37,27 +47,36 @@ export function PetsListScreen() {
     >
       <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar mascota…" />
 
-      {pets.length === 0 ? (
-        <EmptyState
-          icon="paw"
-          title="Sin mascotas"
-          description="No se encontraron mascotas."
-        />
-      ) : (
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={filtered.length === 0}
+        emptyIcon="paw"
+        emptyTitle={query ? 'Sin resultados' : 'Aún no tienes mascotas'}
+        emptyDescription={
+          query ? 'Prueba con otro nombre.' : 'Agrega tu primera mascota con el botón +.'
+        }
+      >
         <View style={{ gap: 8 }}>
-          {pets.map((pet) => (
+          {filtered.map((pet) => (
             <ListRow
               key={pet.id}
               title={pet.name}
-              subtitle={`${SPECIES_LABEL[pet.species]}${pet.breed ? ` · ${pet.breed}` : ''}${pet.birth_date ? ` · Nac. ${formatDate(pet.birth_date)}` : ''}`}
+              subtitle={`${SPECIES_LABEL[pet.species]}${pet.breed ? ` · ${pet.breed}` : ''}${
+                pet.birth_date ? ` · Nac. ${formatDate(pet.birth_date)}` : ''
+              }`}
               leading={
-                <Avatar uri={pet.photo_url} fallback={SPECIES_EMOJI[pet.species]} />
+                <Avatar
+                  uri={pet.photo_url ?? undefined}
+                  fallback={SPECIES_EMOJI[pet.species]}
+                />
               }
               onPress={() => navigation.navigate('PetDetail', { id: pet.id })}
             />
           ))}
         </View>
-      )}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

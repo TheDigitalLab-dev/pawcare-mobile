@@ -57,7 +57,7 @@ export const mockPets: Pet[] = [
     breed: 'Labrador',
     sex: 'male',
     birth_date: '2022-03-10',
-    adoption_status: 'not_in_adoption',
+    adoption_status: 'not_for_adoption',
     photo_url: null,
     proprietary_id: 1,
   },
@@ -68,7 +68,7 @@ export const mockPets: Pet[] = [
     breed: 'Siamés',
     sex: 'female',
     birth_date: '2021-07-22',
-    adoption_status: 'not_in_adoption',
+    adoption_status: 'not_for_adoption',
     photo_url: null,
     proprietary_id: 1,
   },
@@ -315,7 +315,7 @@ export const mockAdoptionPets: AdoptionPet[] = [
     species: 'dog',
     breed: 'Mestiza',
     sex: 'female',
-    adoption_status: 'available',
+    adoption_status: 'available_for_adoption',
     age_label: '2 años',
     description: 'Cariñosa y sociable.',
     photo_url: null,
@@ -326,7 +326,7 @@ export const mockAdoptionPets: AdoptionPet[] = [
     species: 'cat',
     breed: 'Naranja',
     sex: 'male',
-    adoption_status: 'available',
+    adoption_status: 'available_for_adoption',
     age_label: '1 año',
     description: 'Juguetón.',
     photo_url: null,
@@ -343,25 +343,6 @@ export function formatMoney(amount: number, currency = 'COP'): string {
 }
 
 /** Formatea una fecha ISO a algo legible en español (corto). */
-export function formatDate(iso?: string): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString('es-CO', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-export function formatDateTime(iso?: string): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString('es-CO', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+// Los formateadores reales viven en utils/format; se re-exportan para no romper
+// imports existentes mientras se migra cada dominio fuera de este mock.
+export { formatDate, formatDateTime } from '@/utils/format';

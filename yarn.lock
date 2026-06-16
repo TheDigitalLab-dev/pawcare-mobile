@@ -2592,23 +2592,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/react-native@npm:^14.0.0":
-  version: 14.0.0
-  resolution: "@testing-library/react-native@npm:14.0.0"
+"@testing-library/react-native@npm:13.3.3":
+  version: 13.3.3
+  resolution: "@testing-library/react-native@npm:13.3.3"
   dependencies:
-    jest-matcher-utils: "npm:^30.4.1"
+    jest-matcher-utils: "npm:^30.0.5"
     picocolors: "npm:^1.1.1"
-    pretty-format: "npm:^30.4.1"
+    pretty-format: "npm:^30.0.5"
     redent: "npm:^3.0.0"
   peerDependencies:
     jest: ">=29.0.0"
-    react: ">=19.0.0"
-    react-native: ">=0.78"
-    test-renderer: ^1.0.0
+    react: ">=18.2.0"
+    react-native: ">=0.71"
+    react-test-renderer: ">=18.2.0"
   peerDependenciesMeta:
     jest:
       optional: true
-  checksum: 10c0/1c19b1d8e1b66757b38904ddddb54c24185b4969faafcbd6b3888841f8597c4a1d87fbff68f3a950bcf051b2ef16adbdb395f44aad1cbc4ba7eaeca900ffc984
+  checksum: 10c0/ba13066536d5b2c0b625220d4320c6ad1e390c3df4f4b614d859ef467c4974ad52aa79269ae98efdba8f5a074644e3d11583a5485312df5a64387976ecf4225a
   languageName: node
   linkType: hard
 
@@ -2761,7 +2761,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-test-renderer@npm:^19.1.0":
+"@types/react-test-renderer@npm:^19, @types/react-test-renderer@npm:^19.1.0":
   version: 19.1.0
   resolution: "@types/react-test-renderer@npm:19.1.0"
   dependencies:
@@ -6741,7 +6741,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-matcher-utils@npm:30.4.1, jest-matcher-utils@npm:^30.4.1":
+"jest-matcher-utils@npm:30.4.1, jest-matcher-utils@npm:^30.0.5":
   version: 30.4.1
   resolution: "jest-matcher-utils@npm:30.4.1"
   dependencies:
@@ -8471,9 +8471,10 @@ __metadata:
     "@react-navigation/native-stack": "npm:^7.17.3"
     "@reduxjs/toolkit": "npm:^2.12.0"
     "@testing-library/jest-native": "npm:^5.4.3"
-    "@testing-library/react-native": "npm:^14.0.0"
+    "@testing-library/react-native": "npm:13.3.3"
     "@types/jest": "npm:^30.0.0"
     "@types/react": "npm:^19.2.15"
+    "@types/react-test-renderer": "npm:^19"
     eslint: "npm:^9.7.0"
     eslint-config-expo: "npm:^56.0.4"
     eslint-config-prettier: "npm:^10.1.8"
@@ -8493,6 +8494,7 @@ __metadata:
     react-native-safe-area-context: "npm:~5.7.0"
     react-native-screens: "npm:4.25.2"
     react-redux: "npm:^9.3.0"
+    react-test-renderer: "npm:19.2.3"
     redux: "npm:^5.0.1"
     redux-persist: "npm:^6.0.0"
     typescript: "npm:^6.0.3"
@@ -8589,7 +8591,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pretty-format@npm:30.4.1, pretty-format@npm:^30.0.0, pretty-format@npm:^30.4.1":
+"pretty-format@npm:30.4.1, pretty-format@npm:^30.0.0, pretty-format@npm:^30.0.5":
   version: 30.4.1
   resolution: "pretty-format@npm:30.4.1"
   dependencies:
