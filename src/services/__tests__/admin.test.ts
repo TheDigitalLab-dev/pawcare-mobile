@@ -95,4 +95,75 @@ describe('adminService (listas reales del staff)', () => {
 
     await adminService.deleteAdminConsultation(created.id);
   }, 20000);
+
+  it('lista servicios clínicos', async () => {
+    const services = await adminService.listAdminServices();
+    expect(Array.isArray(services)).toBe(true);
+    expect(services.length).toBeGreaterThan(0);
+    expect(services[0]!.id).toEqual(expect.any(Number));
+  });
+
+  it('encadena disponibilidad: días → veterinarios → horarios', async () => {
+    const now = new Date();
+    const days = await adminService.getAdminAvailableDays(
+      now.getMonth() + 1,
+      now.getFullYear(),
+    );
+    expect(Array.isArray(days)).toBe(true);
+    if (days.length === 0) return;
+
+    const vets = await adminService.getAdminAvailableVets(days[0]!);
+    expect(Array.isArray(vets)).toBe(true);
+    if (vets.length === 0) return;
+
+    const services = await adminService.listAdminServices();
+    const slots = await adminService.getAdminTimeSlots(
+      days[0]!,
+      vets[0]!.id,
+      services[0]!.id,
+    );
+    expect(Array.isArray(slots)).toBe(true);
+  }, 20000);
+
+  it('obtiene una adopción por id si existe', async () => {
+    const adoptions = await adminService.listAdminAdoptions();
+    if (adoptions.length === 0) return;
+    const full = await adminService.getAdminAdoption(adoptions[0]!.id);
+    expect(full.id).toBe(adoptions[0]!.id);
+  });
+
+  it('crea una cita como admin y la elimina (real)', async () => {
+    await authService.login('admin@pawcare.com', 'password123');
+    const pets = await adminService.listAdminPets();
+    const pet = pets.find((p) => p.proprietary_id != null);
+    if (!pet || pet.proprietary_id == null) return;
+
+    const now = new Date();
+    const days = await adminService.getAdminAvailableDays(
+      now.getMonth() + 1,
+      now.getFullYear(),
+    );
+    if (days.length === 0) return;
+    const vets = await adminService.getAdminAvailableVets(days[0]!);
+    if (vets.length === 0) return;
+    const services = await adminService.listAdminServices();
+    const slots = await adminService.getAdminTimeSlots(
+      days[0]!,
+      vets[0]!.id,
+      services[0]!.id,
+    );
+    const slot = slots.find((s) => s.available);
+    if (!slot) return;
+
+    const created = await adminService.createAdminAppointment({
+      pet_id: pet.id,
+      service_id: services[0]!.id,
+      owner_id: pet.proprietary_id,
+      assigned_to_id: vets[0]!.id,
+      scheduled_at: `${days[0]}T${slot.time}:00`,
+    });
+    expect(created.id).toEqual(expect.any(Number));
+
+    await adminService.deleteAdminAppointment(created.id);
+  }, 30000);
 });

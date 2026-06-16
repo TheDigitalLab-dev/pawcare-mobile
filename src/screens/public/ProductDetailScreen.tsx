@@ -49,7 +49,7 @@ function Body({ product }: { product: Product }) {
         label="Comprar"
         fullWidth
         disabled={!inStock}
-        onPress={() => navigation.navigate('Checkout')}
+        onPress={() => navigation.navigate('Checkout', { productId: product.id })}
       />
     </>
   );

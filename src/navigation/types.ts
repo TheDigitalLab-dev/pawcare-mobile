@@ -32,7 +32,7 @@ export type PublicStackParamList = {
   Services: undefined;
   Products: undefined;
   ProductDetail: { id: number };
-  Checkout: undefined;
+  Checkout: { productId: number; quantity?: number };
   UploadProof: { orderId: number };
   AdoptionLanding: undefined;
   AdoptionList: undefined;

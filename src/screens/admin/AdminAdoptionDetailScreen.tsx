@@ -1,80 +1,78 @@
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import { View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Badge, Button, EmptyState, PetAvatar } from '@/components/ui';
+import { AsyncBoundary, Badge, PetAvatar } from '@/components/ui';
 import { DetailHero, ListRow } from '@/components/domain';
 import type { AdminPatientsStackParamList } from '@/navigation/types';
-import { mockAdoptionPets } from '@/data/mock';
-import {
-  ADOPTION_STATUS_LABEL,
-  SEX_LABEL,
-  SPECIES_EMOJI,
-  SPECIES_LABEL,
-  type AdoptionStatus,
-} from '@/types/models';
+import { useAsync } from '@/hooks/useAsync';
+import { getAdminAdoption, type AdoptionRecord } from '@/services/admin';
+import { formatDate } from '@/utils/format';
+import { SPECIES_EMOJI, SPECIES_LABEL, type Species } from '@/types/models';
 
 type Nav = NativeStackNavigationProp<AdminPatientsStackParamList>;
 type Rt = RouteProp<AdminPatientsStackParamList, 'AdminAdoptionDetail'>;
 
+function speciesLabel(species?: string): string {
+  return species && species in SPECIES_LABEL
+    ? SPECIES_LABEL[species as Species]
+    : (species ?? 'Mascota');
+}
+
+function speciesEmoji(species?: string): string {
+  return species && species in SPECIES_EMOJI ? SPECIES_EMOJI[species as Species] : '🐾';
+}
+
+function Body({ adoption }: { adoption: AdoptionRecord }) {
+  const petName = adoption.pet?.name ?? 'Mascota';
+  return (
+    <>
+      <DetailHero
+        title={petName}
+        subtitle={speciesLabel(adoption.pet?.species)}
+        avatar={<PetAvatar fallback={speciesEmoji(adoption.pet?.species)} size="lg" />}
+      >
+        <Badge label="Adoptada" variant="success" />
+      </DetailHero>
+
+      <ListRow
+        title="Fecha de adopción"
+        subtitle={
+          adoption.adoption_date ? formatDate(adoption.adoption_date) : 'Sin fecha'
+        }
+      />
+      <ListRow
+        title="Adoptante"
+        subtitle={adoption.adopter?.full_name ?? 'Sin registrar'}
+      />
+      {adoption.adopter?.email ? (
+        <ListRow title="Correo" subtitle={adoption.adopter.email} />
+      ) : null}
+      <ListRow
+        title="Procesada por"
+        subtitle={adoption.processed_by?.full_name ?? 'Sin registrar'}
+      />
+      <ListRow title="Notas" subtitle={adoption.notes ?? 'Sin notas'} />
+    </>
+  );
+}
+
 export function AdminAdoptionDetailScreen() {
   const navigation = useNavigation<Nav>();
   const { params } = useRoute<Rt>();
-  const pet = mockAdoptionPets.find((p) => p.id === params.id);
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
 
-  if (!pet) {
-    return (
-      <MobileShell
-        header={
-          <AppHeader
-            title="Adopción"
-            onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-          />
-        }
-      >
-        <EmptyState
-          icon="paw"
-          title="Adopción no encontrada"
-          description="No existe una solicitud con ese identificador."
-        />
-      </MobileShell>
-    );
-  }
-
-  const status: AdoptionStatus = 'available_for_adoption';
+  const { data, loading, error, reload } = useAsync(() => getAdminAdoption(params.id));
 
   return (
     <MobileShell
       scroll
-      header={
-        <AppHeader
-          title={pet.name}
-          onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-        />
-      }
+      header={<AppHeader title={data?.pet?.name ?? 'Adopción'} onBack={back} />}
       contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
-      <DetailHero
-        title={pet.name}
-        subtitle={`${SPECIES_LABEL[pet.species]} · ${pet.breed ?? 'Sin raza'}`}
-        avatar={<PetAvatar fallback={SPECIES_EMOJI[pet.species]} size="lg" />}
-      >
-        <Badge label={ADOPTION_STATUS_LABEL[status]} variant="info" />
-      </DetailHero>
-
-      <ListRow title="Edad" subtitle={pet.age_display ?? 'Desconocida'} />
-      <ListRow title="Sexo" subtitle={pet.sex ? SEX_LABEL[pet.sex] : 'Sin especificar'} />
-      <ListRow
-        title="Características"
-        subtitle={pet.distinctive_features ?? 'Sin descripción'}
-      />
-
-      <View style={{ gap: 8, marginTop: 8 }}>
-        {/* No-op: sin backend. */}
-        <Button label="Aprobar adopción" variant="primary" fullWidth onPress={() => {}} />
-        <Button label="Rechazar" variant="destructive" fullWidth onPress={() => {}} />
-      </View>
+      <AsyncBoundary loading={loading && data === null} error={error} onRetry={reload}>
+        {data ? <Body adoption={data} /> : null}
+      </AsyncBoundary>
     </MobileShell>
   );
 }

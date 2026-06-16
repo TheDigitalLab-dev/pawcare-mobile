@@ -1,53 +1,121 @@
 import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Button, Card, InfoBanner, SectionTitle, TextField } from '@/components';
-import { formatMoney, mockProducts } from '@/data/mock';
+import {
+  AsyncBoundary,
+  Button,
+  Card,
+  FilterChips,
+  InfoBanner,
+  SectionTitle,
+  TextField,
+} from '@/components';
+import { useAsync } from '@/hooks/useAsync';
+import { getProduct } from '@/services/public';
+import {
+  createProductOrder,
+  requiresPaymentProof,
+  type OrderPaymentMethod,
+} from '@/services/orders';
+import { ApiError } from '@/types/api';
+import { formatMoney } from '@/utils/format';
+import type { Product } from '@/types/models';
 import type { PublicStackParamList } from '@/navigation/types';
 
-/** Resumen de pedido + datos de contacto antes de pagar. */
-export function CheckoutScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<PublicStackParamList>>();
+type Nav = NativeStackNavigationProp<PublicStackParamList>;
+type Rt = RouteProp<PublicStackParamList, 'Checkout'>;
+
+const PAYMENT_OPTIONS: { id: OrderPaymentMethod; label: string }[] = [
+  { id: 'in_store', label: 'En tienda' },
+  { id: 'transfer', label: 'Transferencia' },
+  { id: 'mobile_payment', label: 'Pago móvil' },
+];
+
+function CheckoutForm({ product, quantity }: { product: Product; quantity: number }) {
+  const navigation = useNavigation<Nav>();
   const { colors } = useTheme();
 
+  const stock = product.stock_quantity ?? Number.MAX_SAFE_INTEGER;
+  const [qty, setQty] = useState(() => Math.max(1, Math.min(quantity, stock)));
+  const [payment, setPayment] = useState<OrderPaymentMethod>('in_store');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [notes, setNotes] = useState('');
 
-  // Resumen de ejemplo: primeros productos como items del carrito.
-  const items = mockProducts.slice(0, 2);
-  const total = items.reduce((sum, item) => sum + Number(item.sale_price), 0);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string>();
+
+  const unit = Number(product.sale_price);
+  const total = unit * qty;
 
   const canSubmit =
-    name.trim().length > 0 && email.trim().length > 0 && phone.trim().length > 0;
+    name.trim().length > 0 &&
+    email.trim().length > 0 &&
+    phone.trim().length > 0 &&
+    qty > 0 &&
+    !submitting;
+
+  const onSubmit = async () => {
+    setSubmitting(true);
+    setError(undefined);
+    try {
+      const order = await createProductOrder({
+        contact_name: name.trim(),
+        contact_email: email.trim(),
+        contact_phone: phone.trim(),
+        payment_method: payment,
+        notes: notes.trim() || undefined,
+        items: [{ product_id: product.id, quantity: qty }],
+      });
+      if (requiresPaymentProof(payment)) {
+        navigation.navigate('UploadProof', { orderId: order.id });
+      } else {
+        navigation.navigate('PublicLanding');
+      }
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : 'No se pudo registrar el pedido.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <MobileShell
-      scroll
-      header={
-        <AppHeader
-          title="Pago"
-          onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-        />
-      }
-      contentStyle={{ gap: 12 }}
-    >
+    <>
+      {error ? <InfoBanner tone="destructive" message={error} /> : null}
+
       <SectionTitle>Resumen del pedido</SectionTitle>
       <Card style={styles.summary}>
-        {items.map((item) => (
-          <View key={item.id} style={styles.row}>
-            <Text style={[styles.itemName, { color: colors.foreground }]}>
-              {item.name}
-            </Text>
-            <Text style={{ color: colors.mutedForeground }}>
-              {formatMoney(Number(item.sale_price))}
-            </Text>
+        <View style={styles.row}>
+          <Text style={[styles.itemName, { color: colors.foreground }]}>
+            {product.name}
+          </Text>
+          <Text style={{ color: colors.mutedForeground }}>{formatMoney(unit)}</Text>
+        </View>
+
+        <View style={styles.qtyRow}>
+          <Text style={{ color: colors.foreground, fontWeight: '500' }}>Cantidad</Text>
+          <View style={styles.stepper}>
+            <Button
+              label="−"
+              variant="outline"
+              disabled={qty <= 1}
+              onPress={() => setQty((q) => Math.max(1, q - 1))}
+            />
+            <Text style={[styles.qty, { color: colors.foreground }]}>{qty}</Text>
+            <Button
+              label="+"
+              variant="outline"
+              disabled={qty >= stock}
+              onPress={() => setQty((q) => Math.min(stock, q + 1))}
+            />
           </View>
-        ))}
+        </View>
+
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
         <View style={styles.row}>
           <Text style={[styles.total, { color: colors.foreground }]}>Total</Text>
@@ -56,6 +124,13 @@ export function CheckoutScreen() {
           </Text>
         </View>
       </Card>
+
+      <SectionTitle>Método de pago</SectionTitle>
+      <FilterChips
+        options={PAYMENT_OPTIONS.map((o) => ({ id: o.id, label: o.label }))}
+        selectedId={payment}
+        onSelect={(id) => setPayment(id as OrderPaymentMethod)}
+      />
 
       <SectionTitle>Datos de contacto</SectionTitle>
       <TextField label="Nombre" value={name} onChangeText={setName} />
@@ -74,23 +149,63 @@ export function CheckoutScreen() {
         onChangeText={setPhone}
         keyboardType="phone-pad"
       />
+      <TextField
+        label="Notas (opcional)"
+        value={notes}
+        onChangeText={setNotes}
+        multiline
+      />
 
-      <InfoBanner message="Al confirmar aceptas nuestros Términos y condiciones." />
+      <InfoBanner
+        message={
+          requiresPaymentProof(payment)
+            ? 'Tras confirmar, podrás subir el comprobante de pago.'
+            : 'Acércate a la tienda para completar el pago y recoger tu pedido.'
+        }
+      />
 
       <Button
         label="Confirmar pedido"
         fullWidth
+        loading={submitting}
         disabled={!canSubmit}
-        onPress={() => navigation.navigate('UploadProof', { orderId: 1 })}
+        onPress={onSubmit}
         style={styles.submit}
       />
+    </>
+  );
+}
+
+export function CheckoutScreen() {
+  const navigation = useNavigation<Nav>();
+  const { params } = useRoute<Rt>();
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
+
+  const { data, loading, error, reload } = useAsync(() => getProduct(params.productId));
+
+  return (
+    <MobileShell
+      scroll
+      header={<AppHeader title="Pago" onBack={back} />}
+      contentStyle={{ gap: 12, paddingBottom: 32 }}
+    >
+      <AsyncBoundary loading={loading && data === null} error={error} onRetry={reload}>
+        {data ? <CheckoutForm product={data} quantity={params.quantity ?? 1} /> : null}
+      </AsyncBoundary>
     </MobileShell>
   );
 }
 
 const styles = StyleSheet.create({
-  summary: { gap: 8 },
-  row: { flexDirection: 'row', justifyContent: 'space-between' },
+  summary: { gap: 10 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  qtyRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  qty: { fontSize: 16, fontWeight: '700', minWidth: 24, textAlign: 'center' },
   itemName: { fontSize: 14, fontWeight: '500', flex: 1, marginRight: 8 },
   divider: { height: 1, marginVertical: 4 },
   total: { fontSize: 16, fontWeight: '700' },

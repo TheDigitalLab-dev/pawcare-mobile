@@ -5,6 +5,7 @@
  */
 import type {
   Appointment,
+  AvailableVet,
   Consultation,
   Deworming,
   MedicalProfile,
@@ -15,13 +16,15 @@ import type {
 } from '@/types/models';
 import { api } from './api';
 
-/** Registro de adopción del admin (adoptions-list). */
+/** Registro de adopción del admin (adoptions-list / show). */
 export interface AdoptionRecord {
   id: number;
   adoption_date?: string | null;
   notes?: string | null;
+  created_at?: string | null;
   pet: { id: number; name: string; species: string } | null;
-  adopter?: { id: number; full_name?: string } | null;
+  adopter?: { id: number; full_name?: string; email?: string } | null;
+  processed_by?: { id: number; full_name?: string } | null;
 }
 
 /** Esquema de vacunación (admin vaccination-schedules-list). */
@@ -98,6 +101,29 @@ export async function listAdminDewormings(): Promise<Deworming[]> {
 export async function listAdminAdoptions(): Promise<AdoptionRecord[]> {
   const res = await api.get<{ adoptions: AdoptionRecord[] }>('/admin/adoptions-list');
   return res.adoptions;
+}
+
+export async function getAdminAdoption(id: number): Promise<AdoptionRecord> {
+  const { adoption } = await api.get<{ adoption: AdoptionRecord }>(
+    `/admin/adoptions/${id}`,
+  );
+  return adoption;
+}
+
+export interface AdminAdoptionInput {
+  pet_id: number;
+  adopter_id: number;
+  adoption_date: string;
+  notes?: string;
+}
+
+export async function createAdminAdoption(
+  input: AdminAdoptionInput,
+): Promise<AdoptionRecord> {
+  const { adoption } = await api.post<{ adoption: AdoptionRecord }>('/admin/adoptions', {
+    adoption: input,
+  });
+  return adoption;
 }
 
 export interface AdminMetrics {
@@ -235,6 +261,84 @@ export async function createAdminVaccination(
     { vaccination: input },
   );
   return vaccination;
+}
+
+// --- Agendado de citas (admin) ---------------------------------------------
+
+/** Servicio clínico (admin services-list). */
+export interface AdminService {
+  id: number;
+  name: string;
+  description?: string | null;
+  duration_minutes?: number | null;
+}
+
+export async function listAdminServices(): Promise<AdminService[]> {
+  const { services } = await api.get<{ services: AdminService[] }>(
+    '/admin/services-list',
+  );
+  return services;
+}
+
+/** Días disponibles ("YYYY-MM-DD") para un mes/año dados. */
+export async function getAdminAvailableDays(
+  month: number,
+  year: number,
+): Promise<string[]> {
+  const { available_days } = await api.get<{ available_days: string[] }>(
+    '/admin/appointments/available-days',
+    { params: { month, year } },
+  );
+  return available_days;
+}
+
+export async function getAdminAvailableVets(date: string): Promise<AvailableVet[]> {
+  const { available_vets } = await api.get<{ available_vets: AvailableVet[] }>(
+    '/admin/appointments/available-vets',
+    { params: { date } },
+  );
+  return available_vets;
+}
+
+/** Bloque horario del backend admin (con disponibilidad real). */
+export interface AdminTimeSlot {
+  time: string;
+  available: boolean;
+}
+
+export async function getAdminTimeSlots(
+  date: string,
+  vetId: number,
+  serviceId: number,
+): Promise<AdminTimeSlot[]> {
+  const { time_slots } = await api.get<{ time_slots: AdminTimeSlot[] }>(
+    '/admin/appointments/time-slots',
+    { params: { date, vet_id: vetId, service_id: serviceId } },
+  );
+  return time_slots;
+}
+
+export interface AdminAppointmentInput {
+  pet_id: number;
+  service_id: number;
+  owner_id: number;
+  assigned_to_id: number;
+  scheduled_at: string; // ISO 8601
+  notes?: string;
+}
+
+export async function createAdminAppointment(
+  input: AdminAppointmentInput,
+): Promise<Appointment> {
+  const { appointment } = await api.post<{ appointment: Appointment }>(
+    '/admin/appointments',
+    { appointment: input },
+  );
+  return appointment;
+}
+
+export async function deleteAdminAppointment(id: number): Promise<void> {
+  await api.delete<unknown>(`/admin/appointments/${id}`);
 }
 
 /** Perfil médico de una mascota (admin). Resuelve el dueño desde el paciente. */
