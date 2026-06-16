@@ -80,4 +80,19 @@ describe('adminService (listas reales del staff)', () => {
     await authService.login('owner1@example.com', 'password123');
     await petsService.deletePet(created.id);
   }, 20000);
+
+  it('crea una consulta y la elimina (real)', async () => {
+    await authService.login('admin@pawcare.com', 'password123');
+    const pets = await adminService.listAdminPets();
+    if (pets.length === 0) return;
+
+    const created = await adminService.createAdminConsultation({
+      pet_id: pets[0]!.id,
+      consultation_date: '2026-06-16',
+      diagnosis: 'QA test',
+    });
+    expect(created.id).toEqual(expect.any(Number));
+
+    await adminService.deleteAdminConsultation(created.id);
+  }, 20000);
 });

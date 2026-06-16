@@ -1,62 +1,83 @@
-import { useState } from 'react';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Text } from 'react-native';
 
+import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
-import { Button, InfoBanner, TextField } from '@/components/ui';
+import { AsyncBoundary, Card, InfoBanner, SectionTitle } from '@/components/ui';
 import type { AdminPatientsStackParamList } from '@/navigation/types';
-import { mockMedicalProfile } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
+import { getAdminMedicalProfile } from '@/services/admin';
+import type { MedicalProfile } from '@/types/models';
 
-type Nav = NativeStackNavigationProp<AdminPatientsStackParamList>;
 type Rt = RouteProp<AdminPatientsStackParamList, 'AdminMedicalProfile'>;
 
-export function AdminMedicalProfileScreen() {
-  const navigation = useNavigation<Nav>();
-  useRoute<Rt>();
+function Body({ profile }: { profile: MedicalProfile | null }) {
+  const { colors } = useTheme();
+  const allergies = profile?.allergies ?? [];
+  const chronic = profile?.chronic_diseases ?? [];
+  return (
+    <>
+      <SectionTitle>Alergias</SectionTitle>
+      {allergies.length === 0 ? (
+        <InfoBanner message="Sin alergias registradas." tone="success" />
+      ) : (
+        <Card style={{ gap: 6 }}>
+          {allergies.map((a) => (
+            <Text key={a} style={{ fontSize: 15, color: colors.foreground }}>
+              • {a}
+            </Text>
+          ))}
+        </Card>
+      )}
 
-  const [allergies, setAllergies] = useState(
-    (mockMedicalProfile.allergies ?? []).join(', '),
+      <SectionTitle>Enfermedades crónicas</SectionTitle>
+      {chronic.length === 0 ? (
+        <InfoBanner message="Sin enfermedades crónicas registradas." tone="success" />
+      ) : (
+        <Card style={{ gap: 6 }}>
+          {chronic.map((d) => (
+            <Text key={d} style={{ fontSize: 15, color: colors.foreground }}>
+              • {d}
+            </Text>
+          ))}
+        </Card>
+      )}
+
+      <SectionTitle>Tipo de sangre</SectionTitle>
+      <Card>
+        <Text style={{ fontSize: 16, fontWeight: '600', color: colors.foreground }}>
+          {profile?.blood_type ?? 'No registrado'}
+        </Text>
+      </Card>
+
+      <SectionTitle>Notas</SectionTitle>
+      <Card>
+        <Text style={{ fontSize: 15, color: colors.foreground }}>
+          {profile?.notes ?? 'Sin notas.'}
+        </Text>
+      </Card>
+    </>
   );
-  const [chronic, setChronic] = useState(
-    (mockMedicalProfile.chronic_diseases ?? []).join(', '),
+}
+
+export function AdminMedicalProfileScreen() {
+  const navigation = useNavigation();
+  const { params } = useRoute<Rt>();
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
+
+  const { data, loading, error, reload } = useAsync(() =>
+    getAdminMedicalProfile(params.petId),
   );
-  const [bloodType, setBloodType] = useState(mockMedicalProfile.blood_type ?? '');
-  const [notes, setNotes] = useState(mockMedicalProfile.notes ?? '');
 
   return (
     <MobileShell
       scroll
-      header={
-        <AppHeader
-          title="Perfil médico"
-          onBack={navigation.canGoBack() ? navigation.goBack : undefined}
-        />
-      }
+      header={<AppHeader title="Perfil médico" onBack={back} />}
       contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
-      <InfoBanner message="Separa varias entradas con comas." tone="info" />
-      <TextField
-        label="Alergias"
-        value={allergies}
-        onChangeText={setAllergies}
-        placeholder="Polen, penicilina…"
-        multiline
-      />
-      <TextField
-        label="Enfermedades crónicas"
-        value={chronic}
-        onChangeText={setChronic}
-        multiline
-      />
-      <TextField label="Tipo de sangre" value={bloodType} onChangeText={setBloodType} />
-      <TextField label="Notas" value={notes} onChangeText={setNotes} multiline />
-
-      <Button
-        label="Guardar perfil"
-        fullWidth
-        onPress={() => (navigation.canGoBack() ? navigation.goBack() : undefined)}
-        style={{ marginTop: 8 }}
-      />
+      <AsyncBoundary loading={loading && data === null} error={error} onRetry={reload}>
+        <Body profile={data} />
+      </AsyncBoundary>
     </MobileShell>
   );
 }

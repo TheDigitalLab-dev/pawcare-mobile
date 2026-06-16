@@ -7,6 +7,7 @@ import type {
   Appointment,
   Consultation,
   Deworming,
+  MedicalProfile,
   MedicalReport,
   Payment,
   Pet,
@@ -189,4 +190,61 @@ export async function registerAdminPayment(
     input,
   );
   return payment;
+}
+
+// --- Creación de registros médicos (admin) ---------------------------------
+
+export interface AdminConsultationInput {
+  pet_id: number;
+  consultation_date: string;
+  diagnosis?: string;
+  treatment?: string;
+  notes?: string;
+  weight?: number;
+  temperature?: number;
+}
+
+export async function createAdminConsultation(
+  input: AdminConsultationInput,
+): Promise<Consultation> {
+  const { consultation } = await api.post<{ consultation: Consultation }>(
+    '/admin/consultations',
+    { consultation: input },
+  );
+  return consultation;
+}
+
+export async function deleteAdminConsultation(id: number): Promise<void> {
+  await api.delete<unknown>(`/admin/consultations/${id}`);
+}
+
+export interface AdminVaccinationInput {
+  pet_id: number;
+  vaccine_name: string;
+  manufacturer?: string;
+  dose?: string;
+  application_date: string;
+  next_due_date?: string;
+}
+
+export async function createAdminVaccination(
+  input: AdminVaccinationInput,
+): Promise<Vaccination> {
+  const { vaccination } = await api.post<{ vaccination: Vaccination }>(
+    '/admin/vaccinations',
+    { vaccination: input },
+  );
+  return vaccination;
+}
+
+/** Perfil médico de una mascota (admin). Resuelve el dueño desde el paciente. */
+export async function getAdminMedicalProfile(
+  petId: number,
+): Promise<MedicalProfile | null> {
+  const pet = await getAdminPet(petId);
+  if (pet.proprietary_id === undefined || pet.proprietary_id === null) return null;
+  const { profile } = await api.get<{ profile: MedicalProfile | null }>(
+    `/admin/owners/${pet.proprietary_id}/pets/${petId}/medical_profile`,
+  );
+  return profile;
 }
