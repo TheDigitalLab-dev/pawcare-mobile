@@ -116,7 +116,7 @@ export function AdminAppointmentWizardScreen() {
     setSlotsLoading(true);
     try {
       const result = await getAdminTimeSlots(sel.day, vetId, sel.serviceId);
-      setSlots(result.filter((s) => s.available).map((s) => s.time));
+      setSlots(result.flatMap((s) => (s.available ? [s.time] : [])));
     } catch {
       setSlots([]);
     } finally {

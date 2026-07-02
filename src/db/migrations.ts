@@ -15,7 +15,7 @@ export interface Migration {
   sql: string;
 }
 
-export const MIGRATIONS: Migration[] = [
+const MIGRATIONS: Migration[] = [
   {
     id: 1,
     name: 'init_sync_and_weighings',

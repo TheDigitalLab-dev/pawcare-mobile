@@ -33,7 +33,7 @@ function resolveApiBaseUrl(env: Environment): string {
   return '';
 }
 
-export const environment: Environment = resolveEnvironment();
+const environment: Environment = resolveEnvironment();
 
 export const config = {
   environment,

@@ -21,12 +21,6 @@ export const PET_SEX_LABEL: Record<PetSex, string> = {
 };
 
 export type PhoneType = 'whatsapp' | 'telegram' | 'regular';
-export const PHONE_TYPE_LABEL: Record<PhoneType, string> = {
-  whatsapp: 'WhatsApp',
-  telegram: 'Telegram',
-  regular: 'Normal',
-};
-
 // Enum del backend (app/models/pet.rb): 8 especies.
 export type Species =
   | 'dog'
@@ -60,12 +54,6 @@ export const SPECIES_EMOJI: Record<Species, string> = {
 
 // Enum del backend: not_for_adoption | available_for_adoption | adopted.
 export type AdoptionStatus = 'not_for_adoption' | 'available_for_adoption' | 'adopted';
-export const ADOPTION_STATUS_LABEL: Record<AdoptionStatus, string> = {
-  not_for_adoption: 'No disponible',
-  available_for_adoption: 'En adopción',
-  adopted: 'Adoptado',
-};
-
 // Enum del backend (app/models/appointment.rb).
 export type AppointmentStatus =
   | 'pending'
@@ -117,15 +105,6 @@ export type StaffRole =
   | 'assistant'
   | 'finances'
   | 'hr';
-export const STAFF_ROLE_LABEL: Record<StaffRole, string> = {
-  admin: 'Administrador',
-  vet: 'Veterinario',
-  vet_assistant: 'Asistente veterinario',
-  assistant: 'Asistente',
-  finances: 'Finanzas',
-  hr: 'Recursos humanos',
-};
-
 // --- Entidades -------------------------------------------------------------
 
 export interface Owner {
