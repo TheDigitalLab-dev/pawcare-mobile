@@ -3502,6 +3502,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"await-lock@npm:^2.2.2":
+  version: 2.2.2
+  resolution: "await-lock@npm:2.2.2"
+  checksum: 10c0/bedf00dad44c6325a655bf3bd523ab9e1ce41023da6a8c379990c76ac1d942ac7e5301627ab84ba37917ab5247506ba429b7f6e4bf77074093f255571b9ad5ee
+  languageName: node
+  linkType: hard
+
 "babel-jest@npm:^29.2.1, babel-jest@npm:^29.7.0":
   version: 29.7.0
   resolution: "babel-jest@npm:29.7.0"
@@ -5276,6 +5283,19 @@ __metadata:
   version: 56.0.4
   resolution: "expo-server@npm:56.0.4"
   checksum: 10c0/80b9217b742b4c88e540d00fd60b9b02537ffb7ecc03d205abc7936d655ba02d6c5fa17be0e9b0a1a28550a2cbd958b32b22e5d1ef116341c506467a3a8822a1
+  languageName: node
+  linkType: hard
+
+"expo-sqlite@npm:~56.0.5":
+  version: 56.0.5
+  resolution: "expo-sqlite@npm:56.0.5"
+  dependencies:
+    await-lock: "npm:^2.2.2"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/1b0a715d1b902a2a32ce2e8902e524426dc795c5200c860476e889b0de5bbd2a67541042b3165488d012b0e727f501e3cd4948bb3735ef05b4fc7a3fed3a39f4
   languageName: node
   linkType: hard
 
@@ -8504,6 +8524,7 @@ __metadata:
     expo-image-picker: "npm:~56.0.18"
     expo-linear-gradient: "npm:~56.0.4"
     expo-secure-store: "npm:~56.0.4"
+    expo-sqlite: "npm:~56.0.5"
     expo-status-bar: "npm:~56.0.4"
     husky: "npm:^9.1.7"
     jest: "npm:~29.7.0"
