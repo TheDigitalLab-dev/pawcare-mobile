@@ -72,7 +72,12 @@ export async function listAdminPets(): Promise<Pet[]> {
 }
 
 export async function listAdminAppointments(): Promise<Appointment[]> {
-  const res = await api.get<{ appointments: Appointment[] }>('/admin/appointments-list');
+  // El backend filtra por `scope` (default "upcoming" = solo futuras). La agenda
+  // del admin filtra por estado en el cliente, así que pedimos TODAS las citas
+  // (cualquier fecha). `per_page` alto para que los filtros locales sean completos.
+  const res = await api.get<{ appointments: Appointment[] }>('/admin/appointments-list', {
+    params: { scope: 'all', per_page: 100 },
+  });
   return res.appointments;
 }
 

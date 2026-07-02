@@ -26,6 +26,13 @@ describe('adminService (listas reales del staff)', () => {
     expect(Array.isArray(payments)).toBe(true);
   });
 
+  it('trae citas de cualquier fecha (scope=all, no solo futuras)', async () => {
+    // Regresión: el backend filtra por scope "upcoming" por defecto; la agenda
+    // del admin debe ver TODAS las citas (el seed tiene decenas de citas pasadas).
+    const appointments = await adminService.listAdminAppointments();
+    expect(appointments.length).toBeGreaterThan(0);
+  });
+
   it('lista registros médicos (consultas, vacunas, desparasitaciones)', async () => {
     const [consultations, vaccinations, dewormings] = await Promise.all([
       adminService.listAdminConsultations(),
