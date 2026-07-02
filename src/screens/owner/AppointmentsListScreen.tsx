@@ -1,0 +1,109 @@
+import { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { View } from 'react-native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { AppHeader, MobileShell } from '@/components/layout';
+import { AsyncBoundary, Fab, FilterChips, type BadgeVariant } from '@/components/ui';
+import { AppointmentCard } from '@/components/domain';
+import type { OwnerAppointmentsStackParamList } from '@/navigation/types';
+import { useAsync } from '@/hooks/useAsync';
+import { listAppointments } from '@/services/appointments';
+import { formatDateTime } from '@/utils/format';
+import {
+  APPOINTMENT_STATUS_LABEL,
+  type Appointment,
+  type AppointmentStatus,
+} from '@/types/models';
+
+type Nav = NativeStackNavigationProp<OwnerAppointmentsStackParamList>;
+type Filter = 'upcoming' | 'past';
+
+const STATUS_VARIANT: Record<AppointmentStatus, BadgeVariant> = {
+  pending: 'warning',
+  confirmed: 'success',
+  in_progress: 'primary',
+  completed: 'primary',
+  cancelled: 'destructive',
+  rescheduled: 'warning',
+};
+
+const UPCOMING: AppointmentStatus[] = ['pending', 'confirmed', 'in_progress'];
+
+const FILTERS = [
+  { id: 'upcoming', label: 'Próximas' },
+  { id: 'past', label: 'Pasadas' },
+];
+
+function vetName(a: Appointment): string | undefined {
+  if (!a.assigned_to) return undefined;
+  return `${a.assigned_to.first_name} ${a.assigned_to.last_name}`.trim();
+}
+
+export function AppointmentsListScreen() {
+  const navigation = useNavigation<Nav>();
+  const [filter, setFilter] = useState<Filter>('upcoming');
+  const { data, loading, error, reload } = useAsync(() => listAppointments());
+
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+    }, [reload]),
+  );
+
+  const appointments = useMemo(() => {
+    const list = data ?? [];
+    return list.filter((a) =>
+      filter === 'upcoming' ? UPCOMING.includes(a.status) : !UPCOMING.includes(a.status),
+    );
+  }, [data, filter]);
+
+  return (
+    <MobileShell
+      scroll
+      header={<AppHeader title="Citas" />}
+      contentStyle={{ gap: 12, paddingBottom: 96 }}
+      fab={
+        <Fab
+          icon="add"
+          accessibilityLabel="Agendar cita"
+          onPress={() => navigation.navigate('AppointmentWizard', {})}
+        />
+      }
+    >
+      <FilterChips
+        options={FILTERS}
+        selectedId={filter}
+        onSelect={(id) => setFilter(id as Filter)}
+      />
+
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={appointments.length === 0}
+        emptyIcon="calendar"
+        emptyTitle="Sin citas"
+        emptyDescription={
+          filter === 'upcoming'
+            ? 'No tienes citas próximas. Agenda una con el botón +.'
+            : 'No hay citas pasadas.'
+        }
+      >
+        <View style={{ gap: 12 }}>
+          {appointments.map((a) => (
+            <AppointmentCard
+              key={a.id}
+              petName={a.pet?.name ?? 'Mascota'}
+              dateLabel={formatDateTime(a.scheduled_at)}
+              vetName={vetName(a)}
+              statusLabel={APPOINTMENT_STATUS_LABEL[a.status]}
+              statusVariant={STATUS_VARIANT[a.status]}
+              onPress={() => navigation.navigate('AppointmentDetail', { id: a.id })}
+            />
+          ))}
+        </View>
+      </AsyncBoundary>
+    </MobileShell>
+  );
+}

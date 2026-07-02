@@ -1,0 +1,54 @@
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import { View } from 'react-native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { AppHeader, MobileShell } from '@/components/layout';
+import { AsyncBoundary } from '@/components/ui';
+import { ListRow } from '@/components/domain';
+import type { OwnerPetsStackParamList } from '@/navigation/types';
+import { useAsync } from '@/hooks/useAsync';
+import { listConsultations } from '@/services/medical';
+import { formatDate } from '@/utils/format';
+
+type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
+
+export function ConsultationsScreen() {
+  const navigation = useNavigation<Nav>();
+  const route = useRoute<RouteProp<OwnerPetsStackParamList, 'Consultations'>>();
+  const { petId } = route.params;
+  const back = navigation.canGoBack() ? navigation.goBack : undefined;
+
+  const { data, loading, error, reload } = useAsync(() => listConsultations(petId));
+  const items = data ?? [];
+
+  return (
+    <MobileShell
+      scroll
+      header={<AppHeader title="Consultas" onBack={back} />}
+      contentStyle={{ gap: 8, paddingBottom: 32 }}
+    >
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={items.length === 0}
+        emptyIcon="document-text"
+        emptyTitle="Sin consultas"
+        emptyDescription="Esta mascota no tiene consultas registradas."
+      >
+        <View style={{ gap: 8 }}>
+          {items.map((c) => (
+            <ListRow
+              key={c.id}
+              title={c.diagnosis ?? 'Consulta'}
+              subtitle={`${formatDate(c.consultation_date)} · ${c.veterinarian.full_name}`}
+              onPress={() =>
+                navigation.navigate('ConsultationDetail', { petId, id: c.id })
+              }
+            />
+          ))}
+        </View>
+      </AsyncBoundary>
+    </MobileShell>
+  );
+}
