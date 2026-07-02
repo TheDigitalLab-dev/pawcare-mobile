@@ -4,36 +4,17 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
 import { Avatar, Button, EmptyState, SectionTitle } from '@/components/ui';
-import { DetailHero, ListRow } from '@/components/domain';
+import { DetailHero, ListRow, ThemeToggle } from '@/components/domain';
 import type { OwnerProfileStackParamList } from '@/navigation/types';
 import { useAuth } from '@/hooks/useAuth';
 import { deleteAccount } from '@/services/profile';
 import { ApiError } from '@/types/api';
-import { useTheme, type ThemePreference } from '@/theme';
 
 type Nav = NativeStackNavigationProp<OwnerProfileStackParamList>;
-
-const THEME_ORDER: ThemePreference[] = ['system', 'light', 'dark'];
-const THEME_LABEL: Record<ThemePreference, string> = {
-  system: 'Automático (sistema)',
-  light: 'Claro',
-  dark: 'Oscuro',
-};
-const THEME_ICON: Record<ThemePreference, string> = {
-  system: '🌓',
-  light: '☀️',
-  dark: '🌙',
-};
 
 export function ProfileScreen() {
   const navigation = useNavigation<Nav>();
   const { user, signOut } = useAuth();
-  const { preference, setPreference } = useTheme();
-
-  const cycleTheme = () => {
-    const next = THEME_ORDER[(THEME_ORDER.indexOf(preference) + 1) % THEME_ORDER.length];
-    if (next) setPreference(next);
-  };
 
   const runDelete = async () => {
     try {
@@ -114,12 +95,7 @@ export function ProfileScreen() {
 
       <SectionTitle>Apariencia</SectionTitle>
       <View style={{ gap: 8 }}>
-        <ListRow
-          title="Tema"
-          subtitle={THEME_LABEL[preference]}
-          leading={<Avatar fallback={THEME_ICON[preference]} />}
-          onPress={cycleTheme}
-        />
+        <ThemeToggle />
       </View>
 
       <Button

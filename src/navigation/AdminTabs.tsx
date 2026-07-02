@@ -31,6 +31,7 @@ import {
   AdminVaccinationSchedulesScreen,
   AdminVaccinationsListScreen,
 } from '@/screens/admin';
+import { ServerSettingsScreen } from '@/screens/auth';
 import type {
   AdminAgendaStackParamList,
   AdminHomeStackParamList,
@@ -144,6 +145,7 @@ function AdminMoreStack() {
         name="AdminMedicalReportDetail"
         component={AdminMedicalReportDetailScreen}
       />
+      <MoreStack.Screen name="AdminServerSettings" component={ServerSettingsScreen} />
     </MoreStack.Navigator>
   );
 }

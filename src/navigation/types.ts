@@ -133,6 +133,7 @@ export type AdminMoreStackParamList = {
   AdminPaymentRegister: { id: number };
   AdminMedicalReportsList: undefined;
   AdminMedicalReportDetail: { id: number };
+  AdminServerSettings: undefined;
 };
 
 // --- Helpers de props ------------------------------------------------------

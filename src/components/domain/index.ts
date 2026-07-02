@@ -17,3 +17,4 @@ export { TimelineItem, type TimelineItemProps } from './TimelineItem';
 export { AppointmentCard, type AppointmentCardProps } from './AppointmentCard';
 export { PaymentCard, type PaymentCardProps } from './PaymentCard';
 export { ProductCard, type ProductCardProps } from './ProductCard';
+export { ThemeToggle, nextThemePreference } from './ThemeToggle';

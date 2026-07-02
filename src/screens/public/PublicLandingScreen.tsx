@@ -4,8 +4,8 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 import { MobileShell } from '@/components/layout';
-import { ActionTileGrid, HeroCard, type ActionTile } from '@/components';
-import { Button } from '@/components';
+import { ActionTileGrid, HeroCard, ThemeToggle, type ActionTile } from '@/components';
+import { Button, SectionTitle } from '@/components';
 import type { PublicStackParamList } from '@/navigation/types';
 
 /** Hub público de PawCare: punto de entrada a las secciones abiertas. */
@@ -68,6 +68,9 @@ export function PublicLandingScreen() {
         onPress={() => navigation.navigate('Auth')}
         style={styles.login}
       />
+
+      <SectionTitle>Apariencia</SectionTitle>
+      <ThemeToggle />
     </MobileShell>
   );
 }
