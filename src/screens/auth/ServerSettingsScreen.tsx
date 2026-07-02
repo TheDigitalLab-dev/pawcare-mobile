@@ -23,7 +23,7 @@ export function ServerSettingsScreen() {
   const navigation = useNavigation();
   const back = navigation.canGoBack() ? navigation.goBack : undefined;
 
-  const [url, setUrl] = useState(getApiBaseUrl());
+  const [url, setUrl] = useState(() => getApiBaseUrl());
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [health, setHealth] = useState<ServerHealth | null>(null);
