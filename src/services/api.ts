@@ -8,6 +8,7 @@
  * - Soporte de multipart (uploads, F8) y respuestas crudas (descargas binarias, F8).
  */
 import { config } from '@/config/env';
+import { getApiBaseUrl } from '@/config/serverConfig';
 import {
   ApiError,
   type ApiErrorKind,
@@ -33,7 +34,8 @@ export function registerSessionRefresher(fn: () => Promise<boolean>): void {
 // --- Utilidades -----------------------------------------------------------
 
 function buildUrl(path: string, params?: RequestOptions['params']): string {
-  const base = `${config.apiBaseUrl}${path.startsWith('/') ? path : `/${path}`}`;
+  // URL base en runtime (configurable por el usuario, self-hosted).
+  const base = `${getApiBaseUrl()}${path.startsWith('/') ? path : `/${path}`}`;
   if (!params) return base;
   const qs = Object.entries(params)
     .filter(([, v]) => v !== undefined && v !== null)

@@ -15,3 +15,4 @@ export {
   ResetPasswordScreen,
   type ResetPasswordScreenProps,
 } from './ResetPasswordScreen';
+export { ServerSettingsScreen } from './ServerSettingsScreen';

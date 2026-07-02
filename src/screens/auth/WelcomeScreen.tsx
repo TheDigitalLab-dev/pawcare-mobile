@@ -7,10 +7,15 @@ import { Button } from '@/components/ui';
 export interface WelcomeScreenProps {
   onLogin?: () => void;
   onRegister?: () => void;
+  onOpenServerSettings?: () => void;
 }
 
-/** Pantalla de bienvenida (`GET /auth`) — solo dos accesos: login y registro. */
-export function WelcomeScreen({ onLogin, onRegister }: WelcomeScreenProps) {
+/** Pantalla de bienvenida (`GET /auth`) — accesos a login, registro y servidor. */
+export function WelcomeScreen({
+  onLogin,
+  onRegister,
+  onOpenServerSettings,
+}: WelcomeScreenProps) {
   const { colors } = useTheme();
   return (
     <MobileShell contentStyle={styles.content}>
@@ -23,6 +28,12 @@ export function WelcomeScreen({ onLogin, onRegister }: WelcomeScreenProps) {
       <View style={styles.actions}>
         <Button label="Iniciar sesión" fullWidth onPress={onLogin} />
         <Button label="Crear cuenta" variant="outline" fullWidth onPress={onRegister} />
+        <Button
+          label="Configurar servidor"
+          variant="ghost"
+          fullWidth
+          onPress={onOpenServerSettings}
+        />
       </View>
     </MobileShell>
   );

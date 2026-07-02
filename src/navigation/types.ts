@@ -12,6 +12,7 @@ export type AuthStackParamList = {
   Register: undefined;
   ForgotPassword: undefined;
   ResetPassword: { token?: string };
+  ServerSettings: undefined;
 };
 
 // El árbol raíz cuando no hay sesión es el público (incluye Auth → ResetPassword).

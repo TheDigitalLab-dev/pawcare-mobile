@@ -10,6 +10,7 @@ import {
   LoginScreen,
   RegisterScreen,
   ResetPasswordScreen,
+  ServerSettingsScreen,
   WelcomeScreen,
 } from '@/screens/auth';
 import type { OwnerRegistration } from '@/screens/auth/RegisterScreen';
@@ -43,6 +44,7 @@ function WelcomeRoute() {
     <WelcomeScreen
       onLogin={() => navigation.navigate('Login')}
       onRegister={() => navigation.navigate('Register')}
+      onOpenServerSettings={() => navigation.navigate('ServerSettings')}
     />
   );
 }
@@ -201,6 +203,7 @@ export function AuthStack() {
       <Stack.Screen name="Register" component={RegisterRoute} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordRoute} />
       <Stack.Screen name="ResetPassword" component={ResetPasswordRoute} />
+      <Stack.Screen name="ServerSettings" component={ServerSettingsScreen} />
     </Stack.Navigator>
   );
 }

@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, type ThemePreference } from '@/theme';
 import { SessionProvider } from '@/session/SessionProvider';
 import { RootNavigator } from '@/navigation/RootNavigator';
+import { loadServerUrl } from '@/config/serverConfig';
 
 const THEME_KEY = 'pawcare.theme_preference';
 
@@ -18,7 +19,8 @@ export default function App() {
   const [preference, setPreference] = useState<ThemePreference | null>(null);
 
   useEffect(() => {
-    AsyncStorage.getItem(THEME_KEY).then((stored) => {
+    // Restaura el servidor elegido ANTES de que la sesión haga su primer fetch.
+    Promise.all([AsyncStorage.getItem(THEME_KEY), loadServerUrl()]).then(([stored]) => {
       setPreference(isThemePreference(stored) ? stored : 'system');
     });
   }, []);

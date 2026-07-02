@@ -28,10 +28,9 @@ function resolveApiBaseUrl(env: Environment): string {
   const fromEnv = process.env.EXPO_PUBLIC_API_BASE_URL;
   if (fromEnv && fromEnv.length > 0) return fromEnv.replace(/\/+$/, '');
   if (env === 'development') return DEV_DEFAULT_API_BASE_URL;
-  // En staging/producción exigimos configuración explícita.
-  throw new Error(
-    'EXPO_PUBLIC_API_BASE_URL no está definida. Configúrala para staging/producción.',
-  );
+  // Producción self-hosted: si no se inyectó URL en el build, queda vacía y el
+  // usuario elige su servidor en runtime (ver `serverConfig` + ServerSettings).
+  return '';
 }
 
 export const environment: Environment = resolveEnvironment();
