@@ -6,3 +6,4 @@ export {
   type ThemePreference,
   type ThemeContextValue,
 } from './ThemeProvider';
+export { nextThemePreference } from './nextThemePreference';

@@ -1,4 +1,4 @@
-import { nextThemePreference } from '@/components/domain/ThemeToggle';
+import { nextThemePreference } from '@/theme';
 
 describe('nextThemePreference', () => {
   it('cicla system → light → dark → system', () => {
