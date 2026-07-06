@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { View } from 'react-native';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
@@ -10,7 +10,7 @@ import type { OwnerPetsStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
 import { listPets } from '@/services/pets';
 import { formatDate } from '@/utils/format';
-import { SPECIES_EMOJI, SPECIES_LABEL } from '@/types/models';
+import { SPECIES_EMOJI, SPECIES_LABEL, type Pet } from '@/types/models';
 
 type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
 
@@ -32,18 +32,41 @@ export function PetsListScreen() {
     return q ? list.filter((p) => p.name.toLowerCase().includes(q)) : list;
   }, [data, query]);
 
+  const fab = useMemo(
+    () => (
+      <Fab
+        icon="add"
+        accessibilityLabel="Agregar mascota"
+        onPress={() => navigation.navigate('PetForm', {})}
+      />
+    ),
+    [navigation],
+  );
+
+  const renderItem = useCallback(
+    ({ item: pet }: ListRenderItemInfo<Pet>) => (
+      <ListRow
+        title={pet.name}
+        subtitle={`${SPECIES_LABEL[pet.species]}${pet.breed ? ` · ${pet.breed}` : ''}${
+          pet.birth_date ? ` · Nac. ${formatDate(pet.birth_date)}` : ''
+        }`}
+        leading={() => (
+          <Avatar
+            uri={pet.photo_url ?? undefined}
+            fallback={SPECIES_EMOJI[pet.species]}
+          />
+        )}
+        onPress={() => navigation.navigate('PetDetail', { id: pet.id })}
+      />
+    ),
+    [navigation],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Mis mascotas" />}
-      contentStyle={{ gap: 12, paddingBottom: 96 }}
-      fab={
-        <Fab
-          icon="add"
-          accessibilityLabel="Agregar mascota"
-          onPress={() => navigation.navigate('PetForm', {})}
-        />
-      }
+      contentStyle={styles.content}
+      fab={fab}
     >
       <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar mascota…" />
 
@@ -58,25 +81,21 @@ export function PetsListScreen() {
           query ? 'Prueba con otro nombre.' : 'Agrega tu primera mascota con el botón +.'
         }
       >
-        <View style={{ gap: 8 }}>
-          {filtered.map((pet) => (
-            <ListRow
-              key={pet.id}
-              title={pet.name}
-              subtitle={`${SPECIES_LABEL[pet.species]}${pet.breed ? ` · ${pet.breed}` : ''}${
-                pet.birth_date ? ` · Nac. ${formatDate(pet.birth_date)}` : ''
-              }`}
-              leading={
-                <Avatar
-                  uri={pet.photo_url ?? undefined}
-                  fallback={SPECIES_EMOJI[pet.species]}
-                />
-              }
-              onPress={() => navigation.navigate('PetDetail', { id: pet.id })}
-            />
-          ))}
-        </View>
+        <FlatList
+          data={filtered}
+          keyExtractor={(pet) => String(pet.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          keyboardShouldPersistTaps="handled"
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 8, paddingBottom: 96 },
+});

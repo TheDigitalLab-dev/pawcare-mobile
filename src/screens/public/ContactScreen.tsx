@@ -27,31 +27,33 @@ export function ContactScreen() {
       <ListRow
         title="Teléfono"
         subtitle="+58 412 1234567"
-        leading={<Ionicons name="call" size={22} color={colors.primary} />}
+        leading={() => <Ionicons name="call" size={22} color={colors.primary} />}
         showChevron={false}
       />
       <ListRow
         title="Correo"
         subtitle="contacto@pawcare.com"
-        leading={<Ionicons name="mail" size={22} color={colors.primary} />}
+        leading={() => <Ionicons name="mail" size={22} color={colors.primary} />}
         showChevron={false}
       />
       <ListRow
         title="Dirección"
         subtitle="Av. Principal 123, Ciudad"
-        leading={<Ionicons name="location" size={22} color={colors.primary} />}
+        leading={() => <Ionicons name="location" size={22} color={colors.primary} />}
         showChevron={false}
       />
 
       <SectionTitle>Información legal</SectionTitle>
       <ListRow
         title="Términos y condiciones"
-        leading={<Ionicons name="document-text" size={22} color={colors.primary} />}
+        leading={() => <Ionicons name="document-text" size={22} color={colors.primary} />}
         onPress={() => navigation.navigate('Terms')}
       />
       <ListRow
         title="Política de privacidad"
-        leading={<Ionicons name="shield-checkmark" size={22} color={colors.primary} />}
+        leading={() => (
+          <Ionicons name="shield-checkmark" size={22} color={colors.primary} />
+        )}
         onPress={() => navigation.navigate('Privacy')}
       />
     </MobileShell>

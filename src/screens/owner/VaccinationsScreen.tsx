@@ -1,5 +1,6 @@
+import { useCallback } from 'react';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import { View } from 'react-native';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 
 import { AppHeader, MobileShell } from '@/components/layout';
 import { AsyncBoundary } from '@/components/ui';
@@ -8,6 +9,7 @@ import type { OwnerPetsStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
 import { listVaccinations } from '@/services/medical';
 import { formatDate } from '@/utils/format';
+import type { Vaccination } from '@/types/models';
 
 export function VaccinationsScreen() {
   const navigation = useNavigation();
@@ -18,11 +20,30 @@ export function VaccinationsScreen() {
   const { data, loading, error, reload } = useAsync(() => listVaccinations(petId));
   const items = data ?? [];
 
+  const renderItem = useCallback(
+    ({ item: v, index }: ListRenderItemInfo<Vaccination>) => (
+      <TimelineItem
+        tone="success"
+        title={v.vaccine_name}
+        date={formatDate(v.application_date)}
+        description={
+          [
+            v.next_due_date ? `Próxima: ${formatDate(v.next_due_date)}` : null,
+            v.veterinarian ? v.veterinarian.full_name : null,
+          ]
+            .filter(Boolean)
+            .join(' · ') || undefined
+        }
+        last={index === items.length - 1}
+      />
+    ),
+    [items.length],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Vacunas" onBack={back} />}
-      contentStyle={{ gap: 8, paddingBottom: 32 }}
+      contentStyle={styles.content}
     >
       <AsyncBoundary
         loading={loading && data === null}
@@ -33,26 +54,20 @@ export function VaccinationsScreen() {
         emptyTitle="Sin vacunas"
         emptyDescription="Esta mascota no tiene vacunas registradas."
       >
-        <View>
-          {items.map((v, i) => (
-            <TimelineItem
-              key={v.id}
-              tone="success"
-              title={v.vaccine_name}
-              date={formatDate(v.application_date)}
-              description={
-                [
-                  v.next_due_date ? `Próxima: ${formatDate(v.next_due_date)}` : null,
-                  v.veterinarian ? v.veterinarian.full_name : null,
-                ]
-                  .filter(Boolean)
-                  .join(' · ') || undefined
-              }
-              last={i === items.length - 1}
-            />
-          ))}
-        </View>
+        <FlatList
+          data={items}
+          keyExtractor={(v) => String(v.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 8 },
+  list: { flex: 1 },
+  listContent: { paddingBottom: 32 },
+});

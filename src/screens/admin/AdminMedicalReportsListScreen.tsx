@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -9,6 +10,7 @@ import type { AdminMoreStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
 import { listAdminMedicalReports } from '@/services/admin';
 import { formatDate } from '@/utils/format';
+import type { MedicalReport } from '@/types/models';
 
 type Nav = NativeStackNavigationProp<AdminMoreStackParamList>;
 
@@ -24,11 +26,21 @@ export function AdminMedicalReportsListScreen() {
     return q ? list.filter((r) => r.title.toLowerCase().includes(q)) : list;
   }, [data, query]);
 
+  const renderItem = useCallback(
+    ({ item: r }: ListRenderItemInfo<MedicalReport>) => (
+      <ListRow
+        title={r.title}
+        subtitle={formatDate(r.generated_at ?? r.created_at)}
+        onPress={() => navigation.navigate('AdminMedicalReportDetail', { id: r.id })}
+      />
+    ),
+    [navigation],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Reportes médicos" onBack={back} />}
-      contentStyle={{ gap: 12, paddingBottom: 32 }}
+      contentStyle={styles.content}
     >
       <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar reporte…" />
 
@@ -41,15 +53,21 @@ export function AdminMedicalReportsListScreen() {
         emptyTitle="Sin reportes"
         emptyDescription="No hay reportes médicos."
       >
-        {reports.map((r) => (
-          <ListRow
-            key={r.id}
-            title={r.title}
-            subtitle={formatDate(r.generated_at ?? r.created_at)}
-            onPress={() => navigation.navigate('AdminMedicalReportDetail', { id: r.id })}
-          />
-        ))}
+        <FlatList
+          data={reports}
+          keyExtractor={(r) => String(r.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          keyboardShouldPersistTaps="handled"
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 12, paddingBottom: 32 },
+});

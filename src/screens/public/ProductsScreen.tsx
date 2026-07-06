@@ -1,13 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 
 import { AppHeader, MobileShell } from '@/components/layout';
 import { AsyncBoundary, ProductCard, SearchBar } from '@/components';
 import { useAsync } from '@/hooks/useAsync';
 import { listProducts } from '@/services/public';
 import { formatMoney } from '@/utils/format';
+import type { Product } from '@/types/models';
 import type { PublicStackParamList } from '@/navigation/types';
 
 export function ProductsScreen() {
@@ -21,16 +22,28 @@ export function ProductsScreen() {
     return q ? list.filter((p) => p.name.toLowerCase().includes(q)) : list;
   }, [data, query]);
 
+  const renderItem = useCallback(
+    ({ item: product }: ListRenderItemInfo<Product>) => (
+      <ProductCard
+        name={product.name}
+        priceLabel={formatMoney(Number(product.sale_price))}
+        imageUri={product.image_url ?? undefined}
+        inStock={product.in_stock ?? false}
+        onPress={() => navigation.navigate('ProductDetail', { id: product.id })}
+      />
+    ),
+    [navigation],
+  );
+
   return (
     <MobileShell
-      scroll
       header={
         <AppHeader
           title="Tienda"
           onBack={navigation.canGoBack() ? navigation.goBack : undefined}
         />
       }
-      contentStyle={{ gap: 12 }}
+      contentStyle={styles.content}
     >
       <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar productos…" />
 
@@ -45,28 +58,24 @@ export function ProductsScreen() {
           query ? 'No encontramos productos para tu búsqueda.' : 'Aún no hay productos.'
         }
       >
-        <View style={styles.grid}>
-          {filtered.map((product) => (
-            <ProductCard
-              key={product.id}
-              name={product.name}
-              priceLabel={formatMoney(Number(product.sale_price))}
-              imageUri={product.image_url ?? undefined}
-              inStock={product.in_stock ?? false}
-              onPress={() => navigation.navigate('ProductDetail', { id: product.id })}
-            />
-          ))}
-        </View>
+        <FlatList
+          data={filtered}
+          keyExtractor={(product) => String(product.id)}
+          renderItem={renderItem}
+          numColumns={2}
+          columnWrapperStyle={styles.column}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          keyboardShouldPersistTaps="handled"
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 12 },
+  column: { justifyContent: 'space-between' },
 });

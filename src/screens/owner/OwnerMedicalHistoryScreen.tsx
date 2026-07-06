@@ -81,12 +81,12 @@ export function OwnerMedicalHistoryScreen() {
                   key={pet.id}
                   title={pet.name}
                   subtitle={`${SPECIES_LABEL[pet.species]}${pet.breed ? ` · ${pet.breed}` : ''}`}
-                  leading={
+                  leading={() => (
                     <Avatar
                       uri={pet.photo_url ?? undefined}
                       fallback={SPECIES_EMOJI[pet.species]}
                     />
-                  }
+                  )}
                   onPress={goToPets}
                 />
               ))}

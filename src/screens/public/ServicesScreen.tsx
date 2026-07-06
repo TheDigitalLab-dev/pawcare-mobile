@@ -1,12 +1,14 @@
+import { useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { View } from 'react-native';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 
 import { AppHeader, MobileShell } from '@/components/layout';
 import { AsyncBoundary, ListRow } from '@/components';
 import { useAsync } from '@/hooks/useAsync';
 import { listPublicServices } from '@/services/public';
 import { formatMoney } from '@/utils/format';
+import type { LandingService } from '@/types/models';
 import type { PublicStackParamList } from '@/navigation/types';
 
 export function ServicesScreen() {
@@ -14,16 +16,23 @@ export function ServicesScreen() {
   const { data, loading, error, reload } = useAsync(() => listPublicServices());
   const items = data ?? [];
 
+  const renderItem = useCallback(({ item: s }: ListRenderItemInfo<LandingService>) => {
+    const price = s.price != null ? formatMoney(Number(s.price)) : 'Consultar';
+    const duration = s.duration_minutes ? ` · ${s.duration_minutes} min` : '';
+    return (
+      <ListRow title={s.name} subtitle={`${price}${duration}`} showChevron={false} />
+    );
+  }, []);
+
   return (
     <MobileShell
-      scroll
       header={
         <AppHeader
           title="Servicios"
           onBack={navigation.canGoBack() ? navigation.goBack : undefined}
         />
       }
-      contentStyle={{ gap: 12 }}
+      contentStyle={styles.content}
     >
       <AsyncBoundary
         loading={loading && data === null}
@@ -34,21 +43,20 @@ export function ServicesScreen() {
         emptyTitle="Sin servicios"
         emptyDescription="Aún no hay servicios publicados."
       >
-        <View style={{ gap: 8 }}>
-          {items.map((s) => {
-            const price = s.price != null ? formatMoney(Number(s.price)) : 'Consultar';
-            const duration = s.duration_minutes ? ` · ${s.duration_minutes} min` : '';
-            return (
-              <ListRow
-                key={s.id}
-                title={s.name}
-                subtitle={`${price}${duration}`}
-                showChevron={false}
-              />
-            );
-          })}
-        </View>
+        <FlatList
+          data={items}
+          keyExtractor={(s) => String(s.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 8 },
+});

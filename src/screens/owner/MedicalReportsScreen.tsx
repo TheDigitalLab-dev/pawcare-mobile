@@ -1,5 +1,6 @@
+import { useCallback } from 'react';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import { View } from 'react-native';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
@@ -9,6 +10,7 @@ import type { OwnerPetsStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
 import { listMedicalReports } from '@/services/medical';
 import { formatDate } from '@/utils/format';
+import type { MedicalReport } from '@/types/models';
 
 type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
 
@@ -21,11 +23,21 @@ export function MedicalReportsScreen() {
   const { data, loading, error, reload } = useAsync(() => listMedicalReports(petId));
   const items = data ?? [];
 
+  const renderItem = useCallback(
+    ({ item: r }: ListRenderItemInfo<MedicalReport>) => (
+      <ListRow
+        title={r.title}
+        subtitle={formatDate(r.generated_at ?? r.created_at)}
+        onPress={() => navigation.navigate('MedicalReportDetail', { petId, id: r.id })}
+      />
+    ),
+    [navigation, petId],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Reportes médicos" onBack={back} />}
-      contentStyle={{ gap: 8, paddingBottom: 32 }}
+      contentStyle={styles.content}
     >
       <AsyncBoundary
         loading={loading && data === null}
@@ -36,19 +48,20 @@ export function MedicalReportsScreen() {
         emptyTitle="Sin reportes"
         emptyDescription="Esta mascota no tiene reportes médicos."
       >
-        <View style={{ gap: 8 }}>
-          {items.map((r) => (
-            <ListRow
-              key={r.id}
-              title={r.title}
-              subtitle={formatDate(r.generated_at ?? r.created_at)}
-              onPress={() =>
-                navigation.navigate('MedicalReportDetail', { petId, id: r.id })
-              }
-            />
-          ))}
-        </View>
+        <FlatList
+          data={items}
+          keyExtractor={(r) => String(r.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 8 },
+  list: { flex: 1 },
+  listContent: { gap: 8, paddingBottom: 32 },
+});
