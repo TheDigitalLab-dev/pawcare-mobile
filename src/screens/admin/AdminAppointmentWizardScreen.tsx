@@ -53,6 +53,9 @@ function Check() {
   return <Text style={{ color: colors.primary, fontWeight: '700' }}>✓</Text>;
 }
 
+// Elemento estático hoisteado: el color se resuelve dentro de <Check /> vía useTheme.
+const CHECK_EL = <Check />;
+
 function ownerName(o: AdminOwner): string {
   return o.full_name ?? `${o.first_name} ${o.last_name}`.trim();
 }
@@ -116,7 +119,7 @@ export function AdminAppointmentWizardScreen() {
     setSlotsLoading(true);
     try {
       const result = await getAdminTimeSlots(sel.day, vetId, sel.serviceId);
-      setSlots(result.filter((s) => s.available).map((s) => s.time));
+      setSlots(result.flatMap((s) => (s.available ? [s.time] : [])));
     } catch {
       setSlots([]);
     } finally {
@@ -199,7 +202,7 @@ export function AdminAppointmentWizardScreen() {
                 title={ownerName(o)}
                 subtitle={o.email}
                 showChevron={false}
-                trailing={sel.ownerId === o.id ? <Check /> : undefined}
+                trailing={sel.ownerId === o.id ? CHECK_EL : undefined}
                 onPress={() => patch({ ownerId: o.id, petId: undefined })}
               />
             ))}
@@ -224,14 +227,14 @@ export function AdminAppointmentWizardScreen() {
                 key={pet.id}
                 title={pet.name}
                 subtitle={SPECIES_LABEL[pet.species]}
-                leading={
+                leading={() => (
                   <Avatar
                     uri={pet.photo_url ?? undefined}
                     fallback={SPECIES_EMOJI[pet.species as Species]}
                   />
-                }
+                )}
                 showChevron={false}
-                trailing={sel.petId === pet.id ? <Check /> : undefined}
+                trailing={sel.petId === pet.id ? CHECK_EL : undefined}
                 onPress={() => patch({ petId: pet.id })}
               />
             ))}
@@ -256,7 +259,7 @@ export function AdminAppointmentWizardScreen() {
                 title={s.name}
                 subtitle={s.duration_minutes ? `${s.duration_minutes} min` : undefined}
                 showChevron={false}
-                trailing={sel.serviceId === s.id ? <Check /> : undefined}
+                trailing={sel.serviceId === s.id ? CHECK_EL : undefined}
                 onPress={() =>
                   patch({ serviceId: s.id, vetId: undefined, time: undefined })
                 }
@@ -303,7 +306,7 @@ export function AdminAppointmentWizardScreen() {
                 key={v.id}
                 title={`${v.first_name} ${v.last_name}`}
                 showChevron={false}
-                trailing={sel.vetId === v.id ? <Check /> : undefined}
+                trailing={sel.vetId === v.id ? CHECK_EL : undefined}
                 onPress={() => void selectVet(v.id)}
               />
             ))}

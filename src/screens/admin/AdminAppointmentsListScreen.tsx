@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -9,7 +10,11 @@ import type { AdminAgendaStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
 import { listAdminAppointments } from '@/services/admin';
 import { formatDateTime } from '@/utils/format';
-import { APPOINTMENT_STATUS_LABEL, type AppointmentStatus } from '@/types/models';
+import {
+  APPOINTMENT_STATUS_LABEL,
+  type Appointment,
+  type AppointmentStatus,
+} from '@/types/models';
 
 type Nav = NativeStackNavigationProp<AdminAgendaStackParamList>;
 
@@ -46,17 +51,39 @@ export function AdminAppointmentsListScreen() {
     return filter === 'all' ? list : list.filter((a) => a.status === filter);
   }, [data, filter]);
 
+  const fab = useMemo(
+    () => (
+      <Fab
+        accessibilityLabel="Agendar cita"
+        onPress={() => navigation.navigate('AdminAppointmentWizard', {})}
+      />
+    ),
+    [navigation],
+  );
+
+  const renderItem = useCallback(
+    ({ item: a }: ListRenderItemInfo<Appointment>) => (
+      <AppointmentCard
+        petName={a.pet?.name ?? 'Mascota'}
+        dateLabel={formatDateTime(a.scheduled_at)}
+        vetName={
+          a.assigned_to
+            ? `${a.assigned_to.first_name} ${a.assigned_to.last_name}`
+            : undefined
+        }
+        statusLabel={APPOINTMENT_STATUS_LABEL[a.status]}
+        statusVariant={STATUS_VARIANT[a.status]}
+        onPress={() => navigation.navigate('AdminAppointmentDetail', { id: a.id })}
+      />
+    ),
+    [navigation],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Agenda" />}
-      contentStyle={{ gap: 12, paddingBottom: 96 }}
-      fab={
-        <Fab
-          accessibilityLabel="Agendar cita"
-          onPress={() => navigation.navigate('AdminAppointmentWizard', {})}
-        />
-      }
+      contentStyle={styles.content}
+      fab={fab}
     >
       <FilterChips options={FILTERS} selectedId={filter} onSelect={setFilter} />
 
@@ -69,22 +96,20 @@ export function AdminAppointmentsListScreen() {
         emptyTitle="Sin citas"
         emptyDescription="No hay citas para este filtro."
       >
-        {appointments.map((a) => (
-          <AppointmentCard
-            key={a.id}
-            petName={a.pet?.name ?? 'Mascota'}
-            dateLabel={formatDateTime(a.scheduled_at)}
-            vetName={
-              a.assigned_to
-                ? `${a.assigned_to.first_name} ${a.assigned_to.last_name}`
-                : undefined
-            }
-            statusLabel={APPOINTMENT_STATUS_LABEL[a.status]}
-            statusVariant={STATUS_VARIANT[a.status]}
-            onPress={() => navigation.navigate('AdminAppointmentDetail', { id: a.id })}
-          />
-        ))}
+        <FlatList
+          data={appointments}
+          keyExtractor={(a) => String(a.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 12, paddingBottom: 96 },
+});

@@ -1,4 +1,11 @@
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { useCallback } from 'react';
+import {
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  type ListRenderItemInfo,
+} from 'react-native';
 
 import { useTheme } from '@/theme';
 
@@ -15,41 +22,48 @@ export interface FilterChipsProps {
 
 export function FilterChips({ options, selectedId, onSelect }: FilterChipsProps) {
   const { colors } = useTheme();
+
+  const renderItem = useCallback(
+    ({ item: opt }: ListRenderItemInfo<FilterChipOption>) => {
+      const active = opt.id === selectedId;
+      return (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: active }}
+          onPress={() => onSelect(opt.id)}
+          style={[
+            styles.chip,
+            {
+              backgroundColor: active ? colors.primary : colors.card,
+              borderColor: active ? colors.primary : colors.border,
+            },
+          ]}
+        >
+          <Text
+            style={{
+              color: active ? colors.primaryForeground : colors.foreground,
+              fontSize: 14,
+              fontWeight: '500',
+            }}
+          >
+            {opt.label}
+          </Text>
+        </Pressable>
+      );
+    },
+    [selectedId, onSelect, colors],
+  );
+
   return (
-    <ScrollView
+    <FlatList
       horizontal
+      data={options}
+      keyExtractor={(opt) => opt.id}
+      renderItem={renderItem}
+      extraData={selectedId}
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.row}
-    >
-      {options.map((opt) => {
-        const active = opt.id === selectedId;
-        return (
-          <Pressable
-            key={opt.id}
-            accessibilityRole="button"
-            accessibilityState={{ selected: active }}
-            onPress={() => onSelect(opt.id)}
-            style={[
-              styles.chip,
-              {
-                backgroundColor: active ? colors.primary : colors.card,
-                borderColor: active ? colors.primary : colors.border,
-              },
-            ]}
-          >
-            <Text
-              style={{
-                color: active ? colors.primaryForeground : colors.foreground,
-                fontSize: 14,
-                fontWeight: '500',
-              }}
-            >
-              {opt.label}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </ScrollView>
+    />
   );
 }
 

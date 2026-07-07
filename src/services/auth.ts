@@ -100,18 +100,6 @@ export async function resetPassword(
   );
 }
 
-export async function validateResetToken(token: string): Promise<boolean> {
-  try {
-    const res = await api.get<{ valid: boolean }>(
-      `${BASE}/reset_password/${encodeURIComponent(token)}`,
-      { auth: false },
-    );
-    return res.valid === true;
-  } catch {
-    return false;
-  }
-}
-
 export async function logout(): Promise<void> {
   const refresh = await secureStore.getRefreshToken();
   try {

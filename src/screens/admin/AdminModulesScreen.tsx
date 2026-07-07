@@ -10,6 +10,9 @@ import { useAuth } from '@/hooks/useAuth';
 
 type Nav = NativeStackNavigationProp<AdminMoreStackParamList>;
 
+// Icono estático hoisteado para evitar recrear JSX en cada render (jsx-no-jsx-as-prop).
+const SERVER_ICON = <Avatar fallback="🌐" />;
+
 export function AdminModulesScreen() {
   const navigation = useNavigation<Nav>();
   const { signOut } = useAuth();
@@ -71,7 +74,7 @@ export function AdminModulesScreen() {
         <ListRow
           title="Configurar servidor"
           subtitle="Elige a qué backend se conecta la app"
-          leading={<Avatar fallback="🌐" />}
+          leading={SERVER_ICON}
           onPress={() => navigation.navigate('AdminServerSettings')}
         />
       </View>

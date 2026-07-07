@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, use, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import type { AuthUser } from '@/types/models';
 import type { OwnerRegistration } from '@/screens/auth/RegisterScreen';
@@ -119,7 +112,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 }
 
 export function useSession(): SessionContextValue {
-  const ctx = useContext(SessionContext);
+  const ctx = use(SessionContext);
   if (!ctx) throw new Error('useSession debe usarse dentro de <SessionProvider>.');
   return ctx;
 }

@@ -1,5 +1,6 @@
+import { useCallback } from 'react';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import { View } from 'react-native';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 
 import { AppHeader, MobileShell } from '@/components/layout';
 import { AsyncBoundary, Badge, type BadgeVariant } from '@/components/ui';
@@ -7,6 +8,7 @@ import { ListRow } from '@/components/domain';
 import type { OwnerPetsStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
 import { listConsultations } from '@/services/medical';
+import type { LabExam } from '@/types/models';
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'Pendiente',
@@ -29,11 +31,27 @@ export function LabExamsScreen() {
   const consultation = (data ?? []).find((c) => c.id === consultationId);
   const exams = consultation?.lab_exams ?? [];
 
+  const renderItem = useCallback(
+    ({ item: e }: ListRenderItemInfo<LabExam>) => (
+      <ListRow
+        title={e.exam_name}
+        subtitle={e.results ?? undefined}
+        showChevron={false}
+        trailing={() => (
+          <Badge
+            label={STATUS_LABEL[e.status] ?? e.status}
+            variant={STATUS_VARIANT[e.status] ?? 'outline'}
+          />
+        )}
+      />
+    ),
+    [],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Exámenes de laboratorio" onBack={back} />}
-      contentStyle={{ gap: 12, paddingBottom: 32 }}
+      contentStyle={styles.content}
     >
       <AsyncBoundary
         loading={loading && data === null}
@@ -44,23 +62,20 @@ export function LabExamsScreen() {
         emptyTitle="Sin exámenes"
         emptyDescription="Esta consulta no tiene exámenes de laboratorio."
       >
-        <View style={{ gap: 8 }}>
-          {exams.map((e) => (
-            <ListRow
-              key={e.id}
-              title={e.exam_name}
-              subtitle={e.results ?? undefined}
-              showChevron={false}
-              trailing={
-                <Badge
-                  label={STATUS_LABEL[e.status] ?? e.status}
-                  variant={STATUS_VARIANT[e.status] ?? 'outline'}
-                />
-              }
-            />
-          ))}
-        </View>
+        <FlatList
+          data={exams}
+          keyExtractor={(e) => String(e.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 8, paddingBottom: 32 },
+});

@@ -1,5 +1,6 @@
+import { useCallback } from 'react';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import { View } from 'react-native';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
@@ -9,6 +10,7 @@ import type { OwnerPetsStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
 import { listConsultations } from '@/services/medical';
 import { formatDate } from '@/utils/format';
+import type { Consultation } from '@/types/models';
 
 type Nav = NativeStackNavigationProp<OwnerPetsStackParamList>;
 
@@ -21,11 +23,21 @@ export function ConsultationsScreen() {
   const { data, loading, error, reload } = useAsync(() => listConsultations(petId));
   const items = data ?? [];
 
+  const renderItem = useCallback(
+    ({ item: c }: ListRenderItemInfo<Consultation>) => (
+      <ListRow
+        title={c.diagnosis ?? 'Consulta'}
+        subtitle={`${formatDate(c.consultation_date)} · ${c.veterinarian.full_name}`}
+        onPress={() => navigation.navigate('ConsultationDetail', { petId, id: c.id })}
+      />
+    ),
+    [navigation, petId],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Consultas" onBack={back} />}
-      contentStyle={{ gap: 8, paddingBottom: 32 }}
+      contentStyle={styles.content}
     >
       <AsyncBoundary
         loading={loading && data === null}
@@ -36,19 +48,20 @@ export function ConsultationsScreen() {
         emptyTitle="Sin consultas"
         emptyDescription="Esta mascota no tiene consultas registradas."
       >
-        <View style={{ gap: 8 }}>
-          {items.map((c) => (
-            <ListRow
-              key={c.id}
-              title={c.diagnosis ?? 'Consulta'}
-              subtitle={`${formatDate(c.consultation_date)} · ${c.veterinarian.full_name}`}
-              onPress={() =>
-                navigation.navigate('ConsultationDetail', { petId, id: c.id })
-              }
-            />
-          ))}
-        </View>
+        <FlatList
+          data={items}
+          keyExtractor={(c) => String(c.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 8 },
+  list: { flex: 1 },
+  listContent: { gap: 8, paddingBottom: 32 },
+});

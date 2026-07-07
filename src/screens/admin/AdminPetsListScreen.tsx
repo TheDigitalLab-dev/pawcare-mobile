@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -9,7 +10,7 @@ import type { AdminPatientsStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
 import { listAdminPets } from '@/services/admin';
 import { formatDate } from '@/utils/format';
-import { SPECIES_EMOJI, SPECIES_LABEL } from '@/types/models';
+import { SPECIES_EMOJI, SPECIES_LABEL, type Pet } from '@/types/models';
 
 type Nav = NativeStackNavigationProp<AdminPatientsStackParamList>;
 
@@ -36,17 +37,33 @@ export function AdminPetsListScreen() {
       : list;
   }, [data, query]);
 
+  const fab = useMemo(
+    () => (
+      <Fab
+        accessibilityLabel="Agregar paciente"
+        onPress={() => navigation.navigate('AdminPetForm', {})}
+      />
+    ),
+    [navigation],
+  );
+
+  const renderItem = useCallback(
+    ({ item: pet }: ListRenderItemInfo<Pet>) => (
+      <ListRow
+        title={pet.name}
+        subtitle={`${SPECIES_LABEL[pet.species]} · ${pet.breed ?? 'Sin raza'} · ${formatDate(pet.birth_date)}`}
+        leading={() => <PetAvatar fallback={SPECIES_EMOJI[pet.species]} size="md" />}
+        onPress={() => navigation.navigate('AdminPetDetail', { id: pet.id })}
+      />
+    ),
+    [navigation],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Pacientes" />}
-      contentStyle={{ gap: 12, paddingBottom: 96 }}
-      fab={
-        <Fab
-          accessibilityLabel="Agregar paciente"
-          onPress={() => navigation.navigate('AdminPetForm', {})}
-        />
-      }
+      contentStyle={styles.content}
+      fab={fab}
     >
       <SearchBar
         value={query}
@@ -63,16 +80,21 @@ export function AdminPetsListScreen() {
         emptyTitle="Sin pacientes"
         emptyDescription="No se encontraron mascotas con ese criterio."
       >
-        {pets.map((pet) => (
-          <ListRow
-            key={pet.id}
-            title={pet.name}
-            subtitle={`${SPECIES_LABEL[pet.species]} · ${pet.breed ?? 'Sin raza'} · ${formatDate(pet.birth_date)}`}
-            leading={<PetAvatar fallback={SPECIES_EMOJI[pet.species]} size="md" />}
-            onPress={() => navigation.navigate('AdminPetDetail', { id: pet.id })}
-          />
-        ))}
+        <FlatList
+          data={pets}
+          keyExtractor={(pet) => String(pet.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          keyboardShouldPersistTaps="handled"
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 12, paddingBottom: 96 },
+});

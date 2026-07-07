@@ -1,5 +1,6 @@
+import { useCallback } from 'react';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import { View } from 'react-native';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 
 import { AppHeader, MobileShell } from '@/components/layout';
 import { AsyncBoundary } from '@/components/ui';
@@ -8,6 +9,7 @@ import type { OwnerPetsStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
 import { listDewormings } from '@/services/medical';
 import { formatDate } from '@/utils/format';
+import type { Deworming } from '@/types/models';
 
 export function DewormingsScreen() {
   const navigation = useNavigation();
@@ -18,11 +20,29 @@ export function DewormingsScreen() {
   const { data, loading, error, reload } = useAsync(() => listDewormings(petId));
   const items = data ?? [];
 
+  const renderItem = useCallback(
+    ({ item: d, index }: ListRenderItemInfo<Deworming>) => (
+      <TimelineItem
+        title={d.product_name}
+        date={formatDate(d.application_date)}
+        description={
+          [
+            d.next_due_date ? `Próxima: ${formatDate(d.next_due_date)}` : null,
+            d.veterinarian ? d.veterinarian.full_name : null,
+          ]
+            .filter(Boolean)
+            .join(' · ') || undefined
+        }
+        last={index === items.length - 1}
+      />
+    ),
+    [items.length],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Desparasitaciones" onBack={back} />}
-      contentStyle={{ gap: 8, paddingBottom: 32 }}
+      contentStyle={styles.content}
     >
       <AsyncBoundary
         loading={loading && data === null}
@@ -33,25 +53,20 @@ export function DewormingsScreen() {
         emptyTitle="Sin desparasitaciones"
         emptyDescription="Esta mascota no tiene desparasitaciones registradas."
       >
-        <View>
-          {items.map((d, i) => (
-            <TimelineItem
-              key={d.id}
-              title={d.product_name}
-              date={formatDate(d.application_date)}
-              description={
-                [
-                  d.next_due_date ? `Próxima: ${formatDate(d.next_due_date)}` : null,
-                  d.veterinarian ? d.veterinarian.full_name : null,
-                ]
-                  .filter(Boolean)
-                  .join(' · ') || undefined
-              }
-              last={i === items.length - 1}
-            />
-          ))}
-        </View>
+        <FlatList
+          data={items}
+          keyExtractor={(d) => String(d.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 8 },
+  list: { flex: 1 },
+  listContent: { paddingBottom: 32 },
+});

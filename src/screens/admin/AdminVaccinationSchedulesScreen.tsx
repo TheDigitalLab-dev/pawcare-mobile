@@ -1,10 +1,12 @@
+import { useCallback } from 'react';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { AppHeader, MobileShell } from '@/components/layout';
 import { AsyncBoundary, Badge, type BadgeVariant } from '@/components/ui';
 import { ListRow } from '@/components/domain';
 import { useAsync } from '@/hooks/useAsync';
-import { listVaccinationSchedules } from '@/services/admin';
+import { listVaccinationSchedules, type VaccinationSchedule } from '@/services/admin';
 import { formatDate } from '@/utils/format';
 
 const STATUS_VARIANT: Record<string, BadgeVariant> = {
@@ -20,11 +22,24 @@ export function AdminVaccinationSchedulesScreen() {
   const { data, loading, error, reload } = useAsync(() => listVaccinationSchedules());
   const items = data ?? [];
 
+  const renderItem = useCallback(
+    ({ item: s }: ListRenderItemInfo<VaccinationSchedule>) => (
+      <ListRow
+        title={s.pet?.name ?? `Esquema #${s.id}`}
+        subtitle={`${s.schedule_type}${s.start_date ? ` · ${formatDate(s.start_date)}` : ''}`}
+        showChevron={false}
+        trailing={() => (
+          <Badge label={s.status} variant={STATUS_VARIANT[s.status] ?? 'outline'} />
+        )}
+      />
+    ),
+    [],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Esquemas de vacunación" onBack={back} />}
-      contentStyle={{ gap: 12, paddingBottom: 32 }}
+      contentStyle={styles.content}
     >
       <AsyncBoundary
         loading={loading && data === null}
@@ -35,18 +50,20 @@ export function AdminVaccinationSchedulesScreen() {
         emptyTitle="Sin esquemas"
         emptyDescription="No hay esquemas de vacunación registrados."
       >
-        {items.map((s) => (
-          <ListRow
-            key={s.id}
-            title={s.pet?.name ?? `Esquema #${s.id}`}
-            subtitle={`${s.schedule_type}${s.start_date ? ` · ${formatDate(s.start_date)}` : ''}`}
-            showChevron={false}
-            trailing={
-              <Badge label={s.status} variant={STATUS_VARIANT[s.status] ?? 'outline'} />
-            }
-          />
-        ))}
+        <FlatList
+          data={items}
+          keyExtractor={(s) => String(s.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 12, paddingBottom: 32 },
+});

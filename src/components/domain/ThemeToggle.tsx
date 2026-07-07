@@ -25,7 +25,7 @@ export function ThemeToggle() {
     <ListRow
       title="Tema"
       subtitle={THEME_LABEL[preference]}
-      leading={<Avatar fallback={THEME_ICON[preference]} />}
+      leading={() => <Avatar fallback={THEME_ICON[preference]} />}
       showChevron={false}
       onPress={() => setPreference(nextThemePreference(preference))}
     />

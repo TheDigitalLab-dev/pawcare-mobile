@@ -30,7 +30,9 @@ describe('normalizeServerUrl', () => {
 
 describe('checkServerHealth (real)', () => {
   it('responde ok contra el backend en ejecución', async () => {
-    const health = await checkServerHealth('http://localhost:3000');
+    // Misma fuente de verdad que jest.setup.ts: el backend real configurado.
+    const backendUrl = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+    const health = await checkServerHealth(backendUrl);
     expect(health.ok).toBe(true);
     expect(typeof health.latencyMs).toBe('number');
   }, 15000);

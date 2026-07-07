@@ -12,6 +12,10 @@ import { ApiError } from '@/types/api';
 
 type Nav = NativeStackNavigationProp<OwnerProfileStackParamList>;
 
+// Iconos estáticos hoisteados para evitar recrear JSX en cada render (jsx-no-jsx-as-prop).
+const EDIT_ICON = <Avatar fallback="✎" />;
+const PASSWORD_ICON = <Avatar fallback="🔒" />;
+
 export function ProfileScreen() {
   const navigation = useNavigation<Nav>();
   const { user, signOut } = useAuth();
@@ -83,12 +87,12 @@ export function ProfileScreen() {
       <View style={{ gap: 8 }}>
         <ListRow
           title="Editar perfil"
-          leading={<Avatar fallback="✎" />}
+          leading={EDIT_ICON}
           onPress={() => navigation.navigate('EditProfile')}
         />
         <ListRow
           title="Cambiar contraseña"
-          leading={<Avatar fallback="🔒" />}
+          leading={PASSWORD_ICON}
           onPress={() => navigation.navigate('ChangePassword')}
         />
       </View>

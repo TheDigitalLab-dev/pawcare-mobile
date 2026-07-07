@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 
 import { AppHeader, MobileShell } from '@/components/layout';
@@ -6,6 +8,7 @@ import { ListRow } from '@/components/domain';
 import type { AdminMoreStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
 import { getAdminConsultation } from '@/services/admin';
+import type { LabExam } from '@/types/models';
 
 type Rt = RouteProp<AdminMoreStackParamList, 'AdminLabExams'>;
 
@@ -30,11 +33,27 @@ export function AdminLabExamsScreen() {
   );
   const exams = data?.lab_exams ?? [];
 
+  const renderItem = useCallback(
+    ({ item: e }: ListRenderItemInfo<LabExam>) => (
+      <ListRow
+        title={e.exam_name}
+        subtitle={e.results ?? undefined}
+        showChevron={false}
+        trailing={() => (
+          <Badge
+            label={STATUS_LABEL[e.status] ?? e.status}
+            variant={STATUS_VARIANT[e.status] ?? 'outline'}
+          />
+        )}
+      />
+    ),
+    [],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Exámenes de laboratorio" onBack={back} />}
-      contentStyle={{ gap: 12, paddingBottom: 32 }}
+      contentStyle={styles.content}
     >
       <AsyncBoundary
         loading={loading && data === null}
@@ -45,21 +64,20 @@ export function AdminLabExamsScreen() {
         emptyTitle="Sin exámenes"
         emptyDescription="Esta consulta no tiene exámenes de laboratorio."
       >
-        {exams.map((e) => (
-          <ListRow
-            key={e.id}
-            title={e.exam_name}
-            subtitle={e.results ?? undefined}
-            showChevron={false}
-            trailing={
-              <Badge
-                label={STATUS_LABEL[e.status] ?? e.status}
-                variant={STATUS_VARIANT[e.status] ?? 'outline'}
-              />
-            }
-          />
-        ))}
+        <FlatList
+          data={exams}
+          keyExtractor={(e) => String(e.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 12, paddingBottom: 32 },
+});

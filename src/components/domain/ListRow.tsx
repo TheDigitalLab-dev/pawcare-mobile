@@ -3,14 +3,24 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from '@/theme';
 
+/**
+ * Contenido de un slot: un nodo ya construido (útil para JSX estático hoisteado)
+ * o una función que lo construye (útil para contenido por fila en listas).
+ */
+export type ListRowSlot = React.ReactNode | (() => React.ReactNode);
+
 export interface ListRowProps {
   title: string;
   subtitle?: string;
-  leading?: React.ReactNode;
-  trailing?: React.ReactNode;
+  leading?: ListRowSlot;
+  trailing?: ListRowSlot;
   /** Muestra chevron a la derecha (default true si hay onPress). */
   showChevron?: boolean;
   onPress?: () => void;
+}
+
+function resolveSlot(slot: ListRowSlot): React.ReactNode {
+  return typeof slot === 'function' ? slot() : slot;
 }
 
 export function ListRow({
@@ -23,6 +33,8 @@ export function ListRow({
 }: ListRowProps) {
   const { colors } = useTheme();
   const chevron = showChevron ?? !!onPress;
+  const leadingNode = resolveSlot(leading);
+  const trailingNode = resolveSlot(trailing);
 
   return (
     <Pressable
@@ -38,7 +50,7 @@ export function ListRow({
         },
       ]}
     >
-      {leading}
+      {leadingNode}
       <View style={styles.body}>
         <Text numberOfLines={1} style={[styles.title, { color: colors.foreground }]}>
           {title}
@@ -52,7 +64,7 @@ export function ListRow({
           </Text>
         ) : null}
       </View>
-      {trailing}
+      {trailingNode}
       {chevron ? (
         <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
       ) : null}

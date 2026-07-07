@@ -1,12 +1,16 @@
 import { useCallback } from 'react';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 import { AppHeader, MobileShell } from '@/components/layout';
 import { AsyncBoundary, PetAvatar } from '@/components/ui';
 import { ListRow } from '@/components/domain';
 import { useAsync } from '@/hooks/useAsync';
-import { listAdminAdoptions } from '@/services/admin';
+import { listAdminAdoptions, type AdoptionRecord } from '@/services/admin';
 import { formatDate } from '@/utils/format';
+
+// Avatar estático compartido por todas las filas (evita recrear JSX por render).
+const PAW_AVATAR = <PetAvatar fallback="🐾" size="md" />;
 
 export function AdminAdoptionsListScreen() {
   const navigation = useNavigation();
@@ -19,16 +23,32 @@ export function AdminAdoptionsListScreen() {
     }, [reload]),
   );
 
+  const renderItem = useCallback(
+    ({ item: record }: ListRenderItemInfo<AdoptionRecord>) => (
+      <ListRow
+        title={record.pet?.name ?? 'Mascota'}
+        subtitle={[
+          record.adoption_date ? formatDate(record.adoption_date) : null,
+          record.adopter?.full_name ? `Adoptante: ${record.adopter.full_name}` : null,
+        ]
+          .filter(Boolean)
+          .join(' · ')}
+        leading={PAW_AVATAR}
+        showChevron={false}
+      />
+    ),
+    [],
+  );
+
   return (
     <MobileShell
-      scroll
       header={
         <AppHeader
           title="Adopciones"
           onBack={navigation.canGoBack() ? navigation.goBack : undefined}
         />
       }
-      contentStyle={{ gap: 12, paddingBottom: 32 }}
+      contentStyle={styles.content}
     >
       <AsyncBoundary
         loading={loading && data === null}
@@ -39,21 +59,20 @@ export function AdminAdoptionsListScreen() {
         emptyTitle="Sin adopciones"
         emptyDescription="Aún no hay adopciones registradas."
       >
-        {items.map((record) => (
-          <ListRow
-            key={record.id}
-            title={record.pet?.name ?? 'Mascota'}
-            subtitle={[
-              record.adoption_date ? formatDate(record.adoption_date) : null,
-              record.adopter?.full_name ? `Adoptante: ${record.adopter.full_name}` : null,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-            leading={<PetAvatar fallback="🐾" size="md" />}
-            showChevron={false}
-          />
-        ))}
+        <FlatList
+          data={items}
+          keyExtractor={(record) => String(record.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 12, paddingBottom: 32 },
+});

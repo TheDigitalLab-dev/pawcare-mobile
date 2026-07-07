@@ -1,5 +1,6 @@
+import { useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View } from 'react-native';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
@@ -9,6 +10,7 @@ import type { OwnerHomeStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
 import { listSponsorships } from '@/services/sponsorships';
 import { formatMoney } from '@/utils/format';
+import type { Sponsorship } from '@/types/models';
 
 type Nav = NativeStackNavigationProp<OwnerHomeStackParamList>;
 
@@ -18,11 +20,27 @@ export function OwnerSponsorshipsScreen() {
   const { data, loading, error, reload } = useAsync(() => listSponsorships());
   const items = data ?? [];
 
+  const renderItem = useCallback(
+    ({ item: s }: ListRenderItemInfo<Sponsorship>) => (
+      <ListRow
+        title={s.pet?.name ?? `Apadrinamiento #${s.id}`}
+        subtitle={formatMoney(s.amount)}
+        leading={() => (
+          <Badge
+            label={s.status === 'active' ? 'Activo' : s.status}
+            variant={s.status === 'active' ? 'success' : 'outline'}
+          />
+        )}
+        onPress={() => navigation.navigate('OwnerSponsorshipDetail', { id: s.id })}
+      />
+    ),
+    [navigation],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Apadrinamientos" onBack={back} />}
-      contentStyle={{ gap: 12, paddingBottom: 32 }}
+      contentStyle={styles.content}
     >
       <AsyncBoundary
         loading={loading && data === null}
@@ -33,23 +51,20 @@ export function OwnerSponsorshipsScreen() {
         emptyTitle="Sin apadrinamientos"
         emptyDescription="Aún no apadrinas a ninguna mascota."
       >
-        <View style={{ gap: 8 }}>
-          {items.map((s) => (
-            <ListRow
-              key={s.id}
-              title={s.pet?.name ?? `Apadrinamiento #${s.id}`}
-              subtitle={formatMoney(s.amount)}
-              leading={
-                <Badge
-                  label={s.status === 'active' ? 'Activo' : s.status}
-                  variant={s.status === 'active' ? 'success' : 'outline'}
-                />
-              }
-              onPress={() => navigation.navigate('OwnerSponsorshipDetail', { id: s.id })}
-            />
-          ))}
-        </View>
+        <FlatList
+          data={items}
+          keyExtractor={(s) => String(s.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 8, paddingBottom: 32 },
+});

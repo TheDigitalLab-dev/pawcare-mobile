@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { View } from 'react-native';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
@@ -58,18 +58,36 @@ export function AppointmentsListScreen() {
     );
   }, [data, filter]);
 
+  const fab = useMemo(
+    () => (
+      <Fab
+        icon="add"
+        accessibilityLabel="Agendar cita"
+        onPress={() => navigation.navigate('AppointmentWizard', {})}
+      />
+    ),
+    [navigation],
+  );
+
+  const renderItem = useCallback(
+    ({ item: a }: ListRenderItemInfo<Appointment>) => (
+      <AppointmentCard
+        petName={a.pet?.name ?? 'Mascota'}
+        dateLabel={formatDateTime(a.scheduled_at)}
+        vetName={vetName(a)}
+        statusLabel={APPOINTMENT_STATUS_LABEL[a.status]}
+        statusVariant={STATUS_VARIANT[a.status]}
+        onPress={() => navigation.navigate('AppointmentDetail', { id: a.id })}
+      />
+    ),
+    [navigation],
+  );
+
   return (
     <MobileShell
-      scroll
       header={<AppHeader title="Citas" />}
-      contentStyle={{ gap: 12, paddingBottom: 96 }}
-      fab={
-        <Fab
-          icon="add"
-          accessibilityLabel="Agendar cita"
-          onPress={() => navigation.navigate('AppointmentWizard', {})}
-        />
-      }
+      contentStyle={styles.content}
+      fab={fab}
     >
       <FilterChips
         options={FILTERS}
@@ -90,20 +108,20 @@ export function AppointmentsListScreen() {
             : 'No hay citas pasadas.'
         }
       >
-        <View style={{ gap: 12 }}>
-          {appointments.map((a) => (
-            <AppointmentCard
-              key={a.id}
-              petName={a.pet?.name ?? 'Mascota'}
-              dateLabel={formatDateTime(a.scheduled_at)}
-              vetName={vetName(a)}
-              statusLabel={APPOINTMENT_STATUS_LABEL[a.status]}
-              statusVariant={STATUS_VARIANT[a.status]}
-              onPress={() => navigation.navigate('AppointmentDetail', { id: a.id })}
-            />
-          ))}
-        </View>
+        <FlatList
+          data={appointments}
+          keyExtractor={(a) => String(a.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 12, paddingBottom: 96 },
+});

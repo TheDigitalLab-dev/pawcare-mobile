@@ -13,6 +13,12 @@ function isThemePreference(value: string | null): value is ThemePreference {
   return value === 'system' || value === 'light' || value === 'dark';
 }
 
+// Función pura (no usa estado local): a nivel de módulo para no reconstruirla
+// en cada render y no romper la memoización de los hijos.
+function persistThemePreference(next: ThemePreference): void {
+  void AsyncStorage.setItem(THEME_KEY, next);
+}
+
 export default function App() {
   // Preferencia de tema hidratada desde almacenamiento (persistente entre sesiones).
   // `null` mientras carga: evita un parpadeo claro→oscuro al arrancar.
@@ -27,15 +33,11 @@ export default function App() {
 
   if (preference === null) return null;
 
-  const handlePreferenceChange = (next: ThemePreference) => {
-    void AsyncStorage.setItem(THEME_KEY, next);
-  };
-
   return (
     <SafeAreaProvider>
       <ThemeProvider
         initialPreference={preference}
-        onPreferenceChange={handlePreferenceChange}
+        onPreferenceChange={persistThemePreference}
       >
         <SessionProvider>
           <RootNavigator />

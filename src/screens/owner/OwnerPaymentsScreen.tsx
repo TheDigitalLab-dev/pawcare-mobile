@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { View } from 'react-native';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
@@ -10,7 +10,7 @@ import type { OwnerHomeStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
 import { listPayments } from '@/services/payments';
 import { formatDate, formatMoney } from '@/utils/format';
-import { PAYMENT_STATUS_LABEL, type PaymentStatus } from '@/types/models';
+import { PAYMENT_STATUS_LABEL, type Payment, type PaymentStatus } from '@/types/models';
 
 const STATUS_VARIANT: Record<PaymentStatus, BadgeVariant> = {
   draft: 'outline',
@@ -49,16 +49,37 @@ export function OwnerPaymentsScreen() {
     return list;
   }, [data, filter]);
 
+  const renderItem = useCallback(
+    ({ item: p }: ListRenderItemInfo<Payment>) => (
+      <PaymentCard
+        concept={p.pet_name ?? 'Pago'}
+        amountLabel={formatMoney(p.amount, p.currency)}
+        statusLabel={PAYMENT_STATUS_LABEL[p.status]}
+        statusVariant={STATUS_VARIANT[p.status]}
+        dueLabel={
+          p.status === 'completed'
+            ? `Pagado: ${formatDate(p.paid_at)}`
+            : `Vence: ${formatDate(p.due_date)}`
+        }
+        onRegister={
+          PENDING.includes(p.status)
+            ? () => navigation.navigate('OwnerPaymentRegister', { id: p.id })
+            : undefined
+        }
+      />
+    ),
+    [navigation],
+  );
+
   return (
     <MobileShell
-      scroll
       header={
         <AppHeader
           title="Pagos"
           onBack={navigation.canGoBack() ? navigation.goBack : undefined}
         />
       }
-      contentStyle={{ gap: 12, paddingBottom: 32 }}
+      contentStyle={styles.content}
     >
       <FilterChips
         options={FILTERS}
@@ -75,28 +96,20 @@ export function OwnerPaymentsScreen() {
         emptyTitle="Sin pagos"
         emptyDescription="No hay pagos en esta categoría."
       >
-        <View style={{ gap: 12 }}>
-          {payments.map((p) => (
-            <PaymentCard
-              key={p.id}
-              concept={p.pet_name ?? 'Pago'}
-              amountLabel={formatMoney(p.amount, p.currency)}
-              statusLabel={PAYMENT_STATUS_LABEL[p.status]}
-              statusVariant={STATUS_VARIANT[p.status]}
-              dueLabel={
-                p.status === 'completed'
-                  ? `Pagado: ${formatDate(p.paid_at)}`
-                  : `Vence: ${formatDate(p.due_date)}`
-              }
-              onRegister={
-                PENDING.includes(p.status)
-                  ? () => navigation.navigate('OwnerPaymentRegister', { id: p.id })
-                  : undefined
-              }
-            />
-          ))}
-        </View>
+        <FlatList
+          data={payments}
+          keyExtractor={(p) => String(p.id)}
+          renderItem={renderItem}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+        />
       </AsyncBoundary>
     </MobileShell>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 12 },
+  list: { flex: 1 },
+  listContent: { gap: 12, paddingBottom: 32 },
+});
