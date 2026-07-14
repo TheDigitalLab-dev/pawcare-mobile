@@ -65,3 +65,28 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
+
+// Shim de plataforma: expo-notifications (módulo NATIVO de alarmas locales; no
+// existe en Node). La lógica de negocio de horarios/tomas se prueba de verdad en
+// utils/treatmentSchedule y services/treatments contra SQLite real.
+jest.mock('expo-notifications', () => {
+  let counter = 0;
+  return {
+    setNotificationChannelAsync: jest.fn(async () => null),
+    requestPermissionsAsync: jest.fn(async () => ({ granted: true })),
+    getPermissionsAsync: jest.fn(async () => ({ granted: true })),
+    scheduleNotificationAsync: jest.fn(async () => `notif-${++counter}`),
+    cancelScheduledNotificationAsync: jest.fn(async () => undefined),
+    setNotificationHandler: jest.fn(),
+    AndroidImportance: { MAX: 5 },
+    SchedulableTriggerInputTypes: { DATE: 'date' },
+  };
+});
+
+// Shim de plataforma: expo-sqlite (nativo). Los tests de base local usan
+// `node:sqlite` REAL; este shim solo evita el fallo de import en módulos de app.
+jest.mock('expo-sqlite', () => ({
+  openDatabaseSync: jest.fn(() => {
+    throw new Error('expo-sqlite no existe en Node: inyecta un SqlExecutor de test.');
+  }),
+}));

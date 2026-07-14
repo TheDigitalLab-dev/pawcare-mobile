@@ -49,6 +49,49 @@ const MIGRATIONS: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_outbox_created ON sync_outbox (created_at);
     `,
   },
+  {
+    id: 2,
+    name: 'treatments_and_doses',
+    sql: `
+      CREATE TABLE IF NOT EXISTS treatments (
+        id TEXT PRIMARY KEY NOT NULL,
+        server_id INTEGER,
+        pet_id INTEGER NOT NULL,
+        pet_name TEXT,
+        prescription_item_id INTEGER,
+        medication_name TEXT NOT NULL,
+        dose TEXT,
+        frequency_hours INTEGER NOT NULL CHECK (frequency_hours > 0),
+        duration_days INTEGER NOT NULL CHECK (duration_days > 0),
+        started_at TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'active'
+          CHECK (status IN ('active', 'completed', 'cancelled')),
+        sync_status TEXT NOT NULL DEFAULT 'pending'
+          CHECK (sync_status IN ('pending', 'synced', 'error')),
+        updated_at TEXT NOT NULL,
+        deleted_at TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS treatment_doses (
+        id TEXT PRIMARY KEY NOT NULL,
+        treatment_id TEXT NOT NULL REFERENCES treatments (id),
+        dose_index INTEGER NOT NULL,
+        scheduled_at TEXT NOT NULL,
+        taken_at TEXT,
+        status TEXT NOT NULL DEFAULT 'pending'
+          CHECK (status IN ('pending', 'taken', 'skipped')),
+        notification_id TEXT,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_treatments_status ON treatments (status);
+      CREATE INDEX IF NOT EXISTS idx_treatments_pet ON treatments (pet_id);
+      CREATE INDEX IF NOT EXISTS idx_doses_treatment
+        ON treatment_doses (treatment_id, dose_index);
+      CREATE INDEX IF NOT EXISTS idx_doses_pending
+        ON treatment_doses (status, scheduled_at);
+    `,
+  },
 ];
 
 /**

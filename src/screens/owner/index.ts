@@ -19,6 +19,8 @@ export { ConsultationDetailScreen } from './ConsultationDetailScreen';
 export { MedicalReportsScreen } from './MedicalReportsScreen';
 export { MedicalReportDetailScreen } from './MedicalReportDetailScreen';
 export { LabExamsScreen } from './LabExamsScreen';
+export { TreatmentsScreen } from './TreatmentsScreen';
+export { TreatmentStartScreen } from './TreatmentStartScreen';
 
 // Appointments stack
 export { AppointmentsListScreen } from './AppointmentsListScreen';

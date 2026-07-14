@@ -75,6 +75,16 @@ export type OwnerPetsStackParamList = {
   MedicalReports: { petId: number };
   MedicalReportDetail: { petId: number; id: number };
   LabExams: { petId: number; consultationId: number };
+  Treatments: undefined;
+  TreatmentStart: {
+    petId: number;
+    petName?: string;
+    prescriptionItemId?: number;
+    medicationName: string;
+    dose?: string;
+    frequency?: string;
+    duration?: string;
+  };
 };
 
 export type OwnerAppointmentsStackParamList = {

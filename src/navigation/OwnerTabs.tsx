@@ -27,6 +27,8 @@ import {
   PetMedicalHubScreen,
   PetsListScreen,
   ProfileScreen,
+  TreatmentsScreen,
+  TreatmentStartScreen,
   VaccinationsScreen,
 } from '@/screens/owner';
 import type {
@@ -79,6 +81,8 @@ function OwnerPetsStack() {
         component={MedicalReportDetailScreen}
       />
       <PetsStack.Screen name="LabExams" component={LabExamsScreen} />
+      <PetsStack.Screen name="Treatments" component={TreatmentsScreen} />
+      <PetsStack.Screen name="TreatmentStart" component={TreatmentStartScreen} />
     </PetsStack.Navigator>
   );
 }
