@@ -1,17 +1,23 @@
 import { useNavigation } from '@react-navigation/native';
 import { View } from 'react-native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppHeader, MobileShell } from '@/components/layout';
 import { AsyncBoundary, SectionTitle } from '@/components/ui';
-import { AdminModuleGrid, HeroCard, StatCard } from '@/components/domain';
-import type { AdminTabParamList } from '@/navigation/types';
+import {
+  AdminModuleGrid,
+  HeroCard,
+  NotificationsBell,
+  StatCard,
+} from '@/components/domain';
+import type { AdminHomeStackParamList, AdminTabParamList } from '@/navigation/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useAsync } from '@/hooks/useAsync';
 import { getAdminMetrics } from '@/services/admin';
 
 export function AdminDashboardScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<AdminHomeStackParamList>>();
   const { user } = useAuth();
   const { data, loading, error, reload } = useAsync(() => getAdminMetrics());
 
@@ -21,7 +27,14 @@ export function AdminDashboardScreen() {
   return (
     <MobileShell
       scroll
-      header={<AppHeader title="Inicio" />}
+      header={
+        <AppHeader
+          title="Inicio"
+          rightAction={
+            <NotificationsBell onPress={() => navigation.navigate('Notifications')} />
+          }
+        />
+      }
       contentStyle={{ gap: 16, paddingBottom: 32 }}
     >
       <HeroCard

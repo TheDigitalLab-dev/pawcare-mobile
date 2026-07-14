@@ -92,6 +92,26 @@ const MIGRATIONS: Migration[] = [
         ON treatment_doses (status, scheduled_at);
     `,
   },
+  {
+    id: 3,
+    name: 'notification_center',
+    sql: `
+      CREATE TABLE IF NOT EXISTS notifications (
+        id TEXT PRIMARY KEY NOT NULL,
+        type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        body TEXT,
+        dedupe_key TEXT UNIQUE,
+        created_at TEXT NOT NULL,
+        read_at TEXT
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_notifications_created
+        ON notifications (created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_notifications_unread
+        ON notifications (read_at);
+    `,
+  },
 ];
 
 /**

@@ -31,6 +31,7 @@ import {
   TreatmentStartScreen,
   VaccinationsScreen,
 } from '@/screens/owner';
+import { NotificationsScreen } from '@/screens/common';
 import type {
   OwnerAppointmentsStackParamList,
   OwnerHomeStackParamList,
@@ -44,6 +45,7 @@ function OwnerHomeStack() {
   return (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="OwnerDashboard" component={OwnerDashboardScreen} />
+      <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
       <HomeStack.Screen name="OwnerPayments" component={OwnerPaymentsScreen} />
       <HomeStack.Screen
         name="OwnerPaymentRegister"

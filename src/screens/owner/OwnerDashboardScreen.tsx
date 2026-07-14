@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -10,6 +10,7 @@ import {
   ActionTileGrid,
   AppointmentCard,
   HeroCard,
+  NotificationsBell,
   PaymentCard,
   StatCard,
 } from '@/components/domain';
@@ -19,6 +20,8 @@ import { useAsync } from '@/hooks/useAsync';
 import { listPets } from '@/services/pets';
 import { listAppointments } from '@/services/appointments';
 import { listPayments } from '@/services/payments';
+import { syncReminders } from '@/services/reminderAlarms';
+import { appointmentReminders } from '@/utils/reminders';
 import { formatDateTime, formatMoney } from '@/utils/format';
 import {
   APPOINTMENT_STATUS_LABEL,
@@ -46,6 +49,13 @@ export function OwnerDashboardScreen() {
     }, [pets.reload, appointments.reload, payments.reload]),
   );
 
+  // O1 del plan: recordatorios locales (24 h y 2 h antes) de las citas ya
+  // sincronizadas. Identificadores estables: reprogramar reemplaza, no duplica.
+  useEffect(() => {
+    if (!appointments.data) return;
+    void syncReminders(appointmentReminders(appointments.data, new Date().toISOString()));
+  }, [appointments.data]);
+
   const upcoming = (appointments.data ?? []).filter((a) => UPCOMING.includes(a.status));
   const nextAppointment = upcoming[0];
   const pendingPayments = (payments.data ?? []).filter(
@@ -65,7 +75,14 @@ export function OwnerDashboardScreen() {
   return (
     <MobileShell
       scroll
-      header={<AppHeader title="Inicio" />}
+      header={
+        <AppHeader
+          title="Inicio"
+          rightAction={
+            <NotificationsBell onPress={() => navigation.navigate('Notifications')} />
+          }
+        />
+      }
       contentStyle={{ gap: 16, paddingBottom: 32 }}
     >
       <HeroCard

@@ -60,6 +60,7 @@ export type OwnerHomeStackParamList = {
   OwnerMedicalHistory: undefined;
   OwnerSponsorships: undefined;
   OwnerSponsorshipDetail: { id: number };
+  Notifications: undefined;
 };
 
 export type OwnerPetsStackParamList = {
@@ -109,6 +110,7 @@ export type AdminTabParamList = {
 
 export type AdminHomeStackParamList = {
   AdminDashboard: undefined;
+  Notifications: undefined;
 };
 
 export type AdminPatientsStackParamList = {

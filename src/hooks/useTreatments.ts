@@ -19,6 +19,7 @@ import {
   ensureAlarmPermissions,
   syncTreatmentAlarms,
 } from '@/services/alarms';
+import { createNotificationCenter } from '@/services/notificationCenter';
 import {
   createTreatmentsRepo,
   type ActiveTreatment,
@@ -42,10 +43,9 @@ export interface UseTreatments {
 const MINUTE_MS = 60 * 1000;
 
 export function useTreatments(executor?: SqlExecutor): UseTreatments {
-  const repo = useMemo(
-    () => createTreatmentsRepo(executor ?? initDatabase()),
-    [executor],
-  );
+  const exec = useMemo(() => executor ?? initDatabase(), [executor]);
+  const repo = useMemo(() => createTreatmentsRepo(exec), [exec]);
+  const center = useMemo(() => createNotificationCenter(exec), [exec]);
   // Estado inicial perezoso: la primera lectura ocurre una sola vez al montar
   // (la base es local y síncrona); las mutaciones refrescan vía `reload`.
   const [treatments, setTreatments] = useState<ActiveTreatment[]>(() =>
@@ -72,9 +72,14 @@ export function useTreatments(executor?: SqlExecutor): UseTreatments {
           dose: created.dose,
         });
       }
+      center.add({
+        type: 'treatment',
+        title: '💊 Tratamiento iniciado',
+        body: `${created.medicationName}${created.petName ? ` para ${created.petName}` : ''}: ${created.doses.length} tomas programadas.`,
+      });
       reload();
     },
-    [repo, reload],
+    [repo, center, reload],
   );
 
   const markTaken = useCallback<UseTreatments['markTaken']>(
@@ -111,9 +116,14 @@ export function useTreatments(executor?: SqlExecutor): UseTreatments {
     async (treatment) => {
       repo.finishTreatment(treatment.id, 'completed');
       await cancelDoseAlarms(repo.listDoses(treatment.id));
+      center.add({
+        type: 'treatment',
+        title: '✅ Tratamiento finalizado',
+        body: `${treatment.medicationName}: ${treatment.takenCount} de ${treatment.totalCount} tomas registradas.`,
+      });
       reload();
     },
-    [repo, reload],
+    [repo, center, reload],
   );
 
   return { treatments, permissionDenied, start, markTaken, moveNextDose, finish, reload };

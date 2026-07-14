@@ -90,3 +90,13 @@ jest.mock('expo-sqlite', () => ({
     throw new Error('expo-sqlite no existe en Node: inyecta un SqlExecutor de test.');
   }),
 }));
+
+// Shim de plataforma: expo-network (nativo). Los tests de conectividad ejercitan
+// la lógica pura de transiciones; aquí solo se simula "en línea".
+jest.mock('expo-network', () => ({
+  getNetworkStateAsync: jest.fn(async () => ({
+    isConnected: true,
+    isInternetReachable: true,
+  })),
+  addNetworkStateListener: jest.fn(() => ({ remove: jest.fn() })),
+}));

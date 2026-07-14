@@ -106,6 +106,18 @@ describe('useTreatments', () => {
     ).toBeGreaterThan(5);
   });
 
+  it('iniciar un tratamiento deja constancia en el centro de notificaciones', async () => {
+    const { result } = renderHook(() => useTreatments(exec));
+    await startLuna(result);
+
+    const rows = exec.all<{ title: string; body: string }>(
+      "SELECT title, body FROM notifications WHERE type = 'treatment'",
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.body).toContain('Amoxicilina');
+    expect(rows[0]!.body).toContain('6 tomas');
+  });
+
   it('finalizar el tratamiento lo saca de activos y cancela sus alarmas', async () => {
     const { result } = renderHook(() => useTreatments(exec));
     await startLuna(result);

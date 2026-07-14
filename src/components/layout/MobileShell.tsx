@@ -10,6 +10,8 @@ import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/theme';
 
+import { OfflineBanner } from './OfflineBanner';
+
 export interface MobileShellProps {
   children: React.ReactNode;
   header?: React.ReactNode;
@@ -42,6 +44,7 @@ export function MobileShell({
     >
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       {header}
+      <OfflineBanner />
       {scroll ? (
         <ScrollView
           style={styles.flex}

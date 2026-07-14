@@ -32,6 +32,7 @@ import {
   AdminVaccinationsListScreen,
 } from '@/screens/admin';
 import { ServerSettingsScreen } from '@/screens/auth';
+import { NotificationsScreen } from '@/screens/common';
 import type {
   AdminAgendaStackParamList,
   AdminHomeStackParamList,
@@ -45,6 +46,7 @@ function AdminHomeStack() {
   return (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
+      <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
     </HomeStack.Navigator>
   );
 }
