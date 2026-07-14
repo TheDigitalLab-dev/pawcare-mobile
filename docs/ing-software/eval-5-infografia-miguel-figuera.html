@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infografía — Implementación y Mantenimiento del Producto de Software</title>
+<style>
+  /* ============ Tokens ============ */
+  :root{
+    --paper:#f5efe3;
+    --paper-2:#efe6d4;
+    --ink:#1c2b3a;
+    --ink-soft:#3d5166;
+    --teal:#0e7268;
+    --teal-soft:#dcebe6;
+    --coral:#d4502e;
+    --gold:#c9963c;
+    --line:#c8bda6;
+    --serif:"Palatino Linotype","Book Antiqua",Palatino,Georgia,"Times New Roman",serif;
+    --sans:"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+  @page{ size:210mm 650mm; margin:0 }
+
+  body{
+    width:210mm; margin:0 auto;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    font-size:9.2pt; line-height:1.42;
+    position:relative;
+  }
+  /* textura de papel: rejilla técnica muy tenue */
+  body::before{
+    content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
+    background:
+      repeating-linear-gradient(0deg, rgba(28,43,58,.035) 0 .3mm, transparent .3mm 6mm),
+      repeating-linear-gradient(90deg, rgba(28,43,58,.035) 0 .3mm, transparent .3mm 6mm);
+  }
+  .sheet{position:relative; z-index:1; padding:0 11mm 8mm}
+
+  .kicker{
+    font-family:var(--sans); font-size:6.6pt; font-weight:700;
+    letter-spacing:.24em; text-transform:uppercase; color:var(--teal);
+  }
+
+  /* ============ Cabecera ============ */
+  header{
+    margin:0 -11mm; padding:9mm 11mm 7mm;
+    background:var(--ink); color:var(--paper);
+    position:relative; overflow:hidden;
+  }
+  header::before{ /* huella de rejilla clara */
+    content:""; position:absolute; inset:0;
+    background:
+      repeating-linear-gradient(0deg, rgba(245,239,227,.06) 0 .3mm, transparent .3mm 7mm),
+      repeating-linear-gradient(90deg, rgba(245,239,227,.06) 0 .3mm, transparent .3mm 7mm);
+  }
+  header::after{ /* medallón de engranaje/llave abstracto */
+    content:"⟳"; position:absolute; right:-6mm; top:-14mm;
+    font-size:64mm; color:rgba(245,239,227,.07); line-height:1;
+  }
+  .uni{ position:relative; display:flex; justify-content:space-between; align-items:baseline;
+    font-family:var(--sans); font-size:6.6pt; letter-spacing:.18em; text-transform:uppercase;
+    color:#b9c6d2; border-bottom:.35mm solid rgba(245,239,227,.25); padding-bottom:2.6mm; margin-bottom:5mm}
+  .uni b{color:var(--paper)}
+  .tema-chip{position:relative; display:inline-block; font-family:var(--sans); font-size:6.8pt; font-weight:700;
+    letter-spacing:.2em; text-transform:uppercase; color:var(--ink);
+    background:var(--gold); padding:1.2mm 3mm; margin-bottom:3.4mm}
+  h1{position:relative; font-size:26pt; line-height:1.04; font-weight:700; letter-spacing:-.01em; max-width:150mm}
+  h1 em{font-style:italic; color:#e8b45a}
+  .lede{position:relative; margin-top:3.6mm; max-width:132mm; font-size:9.6pt; color:#d5dde4; font-style:italic}
+  .autores{position:relative; margin-top:5mm; display:flex; gap:8mm; font-family:var(--sans); font-size:7pt; color:#b9c6d2}
+  .autores b{display:block; font-size:8.4pt; color:var(--paper); letter-spacing:.02em}
+
+  /* ============ Secciones ============ */
+  section{margin-top:6mm; position:relative}
+  .sec-head{display:flex; align-items:flex-end; gap:4mm; margin-bottom:3.6mm}
+  .sec-num{
+    font-size:30pt; font-weight:700; line-height:.8; color:transparent;
+    -webkit-text-stroke:.5mm var(--coral); letter-spacing:-.02em; font-family:var(--sans);
+  }
+  .sec-title h2{font-size:14.5pt; line-height:1.05}
+  .sec-title .kicker{display:block; margin-bottom:1mm}
+  .rule{flex:1; border-bottom:.4mm solid var(--ink); margin-bottom:1.6mm; opacity:.85}
+
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:5mm}
+  .col-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:4mm}
+
+  p.body{ text-align:justify; hyphens:auto }
+  .destacado{
+    border-left:1.2mm solid var(--coral); background:var(--paper-2);
+    padding:2.6mm 3.4mm; font-style:italic; color:var(--ink-soft);
+  }
+
+  /* tarjetas de actividades de implantación */
+  .acts{display:grid; grid-template-columns:repeat(5,1fr); gap:2.6mm; margin-top:3.6mm}
+  .act{background:#fff; border:.3mm solid var(--line); border-top:1mm solid var(--teal); padding:2.4mm 2.4mm 2.6mm}
+  .act .ic{font-size:12pt; line-height:1; margin-bottom:1.4mm}
+  .act b{display:block; font-family:var(--sans); font-size:7.2pt; letter-spacing:.04em; margin-bottom:.8mm}
+  .act span{font-size:7.6pt; color:var(--ink-soft); line-height:1.3; display:block}
+
+  /* ============ Estrategias de conversión (diagramas CSS) ============ */
+  .strats{display:grid; grid-template-columns:1fr 1fr; gap:4mm}
+  .strat{background:#fff; border:.3mm solid var(--line); padding:3mm}
+  .strat h3{font-size:9.6pt; margin-bottom:.6mm}
+  .strat h3 small{font-family:var(--sans); font-size:6.4pt; font-weight:700; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--coral); display:block; margin-bottom:.6mm}
+  .strat p{font-size:7.7pt; color:var(--ink-soft); margin-top:1.6mm; line-height:1.35}
+  .diagrama{display:grid; gap:1mm; margin-top:2mm}
+  .track{display:flex; gap:.8mm; align-items:center; height:4.2mm}
+  .track .tag{font-family:var(--sans); font-size:5.6pt; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; width:12mm; color:var(--ink-soft); flex:none}
+  .seg{height:100%; border-radius:.5mm}
+  .old{background:repeating-linear-gradient(45deg, #9aa8b4 0 1.2mm, #b7c2cb 1.2mm 2.4mm)}
+  .new{background:var(--teal)}
+  .new.alt{background:var(--coral)}
+  .gap{background:transparent}
+  .riesgo{margin-top:2mm; display:flex; align-items:center; gap:1.6mm;
+    font-family:var(--sans); font-size:6pt; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft)}
+  .dots{display:inline-flex; gap:.7mm}
+  .dot{width:1.9mm; height:1.9mm; border-radius:50%; border:.3mm solid var(--coral); background:transparent}
+  .dot.on{background:var(--coral)}
+
+  /* ============ Costo del ciclo de vida ============ */
+  .banda-costo{
+    margin:0 -11mm; padding:6mm 11mm 6.5mm;
+    background:var(--ink); color:var(--paper);
+  }
+  .banda-costo .kicker{color:#e8b45a}
+  .banda-costo h2{font-size:14.5pt; margin:.8mm 0 3mm}
+  .costbar{display:flex; height:11mm; border:.4mm solid rgba(245,239,227,.5); font-family:var(--sans)}
+  .costbar div{display:flex; flex-direction:column; justify-content:center; padding:0 3mm}
+  .cost-dev{width:30%; background:rgba(245,239,227,.16)}
+  .cost-mant{width:70%; background:var(--coral)}
+  .costbar b{font-size:12pt; line-height:1}
+  .costbar span{font-size:6.4pt; letter-spacing:.14em; text-transform:uppercase; opacity:.9}
+  .banda-costo p{margin-top:2.6mm; font-size:8.6pt; font-style:italic; color:#d5dde4; max-width:165mm}
+
+  /* ============ Tipos de mantenimiento ============ */
+  .tipos{display:grid; grid-template-columns:repeat(4,1fr); gap:3.4mm}
+  .tipo{background:#fff; border:.3mm solid var(--line); padding:3mm 3mm 3.4mm; position:relative}
+  .tipo .pct{font-family:var(--sans); font-weight:700; font-size:15pt; line-height:1; color:var(--teal)}
+  .tipo.t-corr .pct{color:var(--coral)}
+  .tipo h3{font-size:9.8pt; margin:1.6mm 0 1.2mm}
+  .tipo p{font-size:7.6pt; color:var(--ink-soft); line-height:1.35}
+  .tipo .mini{margin-top:2mm; height:1.6mm; background:var(--paper-2); position:relative}
+  .tipo .mini i{position:absolute; inset:0 auto 0 0; background:var(--teal)}
+  .tipo.t-corr .mini i{background:var(--coral)}
+  .tipo .ej{margin-top:2mm; font-size:6.9pt; color:var(--ink-soft)}
+  .tipo .ej b{color:var(--teal); font-family:var(--sans); font-size:6.2pt; letter-spacing:.1em; text-transform:uppercase}
+  .fuente{font-family:var(--sans); font-size:6.2pt; color:var(--ink-soft); letter-spacing:.06em; margin-top:2.2mm}
+
+  /* ============ Proceso de mantenimiento (flujo) ============ */
+  .flujo{display:flex; align-items:stretch; gap:0; margin-top:1mm}
+  .paso{flex:1; background:#fff; border:.3mm solid var(--line); padding:2.6mm 2.4mm; position:relative}
+  .paso:not(:last-child){margin-right:4.5mm}
+  .paso:not(:last-child)::after{
+    content:"➔"; position:absolute; right:-4.2mm; top:50%; transform:translateY(-50%);
+    color:var(--coral); font-size:8.4pt; font-weight:bold;
+  }
+  .paso .n{font-family:var(--sans); font-size:6pt; font-weight:700; color:#fff; background:var(--ink);
+    display:inline-block; padding:.5mm 1.4mm; letter-spacing:.12em; margin-bottom:1.4mm}
+  .paso b{display:block; font-size:8pt; line-height:1.15; margin-bottom:1mm}
+  .paso span{font-size:6.9pt; color:var(--ink-soft); line-height:1.3; display:block}
+
+  /* ============ Lehman ============ */
+  .lehman{display:grid; grid-template-columns:1fr 1fr; gap:3mm}
+  .ley{display:flex; gap:2.6mm; background:var(--paper-2); padding:2.6mm 3mm; border:.3mm solid var(--line)}
+  .ley .rom{font-family:var(--sans); font-weight:700; font-size:10pt; color:var(--gold); flex:none; width:8mm}
+  .ley b{font-size:8.4pt; display:block; margin-bottom:.6mm}
+  .ley span{font-size:7.5pt; color:var(--ink-soft); line-height:1.35; display:block}
+
+  /* ============ Caso Pawcare ============ */
+  .caso{
+    margin:6mm -11mm 0; padding:6mm 11mm 6mm;
+    background:var(--teal); color:#eef6f2; position:relative; overflow:hidden;
+  }
+  .caso::after{content:"🐾"; position:absolute; right:2mm; top:-8mm; font-size:42mm; opacity:.10; line-height:1}
+  .caso .kicker{color:#bfe3d3}
+  .caso h2{font-size:14.5pt; margin:.8mm 0 1.4mm; color:#fff}
+  .caso .sub{font-style:italic; font-size:8.8pt; color:#d7ece1; max-width:160mm}
+  .caso-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:3.4mm; margin-top:3.6mm; position:relative}
+  .caso-item{background:rgba(255,255,255,.10); border:.3mm solid rgba(255,255,255,.35); padding:2.8mm 3mm}
+  .caso-item b{display:block; font-family:var(--sans); font-size:7.4pt; letter-spacing:.06em; color:#fff; margin-bottom:1mm}
+  .caso-item span{font-size:7.6pt; line-height:1.35; display:block; color:#e2f1e9}
+
+  /* ============ Pie ============ */
+  footer{margin-top:5mm; border-top:.5mm solid var(--ink); padding-top:3mm;
+    display:flex; justify-content:space-between; gap:8mm}
+  footer .refs{font-size:6.8pt; color:var(--ink-soft); line-height:1.5; max-width:132mm}
+  footer .refs b{font-family:var(--sans); font-size:6.4pt; letter-spacing:.18em; text-transform:uppercase; color:var(--ink); display:block; margin-bottom:1mm}
+  footer .sello{text-align:right; font-family:var(--sans); font-size:6.6pt; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ink-soft); flex:none}
+  footer .sello b{display:block; color:var(--coral); font-size:8pt; margin-bottom:.6mm}
+
+  /* ============ Botón imprimir (solo pantalla) ============ */
+  .print-btn{
+    position:fixed; right:16px; bottom:16px; z-index:9;
+    font-family:var(--sans); font-weight:700; font-size:13px; letter-spacing:.06em;
+    background:var(--coral); color:#fff; border:none; padding:12px 18px; border-radius:999px;
+    cursor:pointer; box-shadow:0 6px 18px rgba(28,43,58,.35);
+  }
+  .print-btn:hover{background:#b8401f}
+  @media print{ .print-btn{display:none} body{margin:0} }
+</style>
+</head>
+<body>
+<button class="print-btn" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
+
+<div class="sheet">
+
+  <!-- ================= CABECERA ================= -->
+  <header>
+    <div class="uni">
+      <span><b>UNETI</b> · Universidad Nacional Experimental de las Telecomunicaciones e Informática</span>
+      <span>Ingeniería de Software</span>
+    </div>
+    <span class="tema-chip">Tema N.° 5 · Evaluación final</span>
+    <h1>Implementación y <em>Mantenimiento</em> del producto final de software</h1>
+    <p class="lede">El software no termina cuando compila: se entrega, se pone en producción y vive años evolucionando. Aquí está el mapa completo de esa última — y más larga — etapa del ciclo de vida.</p>
+    <div class="autores">
+      <div><b>Miguel Figuera</b>Autor</div>
+      <div><b>Profa. Misley Baute</b>Docente de la unidad curricular</div>
+      <div><b>Julio de 2026</b>La Victoria, edo. Aragua</div>
+    </div>
+  </header>
+
+  <!-- ================= 01 IMPLEMENTACIÓN ================= -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">01</div>
+      <div class="sec-title">
+        <span class="kicker">De la construcción a la operación</span>
+        <h2>¿Qué es la implementación (implantación)?</h2>
+      </div>
+      <div class="rule"></div>
+    </div>
+    <div class="cols">
+      <p class="body">Es la fase en la que el sistema, ya construido y verificado, se <b>instala en su ambiente real de operación</b> y se pone a disposición de los usuarios finales. Marca la transición del proyecto: el producto deja de ser un artefacto del equipo de desarrollo y pasa a ser una herramienta de trabajo de la organización.</p>
+      <div class="destacado">Una implantación mal planificada puede hacer fracasar un sistema técnicamente perfecto: la resistencia al cambio, los datos mal migrados y la falta de capacitación destruyen la confianza del usuario en el primer contacto.</div>
+    </div>
+    <div class="acts">
+      <div class="act"><div class="ic">⚙️</div><b>Instalación y despliegue</b><span>Preparar servidores, dispositivos y configuración del ambiente de producción.</span></div>
+      <div class="act"><div class="ic">🗄️</div><b>Migración de datos</b><span>Convertir y cargar los datos del sistema anterior, verificando su integridad.</span></div>
+      <div class="act"><div class="ic">🎓</div><b>Capacitación</b><span>Entrenar a los usuarios finales y al personal de soporte en el nuevo sistema.</span></div>
+      <div class="act"><div class="ic">📚</div><b>Documentación</b><span>Manuales de usuario y de operación; guías de instalación y respaldo.</span></div>
+      <div class="act"><div class="ic">✅</div><b>Aceptación</b><span>Pruebas de aceptación con el cliente y firma de conformidad de la entrega.</span></div>
+    </div>
+  </section>
+
+  <!-- ================= 02 ESTRATEGIAS ================= -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">02</div>
+      <div class="sec-title">
+        <span class="kicker">¿Cómo se apaga el sistema viejo?</span>
+        <h2>Estrategias de conversión al nuevo sistema</h2>
+      </div>
+      <div class="rule"></div>
+    </div>
+    <div class="strats">
+      <div class="strat">
+        <h3><small>Riesgo alto · costo bajo</small>Conversión directa (big-bang)</h3>
+        <div class="diagrama">
+          <div class="track"><span class="tag">Anterior</span><div class="seg old" style="width:42%"></div></div>
+          <div class="track"><span class="tag">Nuevo</span><div class="seg gap" style="width:42%"></div><div class="seg new" style="width:52%"></div></div>
+        </div>
+        <div class="riesgo">Riesgo <span class="dots"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i></span></div>
+        <p>El sistema anterior se apaga y el nuevo arranca de inmediato. Rápida y económica, pero sin red de seguridad: si el nuevo falla, la operación se detiene.</p>
+      </div>
+      <div class="strat">
+        <h3><small>Riesgo bajo · costo alto</small>Conversión en paralelo</h3>
+        <div class="diagrama">
+          <div class="track"><span class="tag">Anterior</span><div class="seg old" style="width:70%"></div></div>
+          <div class="track"><span class="tag">Nuevo</span><div class="seg gap" style="width:32%"></div><div class="seg new" style="width:62%"></div></div>
+        </div>
+        <div class="riesgo">Riesgo <span class="dots"><i class="dot on"></i><i class="dot"></i><i class="dot"></i></span></div>
+        <p>Ambos sistemas operan a la vez durante un período y se comparan resultados. Máxima seguridad, pero duplica el trabajo y el costo de operación.</p>
+      </div>
+      <div class="strat">
+        <h3><small>Riesgo controlado · aprendizaje</small>Conversión piloto</h3>
+        <div class="diagrama">
+          <div class="track"><span class="tag">Anterior</span><div class="seg old" style="width:70%"></div></div>
+          <div class="track"><span class="tag">Piloto</span><div class="seg gap" style="width:32%"></div><div class="seg new alt" style="width:14%"></div><div class="seg new" style="width:48%"></div></div>
+        </div>
+        <div class="riesgo">Riesgo <span class="dots"><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></span></div>
+        <p>El nuevo sistema se prueba primero en un área o sede limitada; validado el piloto, se extiende al resto de la organización con las lecciones aprendidas.</p>
+      </div>
+      <div class="strat">
+        <h3><small>Riesgo medio · gradual</small>Conversión por fases</h3>
+        <div class="diagrama">
+          <div class="track"><span class="tag">Anterior</span><div class="seg old" style="width:34%"></div><div class="seg old" style="width:20%; opacity:.6"></div><div class="seg old" style="width:12%; opacity:.35"></div></div>
+          <div class="track"><span class="tag">Nuevo</span><div class="seg gap" style="width:34%"></div><div class="seg new" style="width:20%"></div><div class="seg new" style="width:40%"></div></div>
+        </div>
+        <div class="riesgo">Riesgo <span class="dots"><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></span></div>
+        <p>El sistema se implanta módulo por módulo (p. ej., primero citas, luego pagos). Reparte el riesgo en el tiempo a cambio de convivir con dos sistemas.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 03 COSTO (banda oscura) ================= -->
+  <section class="banda-costo">
+    <span class="kicker">03 · El dato que cambia la perspectiva</span>
+    <h2>El mantenimiento domina el costo del ciclo de vida</h2>
+    <div class="costbar">
+      <div class="cost-dev"><b>≈ 30 %</b><span>Desarrollo inicial</span></div>
+      <div class="cost-mant"><b>≈ 70 %</b><span>Mantenimiento y evolución</span></div>
+    </div>
+    <p>Diversos estudios estiman que entre el 60 % y el 80 % del costo total de un sistema se consume después de su entrega (Sommerville, 2011; Pressman, 2010). Diseñar pensando en la mantenibilidad — código limpio, pruebas automatizadas, documentación de decisiones — es la inversión más rentable de todo el proyecto.</p>
+  </section>
+
+  <!-- ================= 04 TIPOS ================= -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">04</div>
+      <div class="sec-title">
+        <span class="kicker">ISO/IEC 14764 · Norma internacional del mantenimiento</span>
+        <h2>Los cuatro tipos de mantenimiento</h2>
+      </div>
+      <div class="rule"></div>
+    </div>
+    <div class="tipos">
+      <div class="tipo t-corr">
+        <div class="pct">≈ 21 %</div>
+        <h3>Correctivo</h3>
+        <div class="mini"><i style="width:21%"></i></div>
+        <p>Repara defectos detectados en operación: fallas de lógica, errores de cálculo, caídas del sistema.</p>
+        <p class="ej"><b>Ejemplo</b> · Un pago registrado no aparece en el historial del cliente.</p>
+      </div>
+      <div class="tipo">
+        <div class="pct">≈ 25 %</div>
+        <h3>Adaptativo</h3>
+        <div class="mini"><i style="width:25%"></i></div>
+        <p>Ajusta el software a cambios del entorno: nuevo sistema operativo, nueva versión del API, nuevas leyes.</p>
+        <p class="ej"><b>Ejemplo</b> · Migrar la app a una nueva versión de Android o del SDK.</p>
+      </div>
+      <div class="tipo">
+        <div class="pct">≈ 50 %</div>
+        <h3>Perfectivo</h3>
+        <div class="mini"><i style="width:50%"></i></div>
+        <p>Mejora funciones existentes o añade nuevas a petición del usuario; incluye mejoras de rendimiento.</p>
+        <p class="ej"><b>Ejemplo</b> · Agregar recordatorios automáticos de vacunación.</p>
+      </div>
+      <div class="tipo">
+        <div class="pct">≈ 4 %</div>
+        <h3>Preventivo</h3>
+        <div class="mini"><i style="width:4%"></i></div>
+        <p>Reestructura y refactoriza para facilitar el mantenimiento futuro antes de que los defectos aparezcan.</p>
+        <p class="ej"><b>Ejemplo</b> · Refactorizar listas a componentes virtualizados.</p>
+      </div>
+    </div>
+    <p class="fuente">Distribución típica del esfuerzo según los estudios clásicos de Lientz y Swanson, citados por Pressman (2010).</p>
+  </section>
+
+  <!-- ================= 05 PROCESO ================= -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">05</div>
+      <div class="sec-title">
+        <span class="kicker">Nada se toca sin control de cambios</span>
+        <h2>El proceso de mantenimiento, paso a paso</h2>
+      </div>
+      <div class="rule"></div>
+    </div>
+    <div class="flujo">
+      <div class="paso"><span class="n">1</span><b>Solicitud de cambio</b><span>Usuarios o soporte reportan defectos o piden mejoras (tickets, incidencias).</span></div>
+      <div class="paso"><span class="n">2</span><b>Análisis de impacto</b><span>Se evalúa qué módulos, datos y usuarios afecta; se estima costo y riesgo.</span></div>
+      <div class="paso"><span class="n">3</span><b>Priorización</b><span>El comité de cambios aprueba, pospone o rechaza; lo urgente entra como corrección.</span></div>
+      <div class="paso"><span class="n">4</span><b>Implementación</b><span>Se modifica el código con control de versiones y revisión por pares.</span></div>
+      <div class="paso"><span class="n">5</span><b>Pruebas de regresión</b><span>Se verifica el cambio y que nada de lo que funcionaba se haya roto.</span></div>
+      <div class="paso"><span class="n">6</span><b>Liberación</b><span>Nueva versión numerada, notas de cambio y despliegue a los usuarios.</span></div>
+    </div>
+  </section>
+
+  <!-- ================= 06 LEHMAN ================= -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">06</div>
+      <div class="sec-title">
+        <span class="kicker">Por qué el software nunca está “terminado”</span>
+        <h2>Leyes de la evolución del software (Lehman)</h2>
+      </div>
+      <div class="rule"></div>
+    </div>
+    <div class="lehman">
+      <div class="ley"><span class="rom">I</span><div><b>Cambio continuo</b><span>Un sistema que se usa en el mundo real debe adaptarse continuamente o se vuelve progresivamente menos útil.</span></div></div>
+      <div class="ley"><span class="rom">II</span><div><b>Complejidad creciente</b><span>Al evolucionar, la estructura del sistema se degrada y su complejidad aumenta, salvo que se trabaje activamente para reducirla.</span></div></div>
+      <div class="ley"><span class="rom">VI</span><div><b>Crecimiento continuo</b><span>La funcionalidad debe crecer a lo largo de la vida del sistema para mantener satisfechos a sus usuarios.</span></div></div>
+      <div class="ley"><span class="rom">VII</span><div><b>Calidad decreciente</b><span>La calidad percibida decae si el sistema no se adapta con rigor a los cambios de su entorno operativo.</span></div></div>
+    </div>
+  </section>
+
+  <!-- ================= CASO PAWCARE ================= -->
+  <section class="caso">
+    <span class="kicker">Caso de estudio real · proyecto de la unidad curricular</span>
+    <h2>Cómo lo aplica Pawcare 🐾</h2>
+    <p class="sub">La aplicación móvil de atención veterinaria a domicilio del consultorio Pawcare (Expo SDK 56 · React Native · TypeScript, sobre un backend API REST de 157 rutas) ya practica la implantación y el mantenimiento disciplinados:</p>
+    <div class="caso-grid">
+      <div class="caso-item"><b>🚦 Implantación por fases</b><span>El producto se entrega en incrementos por dominio — público, dueño y administrador — validados con la clienta en cada revisión de sprint.</span></div>
+      <div class="caso-item"><b>🧪 Regresión real, no simulada</b><span>15 suites con 49 pruebas de integración corren contra el backend real antes de cada commit: la red de seguridad del mantenimiento.</span></div>
+      <div class="caso-item"><b>🔀 Control de cambios</b><span>Ramas cortas, pull requests con revisión y commits convencionales: cada cambio queda trazado desde la solicitud hasta la liberación.</span></div>
+      <div class="caso-item"><b>🛡️ Compuertas automáticas</b><span>Pruebas, tipos, lint y react-doctor bloquean el push de código defectuoso: mantenimiento preventivo integrado al proceso.</span></div>
+      <div class="caso-item"><b>📱 Despliegue móvil</b><span>Builds versionados con Expo y actualizaciones controladas: liberar una corrección no exige reinstalar la aplicación completa.</span></div>
+      <div class="caso-item"><b>📖 Memoria de decisiones</b><span>Los ADR (registros de decisión arquitectónica) documentan el porqué de cada diseño, reduciendo el costo de entender el sistema en el futuro.</span></div>
+    </div>
+  </section>
+
+  <!-- ================= PIE ================= -->
+  <footer>
+    <div class="refs">
+      <b>Referencias</b>
+      ISO/IEC. (2022). <i>ISO/IEC/IEEE 14764: Software engineering — Software life cycle processes — Maintenance.</i> ·
+      Lehman, M. M. (1980). Programs, life cycles, and laws of software evolution. <i>Proceedings of the IEEE, 68</i>(9). ·
+      Pressman, R. (2010). <i>Ingeniería del software: un enfoque práctico</i> (7.ª ed.). McGraw-Hill. ·
+      Sommerville, I. (2011). <i>Ingeniería de software</i> (9.ª ed.). Pearson.
+    </div>
+    <div class="sello">
+      <b>Ingeniería de Software · Tema 5</b>
+      Miguel Figuera · Profa. Misley Baute<br>UNETI · Julio 2026
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
