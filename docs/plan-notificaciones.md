@@ -29,8 +29,11 @@ Prioridades: **Alta** = accionable y sensible al tiempo · **Media** = informati
 | O9 | Estado de solicitud de adopción (recibida / aprobada / rechazada) | Cambio de estado de la solicitud | Push remota + in-app | Alta | adoption |
 | O10 | Renovación o vencimiento de apadrinamiento | Ciclo del apadrinamiento | Push remota + in-app | Media | sponsorship |
 | O11 | Pedido de tienda confirmado / listo para retirar | Cambio de estado del pedido (checkout) | Push remota + in-app | Media | — (nuevo) |
-| O12 | Sincronización completada / fallida (local-first) | Resultado de la cola de sincronización F2–F4 | In-app | Baja | — (local) |
-| O13 | Campañas del consultorio (jornadas de vacunación, promociones) | Campaña creada por el administrador | Push remota + in-app | Baja (opt-out) | campaign |
+| O12 | **Modo offline activado**: se perdió la conexión, la app sigue funcionando con los datos locales | Detección de pérdida de conectividad | In-app (banner persistente) | Alta | — (local) |
+| O13 | **Conexión recuperada — sincronizando con el consultorio** y resultado (sincronización completada / N cambios enviados / conflicto o fallo) | Ciclo de la cola de sincronización (F2–F4 del ADR 0001) | In-app + push local si la app está en segundo plano | Alta | — (local) |
+| O14 | **Alarma de medicamento**: hora de administrar la dosis a la mascota bajo tratamiento (medicamento, dosis y mascota en el aviso) | Receta/prescripción activa con posología (frecuencia y duración del tratamiento) | Push local tipo **alarma** (repetida según el horario: cada 6/8/12/24 h) + in-app | Alta | medical_report |
+| O15 | Tratamiento por finalizar / finalizado (suspender o renovar según indicación) | Fin de la duración indicada en la receta | Push local + in-app | Media | medical_report |
+| O16 | Campañas del consultorio (jornadas de vacunación, promociones) | Campaña creada por el administrador | Push remota + in-app | Baja (opt-out) | campaign |
 
 ## 2. Administrador (rol `admin`)
 
@@ -63,9 +66,27 @@ Prioridades: **Alta** = accionable y sensible al tiempo · **Media** = informati
 
 Sin push (no hay identidad ni token). Únicamente avisos **in-app contextuales** al navegar: confirmación de mensaje de contacto enviado, confirmación de checkout, y estado de la solicitud de adopción consultable con el código/correo. Si se registra, pasa al catálogo del dueño.
 
+## Notificaciones del ciclo local-first (detalle)
+
+El estado de conectividad y sincronización es información de primera clase para el usuario — especialmente en la atención a domicilio:
+
+- **Al perder conexión (O12)**: banner in-app persistente "Sin conexión — trabajando con datos locales", con la fecha/hora de la última sincronización. No es un error: es el modo normal de operación en campo.
+- **Al recuperar conexión (O13)**: aviso "Conexión recuperada — sincronizando…" y, al terminar, el resultado: "Sincronización completada (N cambios enviados, M recibidos)" o, si algo falla, "No se pudieron sincronizar X cambios — se reintentará" con acceso al detalle. Si la app está en segundo plano, el resultado se emite como push local.
+- Toda escritura hecha offline se marca visualmente como **pendiente de sincronizar** hasta que la cola la confirme contra el backend.
+
+## Alarmas de medicación para dueños (detalle)
+
+Los dueños necesitan que la app **programe alarmas con los horarios de los medicamentos** de las mascotas bajo tratamiento:
+
+- **Fuente de datos**: la receta/prescripción emitida en consulta (ya existe en el dominio clínico), extendida con posología estructurada: medicamento, dosis, frecuencia (cada 6/8/12/24 h u horarios fijos) y duración del tratamiento.
+- **Programación**: al sincronizar la receta, la app programa **alarmas locales repetidas** (`expo-notifications` con canal Android de alta prioridad, sonido y vibración) por cada toma, desde el inicio hasta el fin del tratamiento. Al ser locales, **suenan aunque no haya conexión** — coherente con local-first.
+- **Contenido del aviso**: mascota, medicamento y dosis ("💊 Luna — Amoxicilina 250 mg, toma de las 8:00 p. m."), con acciones rápidas: *Administrado* (registra la toma) y *Posponer 15 min*.
+- **Gestión**: pantalla "Tratamientos activos" en el dominio del dueño para ver, silenciar o ajustar horarios de cada tratamiento; las tomas registradas quedan en la historia local y se sincronizan al conectar.
+- **Cierre**: al cumplirse la duración indicada se emite O15 y las alarmas se cancelan automáticamente.
+
 ## Consideraciones de implementación (resumen)
 
-1. **Coherencia local-first**: el centro in-app se respalda en la tabla local SQLite; las push locales se programan desde datos ya sincronizados — ambas funcionan sin conexión. Las push remotas requieren token de dispositivo registrado en el backend.
+1. **Coherencia local-first**: el centro in-app se respalda en la tabla local SQLite; las push locales y las alarmas de medicación se programan desde datos ya sincronizados — todas funcionan sin conexión. Las push remotas requieren token de dispositivo registrado en el backend.
 2. **Backend**: se necesita un modelo `Notification` + endpoints móviles (listar, marcar leída, preferencias) y el registro de tokens push; los mailers existentes marcan exactamente dónde disparar cada evento (mismo punto de emisión, segundo canal).
 3. **Preferencias por usuario**: pantalla de ajustes con opt-in/opt-out por categoría (obligatorio para prioridad Baja/marketing).
-4. **Orden de implementación sugerido**: F1 centro in-app + push locales de recordatorios (O1, O3, A3, V2 — sin cambios de backend complejos) → F2 push remotas de eventos críticos (O2, O5, O7, A1, A4, A7) → F3 resto + preferencias.
+4. **Orden de implementación sugerido**: F1 centro in-app + ciclo offline/sync (O12, O13) + push locales de recordatorios (O1, O3, A3, V2) — todo sin cambios complejos de backend → F2 alarmas de medicación (O14, O15: requieren posología estructurada en la receta) y push remotas de eventos críticos (O2, O5, O7, A1, A4, A7) → F3 resto + pantalla de preferencias.
