@@ -26,7 +26,10 @@ export function AdminVaccinationSchedulesScreen() {
   // A10 del plan: aviso el día previo a cada vacunación programada.
   useEffect(() => {
     if (!data) return;
-    void syncReminders(vaccinationScheduleReminders(data, new Date().toISOString()));
+    void syncReminders(
+      'vsched-',
+      vaccinationScheduleReminders(data, new Date().toISOString()),
+    );
   }, [data]);
   const items = data ?? [];
 

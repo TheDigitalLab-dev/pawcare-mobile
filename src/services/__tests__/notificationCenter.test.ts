@@ -69,6 +69,11 @@ describe('createNotificationCenter', () => {
     expect(center.list()).toHaveLength(1);
   });
 
+  it('retiene como máximo las 200 notificaciones más recientes', () => {
+    for (let i = 0; i < 210; i++) center.add({ type: 't', title: `N${i}` });
+    expect(center.list(500)).toHaveLength(200);
+  });
+
   it('respeta el límite del listado', () => {
     for (let i = 0; i < 5; i++) center.add({ type: 't', title: `N${i}` });
     expect(center.list(3)).toHaveLength(3);

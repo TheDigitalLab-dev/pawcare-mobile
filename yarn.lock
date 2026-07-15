@@ -1341,6 +1341,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@expo/config-plugins@npm:~56.0.11":
+  version: 56.0.12
+  resolution: "@expo/config-plugins@npm:56.0.12"
+  dependencies:
+    "@expo/config-types": "npm:^56.0.7"
+    "@expo/json-file": "npm:~10.2.0"
+    "@expo/plist": "npm:^0.7.0"
+    "@expo/require-utils": "npm:^56.1.4"
+    "@expo/sdk-runtime-versions": "npm:^1.0.0"
+    chalk: "npm:^4.1.2"
+    debug: "npm:^4.3.5"
+    getenv: "npm:^2.0.0"
+    glob: "npm:^13.0.0"
+    semver: "npm:^7.5.4"
+    slugify: "npm:^1.6.6"
+    xcode: "npm:^3.0.1"
+    xml2js: "npm:0.6.0"
+  checksum: 10c0/5bced5e36b6c1c8165923b55a82a2a95beb11adba8de7e64d5b23558ce98ab56a9e5f1c0fb683f1e8663a5f9b49c36e9f9447f490e2f764afd151baf8e2b5754
+  languageName: node
+  linkType: hard
+
 "@expo/config-plugins@npm:~56.0.7, @expo/config-plugins@npm:~56.0.8":
   version: 56.0.8
   resolution: "@expo/config-plugins@npm:56.0.8"
@@ -1366,6 +1387,13 @@ __metadata:
   version: 56.0.5
   resolution: "@expo/config-types@npm:56.0.5"
   checksum: 10c0/b6aa98e3cb4b66954e307640550a168290d1e843c9fdedce64077e286d77cfd7e33c40333672d6434c32ad5468fa723e251bc49897fd606f7c1b985dc2170a1d
+  languageName: node
+  linkType: hard
+
+"@expo/config-types@npm:^56.0.7":
+  version: 56.0.7
+  resolution: "@expo/config-types@npm:56.0.7"
+  checksum: 10c0/97c2fbe59c0ee3d830d369a8789aa27cb7553879661e3f5e014215ad25fb19e44f66bb9956233520f3c1aa76b10278a2aa418ba1edfda02709de572d29209054
   languageName: node
   linkType: hard
 
@@ -5357,6 +5385,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-splash-screen@npm:~56.0.3":
+  version: 56.0.12
+  resolution: "expo-splash-screen@npm:56.0.12"
+  dependencies:
+    "@expo/config-plugins": "npm:~56.0.11"
+    "@expo/image-utils": "npm:^0.10.2"
+    xml2js: "npm:0.6.0"
+  peerDependencies:
+    expo: "*"
+  checksum: 10c0/e07a8c3fbb2baa9ebf7a8e0ae6fe3cc1e79efebf1c464c950cff65f4df0e227f276edc70c999b44aac25de462befc282054a410ffddc3a1ac382933bef698074
+  languageName: node
+  linkType: hard
+
 "expo-sqlite@npm:~56.0.5":
   version: 56.0.5
   resolution: "expo-sqlite@npm:56.0.5"
@@ -8590,6 +8631,7 @@ __metadata:
     expo-network: "npm:~56.0.5"
     expo-notifications: "npm:~56.0.20"
     expo-secure-store: "npm:~56.0.4"
+    expo-splash-screen: "npm:~56.0.3"
     expo-sqlite: "npm:~56.0.5"
     expo-status-bar: "npm:~56.0.4"
     husky: "npm:^9.1.7"

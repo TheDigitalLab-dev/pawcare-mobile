@@ -205,8 +205,12 @@ export function AdminPetFormScreen() {
           void owners.reload();
           void pet.reload();
         }}
+        empty={editingId !== undefined && !loading && pet.data === null}
+        emptyIcon="paw"
+        emptyTitle="Paciente no encontrado"
+        emptyDescription="No se pudo cargar el paciente a editar."
       >
-        {owners.data ? (
+        {owners.data && (editingId === undefined || pet.data) ? (
           <PetForm owners={owners.data} existing={pet.data ?? undefined} />
         ) : null}
       </AsyncBoundary>

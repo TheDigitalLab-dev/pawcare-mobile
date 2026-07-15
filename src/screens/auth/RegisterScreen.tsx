@@ -103,7 +103,7 @@ export function RegisterScreen({
         label="Documento de identidad"
         value={form.identity_document}
         onChangeText={(v) => set('identity_document', v)}
-        keyboardType="numbers-and-punctuation"
+        keyboardType="numeric"
         error={fieldErrors?.identity_document}
       />
       <View>

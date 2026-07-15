@@ -168,33 +168,42 @@ export function createTreatmentsRepo(exec: SqlExecutor): TreatmentsRepo {
         throw new Error('Frecuencia, duración o fecha de inicio inválidas.');
       }
 
-      exec.run(
-        `INSERT INTO treatments
-           (id, pet_id, pet_name, prescription_item_id, medication_name, dose,
-            frequency_hours, duration_days, started_at, status, sync_status, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?)`,
-        [
-          id,
-          input.petId,
-          input.petName ?? null,
-          input.prescriptionItemId ?? null,
-          input.medicationName,
-          input.dose ?? null,
-          input.frequencyHours,
-          input.durationDays,
-          input.startedAt,
-          now(),
-        ],
-      );
-
-      schedule.forEach((scheduledAt, index) => {
+      // Transacción real: el tratamiento y TODAS sus tomas se insertan juntos
+      // o no se inserta nada (un fallo a mitad no deja tratamientos huérfanos).
+      exec.exec('BEGIN');
+      try {
         exec.run(
-          `INSERT INTO treatment_doses
-             (id, treatment_id, dose_index, scheduled_at, status, updated_at)
-           VALUES (?, ?, ?, ?, 'pending', ?)`,
-          [newLocalId(), id, index, scheduledAt, now()],
+          `INSERT INTO treatments
+             (id, pet_id, pet_name, prescription_item_id, medication_name, dose,
+              frequency_hours, duration_days, started_at, status, sync_status, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?)`,
+          [
+            id,
+            input.petId,
+            input.petName ?? null,
+            input.prescriptionItemId ?? null,
+            input.medicationName,
+            input.dose ?? null,
+            input.frequencyHours,
+            input.durationDays,
+            input.startedAt,
+            now(),
+          ],
         );
-      });
+
+        schedule.forEach((scheduledAt, index) => {
+          exec.run(
+            `INSERT INTO treatment_doses
+               (id, treatment_id, dose_index, scheduled_at, status, updated_at)
+             VALUES (?, ?, ?, ?, 'pending', ?)`,
+            [newLocalId(), id, index, scheduledAt, now()],
+          );
+        });
+        exec.exec('COMMIT');
+      } catch (e) {
+        exec.exec('ROLLBACK');
+        throw e;
+      }
 
       const treatment = getTreatment(id);
       if (!treatment) throw new Error('No se pudo crear el tratamiento.');
@@ -208,8 +217,24 @@ export function createTreatmentsRepo(exec: SqlExecutor): TreatmentsRepo {
       const rows = exec.all<TreatmentRow>(
         "SELECT * FROM treatments WHERE status = 'active' AND deleted_at IS NULL ORDER BY started_at DESC",
       );
+      if (rows.length === 0) return [];
+      // Una sola consulta de tomas para todos los tratamientos (sin N+1).
+      const placeholders = rows.map(() => '?').join(', ');
+      const allDoses = exec
+        .all<DoseRow>(
+          `SELECT * FROM treatment_doses WHERE treatment_id IN (${placeholders})
+           ORDER BY dose_index`,
+          rows.map((r) => r.id),
+        )
+        .map(toDose);
+      const byTreatment = new Map<string, TreatmentDose[]>();
+      for (const dose of allDoses) {
+        const group = byTreatment.get(dose.treatmentId);
+        if (group) group.push(dose);
+        else byTreatment.set(dose.treatmentId, [dose]);
+      }
       return rows.map((row) => {
-        const doses = listDoses(row.id);
+        const doses = byTreatment.get(row.id) ?? [];
         const nextDose = doses.find((d) => d.status === 'pending') ?? null;
         return {
           ...toTreatment(row),

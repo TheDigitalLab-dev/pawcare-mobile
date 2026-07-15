@@ -24,7 +24,7 @@ export function OwnerSponsorshipsScreen() {
   // O10 del plan: aviso 5 días antes del vencimiento del apadrinamiento.
   useEffect(() => {
     if (!data) return;
-    void syncReminders(sponsorshipReminders(data, new Date().toISOString()));
+    void syncReminders('sponsor-', sponsorshipReminders(data, new Date().toISOString()));
   }, [data]);
   const items = data ?? [];
 

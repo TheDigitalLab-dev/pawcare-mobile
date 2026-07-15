@@ -30,17 +30,37 @@ async function ensureChannel(): Promise<void> {
 }
 
 /**
- * Programa (o reemplaza) los avisos dados, respetando el opt-out por categoría.
- * Sin permiso de notificaciones, no hace nada.
+ * Sincroniza la FAMILIA de avisos del prefijo dado: cancela los programados de
+ * esa familia que ya no aplican (p. ej. un pago que se saldó) y programa o
+ * reemplaza los vigentes, respetando el opt-out por categoría. Sin permiso de
+ * notificaciones, solo cancela.
  */
-export async function syncReminders(specs: ReminderSpec[]): Promise<void> {
+export async function syncReminders(
+  prefix: string,
+  specs: ReminderSpec[],
+): Promise<void> {
   const enabled = specs.filter((s) => categoryEnabled(s.category));
+  const wanted = new Set(enabled.map((s) => s.identifier));
+
+  try {
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    const stale: Promise<void>[] = [];
+    for (const n of scheduled) {
+      if (n.identifier.startsWith(prefix) && !wanted.has(n.identifier)) {
+        stale.push(Notifications.cancelScheduledNotificationAsync(n.identifier));
+      }
+    }
+    await Promise.allSettled(stale);
+  } catch {
+    // Sin acceso a las programadas: se sigue con la reprogramación.
+  }
+
   if (enabled.length === 0) return;
   const granted = await ensureAlarmPermissions();
   if (!granted) return;
   await ensureChannel();
 
-  await Promise.all(
+  await Promise.allSettled(
     enabled.map((spec) =>
       Notifications.scheduleNotificationAsync({
         identifier: spec.identifier,

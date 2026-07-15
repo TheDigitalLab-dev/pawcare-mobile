@@ -34,6 +34,13 @@ interface VaccinationLike {
 const HOUR_MS = 60 * 60 * 1000;
 const SKIP_STATUSES = new Set(['cancelled', 'completed']);
 
+/** Día civil LOCAL (YYYY-MM-DD) — el usuario piensa en su hora, no en UTC. */
+function localDayKey(d: Date): string {
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
 function formatWhen(iso: string): string {
   const d = new Date(iso);
   const date = d.toLocaleDateString('es-VE', { day: 'numeric', month: 'short' });
@@ -185,12 +192,12 @@ export function clinicAgendaReminders(
   if (Number.isNaN(now.getTime())) return [];
   const tomorrow = new Date(now.getTime());
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const dayKey = tomorrow.toISOString().slice(0, 10);
+  const dayKey = localDayKey(tomorrow);
 
   const count = appointments.filter((a) => {
     if (SKIP_STATUSES.has(a.status)) return false;
     const at = new Date(a.scheduled_at);
-    return !Number.isNaN(at.getTime()) && at.toISOString().slice(0, 10) === dayKey;
+    return !Number.isNaN(at.getTime()) && localDayKey(at) === dayKey;
   }).length;
   if (count === 0) return [];
 

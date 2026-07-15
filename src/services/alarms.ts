@@ -29,6 +29,8 @@ Notifications.setNotificationHandler({
 
 /** Cota de alarmas programadas por tratamiento (iOS limita ~64 pendientes en total). */
 const MAX_SCHEDULED_PER_TREATMENT = 20;
+/** Presupuesto global de programadas para no chocar con el límite del SO (~64). */
+const MAX_SCHEDULED_TOTAL = 60;
 
 let channelReady = false;
 
@@ -88,12 +90,27 @@ export async function syncTreatmentAlarms(
   const doses = repo.listDoses(treatmentId);
   await cancelDoseAlarms(doses);
 
+  // Presupuesto global: respeta el límite del SO contando lo ya programado por
+  // OTROS tratamientos y recordatorios.
+  let alreadyScheduled = 0;
+  try {
+    alreadyScheduled = (await Notifications.getAllScheduledNotificationsAsync()).length;
+  } catch {
+    // Sin acceso a las programadas: se usa solo la cota por tratamiento.
+  }
+  const budget = Math.min(
+    MAX_SCHEDULED_PER_TREATMENT,
+    Math.max(0, MAX_SCHEDULED_TOTAL - alreadyScheduled),
+  );
+
   const nowMs = Date.now();
   const upcoming = doses
     .filter((d) => d.status === 'pending' && Date.parse(d.scheduledAt) > nowMs)
-    .slice(0, MAX_SCHEDULED_PER_TREATMENT);
+    .slice(0, budget);
 
-  await Promise.all(
+  // allSettled: un fallo del SO en UNA alarma no debe abortar las demás ni
+  // romper la acción del usuario (el registro de la toma ya ocurrió).
+  await Promise.allSettled(
     upcoming.map(async (dose) => {
       const id = await Notifications.scheduleNotificationAsync({
         content: alarmContent(ctx, dose.scheduledAt),
@@ -106,6 +123,15 @@ export async function syncTreatmentAlarms(
       repo.setDoseNotificationId(dose.id, id);
     }),
   );
+}
+
+/** Cancela TODAS las notificaciones locales programadas (cierre de sesión). */
+export async function cancelAllLocalAlarms(): Promise<void> {
+  try {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+  } catch {
+    // Sin acceso al programador: no hay nada más que hacer.
+  }
 }
 
 /** Cancela las alarmas programadas de las tomas dadas. */

@@ -76,6 +76,13 @@ export function createNotificationCenter(exec: SqlExecutor): NotificationCenter 
           new Date().toISOString(),
         ],
       );
+      // Retención: el historial no crece sin cota (se conservan las 200 últimas).
+      exec.run(
+        `DELETE FROM notifications WHERE id IN (
+           SELECT id FROM notifications
+           ORDER BY created_at DESC, rowid DESC LIMIT -1 OFFSET 200
+         )`,
+      );
     },
 
     list(limit = 50) {

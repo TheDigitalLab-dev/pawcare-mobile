@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, View } from 'react-native';
 
 import { IconButton } from '@/components/ui';
@@ -10,7 +12,15 @@ import { useTheme } from '@/theme';
  */
 export function NotificationsBell({ onPress }: { onPress: () => void }) {
   const { colors } = useTheme();
-  const { unreadCount } = useNotifications();
+  const { unreadCount, refresh } = useNotifications();
+
+  // Al volver a la pantalla (p. ej. desde el centro de notificaciones) el badge
+  // se refresca; sin esto quedaría con el conteo del último montaje.
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
 
   return (
     <View>

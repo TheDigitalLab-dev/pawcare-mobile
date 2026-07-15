@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ThemeProvider, type ThemePreference } from '@/theme';
 import { SessionProvider } from '@/session/SessionProvider';
 import { RootNavigator } from '@/navigation/RootNavigator';
@@ -34,15 +35,17 @@ export default function App() {
   if (preference === null) return null;
 
   return (
-    <SafeAreaProvider>
-      <ThemeProvider
-        initialPreference={preference}
-        onPreferenceChange={persistThemePreference}
-      >
-        <SessionProvider>
-          <RootNavigator />
-        </SessionProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <ThemeProvider
+          initialPreference={preference}
+          onPreferenceChange={persistThemePreference}
+        >
+          <SessionProvider>
+            <RootNavigator />
+          </SessionProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }

@@ -17,6 +17,20 @@ const STORAGE_KEY = 'pawcare.server_url';
 /** URL base activa (en memoria). Arranca con el default del build. */
 let currentBaseUrl: string = config.apiBaseUrl;
 
+// Suscriptores del cambio de servidor (p. ej. el gate de primer arranque).
+const listeners = new Set<() => void>();
+function emitChange(): void {
+  for (const listener of listeners) listener();
+}
+
+/** Suscribe a cambios de la URL activa. Devuelve la función para desuscribir. */
+export function subscribeServerUrl(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
 /** Normaliza una URL de servidor: añade esquema si falta y quita "/" finales. */
 export function normalizeServerUrl(raw: string): string {
   let url = raw.trim();
@@ -39,7 +53,10 @@ export function getDefaultApiBaseUrl(): string {
 export async function loadServerUrl(): Promise<void> {
   try {
     const saved = await AsyncStorage.getItem(STORAGE_KEY);
-    if (saved && saved.length > 0) currentBaseUrl = saved;
+    if (saved && saved.length > 0) {
+      currentBaseUrl = saved;
+      emitChange();
+    }
   } catch {
     // Sin persistencia disponible: se mantiene el default del build.
   }
@@ -49,6 +66,7 @@ export async function loadServerUrl(): Promise<void> {
 export async function setServerUrl(raw: string): Promise<string> {
   const url = normalizeServerUrl(raw);
   currentBaseUrl = url;
+  emitChange();
   await AsyncStorage.setItem(STORAGE_KEY, url);
   return url;
 }
@@ -56,6 +74,7 @@ export async function setServerUrl(raw: string): Promise<string> {
 /** Vuelve al servidor por defecto del build y borra el guardado. */
 export async function resetServerUrl(): Promise<void> {
   currentBaseUrl = config.apiBaseUrl;
+  emitChange();
   await AsyncStorage.removeItem(STORAGE_KEY);
 }
 

@@ -91,6 +91,10 @@ describe('useTreatments', () => {
     const { result } = renderHook(() => useTreatments(exec));
     await startLuna(result);
 
+    // La primera toma (el ancla, "ahora") se administra; la próxima queda a +8 h.
+    await act(async () => {
+      await result.current.markTaken(result.current.treatments[0]!);
+    });
     const before = result.current.treatments[0]!;
     const beforeNext = Date.parse(before.nextDose!.scheduledAt);
 
@@ -104,6 +108,21 @@ describe('useTreatments', () => {
     expect(
       (Notifications.scheduleNotificationAsync as jest.Mock).mock.calls.length,
     ).toBeGreaterThan(5);
+  });
+
+  it('no permite mover una toma al pasado (quedaría sin alarma para siempre)', async () => {
+    const { result } = renderHook(() => useTreatments(exec));
+    await startLuna(result);
+
+    // La próxima toma es el ancla ("ahora"): moverla -2 h la mandaría al pasado.
+    const before = result.current.treatments[0]!;
+    const beforeAt = before.nextDose!.scheduledAt;
+
+    await act(async () => {
+      await result.current.moveNextDose(before, -120);
+    });
+
+    expect(result.current.treatments[0]!.nextDose!.scheduledAt).toBe(beforeAt);
   });
 
   it('iniciar un tratamiento deja constancia en el centro de notificaciones', async () => {

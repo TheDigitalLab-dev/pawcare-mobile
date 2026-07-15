@@ -122,6 +122,38 @@ describe('createTreatmentsRepo', () => {
     expect(doses[0]!.notificationId).toBeNull();
   });
 
+  it('si un insert falla a mitad, la transacción revierte todo (sin huérfanos)', () => {
+    let doseInserts = 0;
+    const failing: SqlExecutor = {
+      exec: (sql) => db.exec(sql),
+      run: (sql, params = []) => {
+        if (sql.includes('INSERT INTO treatment_doses') && ++doseInserts === 2) {
+          throw new Error('disco lleno');
+        }
+        db.prepare(sql).run(...(params as never[]));
+      },
+      all: (sql, params = []) => db.prepare(sql).all(...(params as never[])) as never,
+      get: (sql, params = []) =>
+        (db.prepare(sql).get(...(params as never[])) as never) ?? undefined,
+    };
+    const failingRepo = createTreatmentsRepo(failing);
+
+    expect(() =>
+      failingRepo.startTreatment({
+        petId: 42,
+        medicationName: 'Amoxicilina',
+        frequencyHours: 8,
+        durationDays: 1,
+        startedAt: START,
+      }),
+    ).toThrow('disco lleno');
+
+    // Nada quedó a medias: ni el tratamiento ni las tomas parciales.
+    expect(repo.listActiveTreatments()).toEqual([]);
+    const doses = failing.all('SELECT * FROM treatment_doses');
+    expect(doses).toEqual([]);
+  });
+
   it('los tratamientos quedan pendientes de sincronizar (local-first)', () => {
     const t = startAmoxicilina();
     expect(t.syncStatus).toBe('pending');

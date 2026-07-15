@@ -49,7 +49,7 @@ export function AdminAppointmentsListScreen() {
   // A3/V2: resumen local de la agenda de mañana a las 7:30.
   useEffect(() => {
     if (!data) return;
-    void syncReminders(clinicAgendaReminders(data, new Date().toISOString()));
+    void syncReminders('agenda-', clinicAgendaReminders(data, new Date().toISOString()));
   }, [data]);
 
   useFocusEffect(

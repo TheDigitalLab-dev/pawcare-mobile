@@ -44,8 +44,16 @@ export function processChangeAlerts<T>(
   const current = items.map((it) => ({ id: config.idOf(it), state: config.stateOf(it) }));
   const events = detectChanges(previous, current, seeded);
 
+  // Con la categoría apagada se actualiza el snapshot igual (al reactivarla no
+  // debe llegar una avalancha retroactiva), pero no se registra ningún aviso.
+  const pref = exec.get<{ enabled: number }>(
+    'SELECT enabled FROM notification_prefs WHERE category = ?',
+    [config.category],
+  );
+  const categoryOn = !pref || pref.enabled === 1;
+
   const center = createNotificationCenter(exec);
-  for (const event of events) {
+  for (const event of categoryOn ? events : []) {
     const item = byId.get(event.id);
     if (!item) continue;
     const text = config.describe(event, item);

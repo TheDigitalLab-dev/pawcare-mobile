@@ -16,6 +16,7 @@ import {
 import { ListRow, StepIndicator } from '@/components/domain';
 import type { OwnerAppointmentsStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
+
 import {
   createAppointment,
   getAvailableDays,
@@ -23,7 +24,7 @@ import {
   listServices,
 } from '@/services/appointments';
 import { listPets } from '@/services/pets';
-import { ApiError } from '@/types/api';
+import { ApiError, toApiError } from '@/types/api';
 import { formatDate } from '@/utils/format';
 import { generateTimeSlots } from '@/utils/schedule';
 import { SPECIES_EMOJI, SPECIES_LABEL, type AvailableVet } from '@/types/models';
@@ -68,6 +69,7 @@ export function AppointmentWizardScreen() {
 
   const [vets, setVets] = useState<AvailableVet[]>([]);
   const [vetsLoading, setVetsLoading] = useState(false);
+  const [vetsError, setVetsError] = useState<ApiError | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>();
@@ -87,10 +89,13 @@ export function AppointmentWizardScreen() {
   const selectDay = async (d: string) => {
     patch({ day: d, vetId: undefined, time: undefined });
     setVetsLoading(true);
+    setVetsError(null);
     try {
       setVets(await getAvailableVets(d));
-    } catch {
+    } catch (e) {
+      // Un fallo de red NO es "sin veterinarios": se muestra con reintento.
       setVets([]);
+      setVetsError(toApiError(e));
     } finally {
       setVetsLoading(false);
     }
@@ -237,7 +242,10 @@ export function AppointmentWizardScreen() {
           <SectionTitle>Elige el veterinario</SectionTitle>
           <AsyncBoundary
             loading={vetsLoading}
-            error={null}
+            error={vetsError}
+            onRetry={() => {
+              if (sel.day) void selectDay(sel.day);
+            }}
             empty={vets.length === 0}
             emptyIcon="person"
             emptyTitle="Sin veterinarios"

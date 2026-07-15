@@ -25,7 +25,7 @@ export function VaccinationsScreen() {
   // O3 del plan: aviso local 3 días antes del vencimiento de la próxima dosis.
   useEffect(() => {
     if (!data) return;
-    void syncReminders(vaccinationReminders(data, new Date().toISOString()));
+    void syncReminders('vacc-', vaccinationReminders(data, new Date().toISOString()));
   }, [data]);
 
   const renderItem = useCallback(

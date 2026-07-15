@@ -10,22 +10,13 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { ApiError } from '@/types/api';
+import { ApiError, toApiError } from '@/types/api';
 
 export interface AsyncState<T> {
   data: T | null;
   loading: boolean;
   error: ApiError | null;
   reload: () => Promise<void>;
-}
-
-function toApiError(e: unknown): ApiError {
-  if (e instanceof ApiError) return e;
-  return new ApiError({
-    message: 'Ocurrió un error inesperado.',
-    status: 0,
-    kind: 'unknown',
-  });
 }
 
 export function useAsync<T>(fn: () => Promise<T>): AsyncState<T> {

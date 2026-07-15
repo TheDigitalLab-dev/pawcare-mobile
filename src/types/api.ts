@@ -42,6 +42,16 @@ export class ApiError extends Error {
   }
 }
 
+/** Normaliza cualquier excepción a ApiError (para estados de error de UI). */
+export function toApiError(e: unknown): ApiError {
+  if (e instanceof ApiError) return e;
+  return new ApiError({
+    message: 'Ocurrió un error inesperado.',
+    status: 0,
+    kind: 'unknown',
+  });
+}
+
 /** Resultado paginado, cuando el endpoint lo ofrezca (RNF-PERF-001). */
 export interface Paginated<T> {
   items: T[];
@@ -56,6 +66,8 @@ export type QueryParams = Record<string, string | number | boolean | null | unde
 export interface RequestOptions {
   /** Query string. */
   params?: QueryParams;
+  /** Cuerpo JSON para métodos que normalmente no lo llevan (p. ej. DELETE). */
+  body?: unknown;
   /** Headers extra. */
   headers?: Record<string, string>;
   /** Si false, no inyecta Authorization (endpoints públicos). Default true. */

@@ -66,11 +66,16 @@ export function useTreatments(executor?: SqlExecutor): UseTreatments {
       const granted = await ensureAlarmPermissions();
       setPermissionDenied(!granted);
       if (granted) {
-        await syncTreatmentAlarms(repo, created.id, {
-          petName: created.petName,
-          medicationName: created.medicationName,
-          dose: created.dose,
-        });
+        try {
+          await syncTreatmentAlarms(repo, created.id, {
+            petName: created.petName,
+            medicationName: created.medicationName,
+            dose: created.dose,
+          });
+        } catch {
+          // El tratamiento ya quedó registrado; las alarmas se reintentan en la
+          // próxima acción sobre el tratamiento.
+        }
       }
       center.add({
         type: 'tratamientos',
@@ -87,8 +92,18 @@ export function useTreatments(executor?: SqlExecutor): UseTreatments {
       const dose = treatment.nextDose;
       if (!dose) return;
       repo.markDoseTaken(dose.id, new Date().toISOString());
-      // Si la toma se registró antes de que sonara, su alarma ya no aplica.
-      await cancelDoseAlarms([dose]);
+      try {
+        // Si la toma se registró antes de que sonara, su alarma ya no aplica; y
+        // se recargan las siguientes (la cota por tratamiento deja espacio).
+        await cancelDoseAlarms([dose]);
+        await syncTreatmentAlarms(repo, treatment.id, {
+          petName: treatment.petName,
+          medicationName: treatment.medicationName,
+          dose: treatment.dose,
+        });
+      } catch {
+        // La toma ya quedó registrada; las alarmas se reintentan luego.
+      }
       reload();
     },
     [repo, reload],
@@ -98,15 +113,20 @@ export function useTreatments(executor?: SqlExecutor): UseTreatments {
     async (treatment, deltaMinutes) => {
       const dose = treatment.nextDose;
       if (!dose) return;
-      const newIso = new Date(
-        Date.parse(dose.scheduledAt) + deltaMinutes * MINUTE_MS,
-      ).toISOString();
-      repo.rescheduleFromDose(dose.id, newIso);
-      await syncTreatmentAlarms(repo, treatment.id, {
-        petName: treatment.petName,
-        medicationName: treatment.medicationName,
-        dose: treatment.dose,
-      });
+      const newTimeMs = Date.parse(dose.scheduledAt) + deltaMinutes * MINUTE_MS;
+      // Una toma no puede moverse al pasado: quedaría pendiente para siempre
+      // sin alarma (las alarmas solo se programan hacia el futuro).
+      if (newTimeMs <= Date.now()) return;
+      repo.rescheduleFromDose(dose.id, new Date(newTimeMs).toISOString());
+      try {
+        await syncTreatmentAlarms(repo, treatment.id, {
+          petName: treatment.petName,
+          medicationName: treatment.medicationName,
+          dose: treatment.dose,
+        });
+      } catch {
+        // El horario ya quedó guardado; las alarmas se reintentan luego.
+      }
       reload();
     },
     [repo, reload],

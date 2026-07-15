@@ -58,13 +58,19 @@ export function OwnerDashboardScreen() {
   // sincronizadas. Identificadores estables: reprogramar reemplaza, no duplica.
   useEffect(() => {
     if (!appointments.data) return;
-    void syncReminders(appointmentReminders(appointments.data, new Date().toISOString()));
+    void syncReminders(
+      'appt-',
+      appointmentReminders(appointments.data, new Date().toISOString()),
+    );
   }, [appointments.data]);
 
   // O8: recordatorio local (mañana 10:00) de pagos pendientes o vencidos.
   useEffect(() => {
     if (!payments.data) return;
-    void syncReminders(pendingPaymentReminders(payments.data, new Date().toISOString()));
+    void syncReminders(
+      'pay-',
+      pendingPaymentReminders(payments.data, new Date().toISOString()),
+    );
   }, [payments.data]);
 
   // O2/O7: cambios de estado de citas y pagos al centro de notificaciones.

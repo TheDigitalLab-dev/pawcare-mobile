@@ -7,6 +7,7 @@ import { useTheme } from '@/theme';
 import { AppHeader, MobileShell } from '@/components/layout';
 import {
   AsyncBoundary,
+  type AsyncBoundaryProps,
   Avatar,
   Button,
   FilterChips,
@@ -15,7 +16,8 @@ import {
 } from '@/components/ui';
 import { ListRow, StepIndicator } from '@/components/domain';
 import type { AdminAgendaStackParamList } from '@/navigation/types';
-import { useAsync } from '@/hooks/useAsync';
+import { useAsync, type AsyncState } from '@/hooks/useAsync';
+
 import {
   createAdminAppointment,
   getAdminAvailableDays,
@@ -26,12 +28,14 @@ import {
   listAdminServices,
   type AdminOwner,
 } from '@/services/admin';
-import { ApiError } from '@/types/api';
+import { ApiError, toApiError } from '@/types/api';
 import { formatDate } from '@/utils/format';
 import {
   SPECIES_EMOJI,
   SPECIES_LABEL,
   type AvailableVet,
+  type Pet,
+  type Service,
   type Species,
 } from '@/types/models';
 
@@ -66,6 +70,142 @@ function uniqueVets(vets: AvailableVet[]): AvailableVet[] {
   return vets.filter((v) => (seen.has(v.id) ? false : (seen.add(v.id), true)));
 }
 
+/** Sección de un paso del asistente: título + estados de carga/error/vacío. */
+function StepSection({
+  title,
+  boundary,
+  children,
+}: {
+  title: string;
+  boundary: Omit<AsyncBoundaryProps, 'children'>;
+  children: React.ReactNode;
+}) {
+  return (
+    <View style={{ gap: 8 }}>
+      <SectionTitle>{title}</SectionTitle>
+      <AsyncBoundary {...boundary}>{children}</AsyncBoundary>
+    </View>
+  );
+}
+
+function OwnerStep({
+  owners,
+  selectedId,
+  onSelect,
+}: {
+  owners: AsyncState<AdminOwner[]>;
+  selectedId?: number;
+  onSelect: (id: number) => void;
+}) {
+  return (
+    <StepSection
+      title="Elige el dueño"
+      boundary={{
+        loading: owners.loading && owners.data === null,
+        error: owners.error,
+        onRetry: owners.reload,
+        empty: (owners.data ?? []).length === 0,
+        emptyIcon: 'person',
+        emptyTitle: 'Sin dueños',
+      }}
+    >
+      {(owners.data ?? []).map((o) => (
+        <ListRow
+          key={o.id}
+          title={ownerName(o)}
+          subtitle={o.email}
+          showChevron={false}
+          trailing={selectedId === o.id ? CHECK_EL : undefined}
+          onPress={() => onSelect(o.id)}
+        />
+      ))}
+    </StepSection>
+  );
+}
+
+function PetStep({
+  loading,
+  error,
+  onRetry,
+  ownerPets,
+  selectedId,
+  onSelect,
+}: {
+  loading: boolean;
+  error: ApiError | null;
+  onRetry: () => void;
+  ownerPets: Pet[];
+  selectedId?: number;
+  onSelect: (id: number) => void;
+}) {
+  return (
+    <StepSection
+      title="Elige la mascota"
+      boundary={{
+        loading,
+        error,
+        onRetry,
+        empty: ownerPets.length === 0,
+        emptyIcon: 'paw',
+        emptyTitle: 'Sin mascotas',
+        emptyDescription: 'Este dueño no tiene mascotas registradas.',
+      }}
+    >
+      {ownerPets.map((pet) => (
+        <ListRow
+          key={pet.id}
+          title={pet.name}
+          subtitle={SPECIES_LABEL[pet.species]}
+          leading={() => (
+            <Avatar
+              uri={pet.photo_url ?? undefined}
+              fallback={SPECIES_EMOJI[pet.species as Species]}
+            />
+          )}
+          showChevron={false}
+          trailing={selectedId === pet.id ? CHECK_EL : undefined}
+          onPress={() => onSelect(pet.id)}
+        />
+      ))}
+    </StepSection>
+  );
+}
+
+function ServiceStep({
+  services,
+  selectedId,
+  onSelect,
+}: {
+  services: AsyncState<Service[]>;
+  selectedId?: number;
+  onSelect: (id: number) => void;
+}) {
+  return (
+    <StepSection
+      title="Elige el servicio"
+      boundary={{
+        loading: services.loading && services.data === null,
+        error: services.error,
+        onRetry: services.reload,
+        empty: (services.data ?? []).length === 0,
+        emptyIcon: 'medkit',
+        emptyTitle: 'Sin servicios',
+      }}
+    >
+      {(services.data ?? []).map((s) => (
+        <ListRow
+          key={s.id}
+          title={s.name}
+          subtitle={s.duration_minutes ? `${s.duration_minutes} min` : undefined}
+          showChevron={false}
+          trailing={selectedId === s.id ? CHECK_EL : undefined}
+          onPress={() => onSelect(s.id)}
+        />
+      ))}
+    </StepSection>
+  );
+}
+
 export function AdminAppointmentWizardScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation<Nav>();
@@ -87,8 +227,10 @@ export function AdminAppointmentWizardScreen() {
 
   const [vets, setVets] = useState<AvailableVet[]>([]);
   const [vetsLoading, setVetsLoading] = useState(false);
+  const [vetsError, setVetsError] = useState<ApiError | null>(null);
   const [slots, setSlots] = useState<string[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const [slotsError, setSlotsError] = useState<ApiError | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>();
@@ -103,10 +245,12 @@ export function AdminAppointmentWizardScreen() {
     setVets([]);
     setSlots([]);
     setVetsLoading(true);
+    setVetsError(null);
     try {
       setVets(uniqueVets(await getAdminAvailableVets(d)));
-    } catch {
+    } catch (e) {
       setVets([]);
+      setVetsError(toApiError(e));
     } finally {
       setVetsLoading(false);
     }
@@ -117,11 +261,13 @@ export function AdminAppointmentWizardScreen() {
     setSlots([]);
     if (sel.day === undefined || sel.serviceId === undefined) return;
     setSlotsLoading(true);
+    setSlotsError(null);
     try {
       const result = await getAdminTimeSlots(sel.day, vetId, sel.serviceId);
       setSlots(result.flatMap((s) => (s.available ? [s.time] : [])));
-    } catch {
+    } catch (e) {
       setSlots([]);
+      setSlotsError(toApiError(e));
     } finally {
       setSlotsLoading(false);
     }
@@ -186,152 +332,101 @@ export function AdminAppointmentWizardScreen() {
       {submitError ? <InfoBanner tone="destructive" message={submitError} /> : null}
 
       {step === 0 ? (
-        <View style={{ gap: 8 }}>
-          <SectionTitle>Elige el dueño</SectionTitle>
-          <AsyncBoundary
-            loading={owners.loading && owners.data === null}
-            error={owners.error}
-            onRetry={owners.reload}
-            empty={(owners.data ?? []).length === 0}
-            emptyIcon="person"
-            emptyTitle="Sin dueños"
-          >
-            {(owners.data ?? []).map((o) => (
-              <ListRow
-                key={o.id}
-                title={ownerName(o)}
-                subtitle={o.email}
-                showChevron={false}
-                trailing={sel.ownerId === o.id ? CHECK_EL : undefined}
-                onPress={() => patch({ ownerId: o.id, petId: undefined })}
-              />
-            ))}
-          </AsyncBoundary>
-        </View>
+        <OwnerStep
+          owners={owners}
+          selectedId={sel.ownerId}
+          onSelect={(id) => patch({ ownerId: id, petId: undefined })}
+        />
       ) : null}
 
       {step === 1 ? (
-        <View style={{ gap: 8 }}>
-          <SectionTitle>Elige la mascota</SectionTitle>
-          <AsyncBoundary
-            loading={pets.loading && pets.data === null}
-            error={pets.error}
-            onRetry={pets.reload}
-            empty={ownerPets.length === 0}
-            emptyIcon="paw"
-            emptyTitle="Sin mascotas"
-            emptyDescription="Este dueño no tiene mascotas registradas."
-          >
-            {ownerPets.map((pet) => (
-              <ListRow
-                key={pet.id}
-                title={pet.name}
-                subtitle={SPECIES_LABEL[pet.species]}
-                leading={() => (
-                  <Avatar
-                    uri={pet.photo_url ?? undefined}
-                    fallback={SPECIES_EMOJI[pet.species as Species]}
-                  />
-                )}
-                showChevron={false}
-                trailing={sel.petId === pet.id ? CHECK_EL : undefined}
-                onPress={() => patch({ petId: pet.id })}
-              />
-            ))}
-          </AsyncBoundary>
-        </View>
+        <PetStep
+          loading={pets.loading && pets.data === null}
+          error={pets.error}
+          onRetry={pets.reload}
+          ownerPets={ownerPets}
+          selectedId={sel.petId}
+          onSelect={(id) => patch({ petId: id })}
+        />
       ) : null}
 
       {step === 2 ? (
-        <View style={{ gap: 8 }}>
-          <SectionTitle>Elige el servicio</SectionTitle>
-          <AsyncBoundary
-            loading={services.loading && services.data === null}
-            error={services.error}
-            onRetry={services.reload}
-            empty={(services.data ?? []).length === 0}
-            emptyIcon="medkit"
-            emptyTitle="Sin servicios"
-          >
-            {(services.data ?? []).map((s) => (
-              <ListRow
-                key={s.id}
-                title={s.name}
-                subtitle={s.duration_minutes ? `${s.duration_minutes} min` : undefined}
-                showChevron={false}
-                trailing={sel.serviceId === s.id ? CHECK_EL : undefined}
-                onPress={() =>
-                  patch({ serviceId: s.id, vetId: undefined, time: undefined })
-                }
-              />
-            ))}
-          </AsyncBoundary>
-        </View>
+        <ServiceStep
+          services={services}
+          selectedId={sel.serviceId}
+          onSelect={(id) => patch({ serviceId: id, vetId: undefined, time: undefined })}
+        />
       ) : null}
 
       {step === 3 ? (
-        <View style={{ gap: 8 }}>
-          <SectionTitle>Elige el día</SectionTitle>
-          <AsyncBoundary
-            loading={days.loading && days.data === null}
-            error={days.error}
-            onRetry={days.reload}
-            empty={(days.data ?? []).length === 0}
-            emptyIcon="calendar"
-            emptyTitle="Sin días disponibles"
-            emptyDescription="No hay disponibilidad este mes."
-          >
-            <FilterChips
-              options={dayOptions}
-              selectedId={sel.day ?? ''}
-              onSelect={(id) => void selectDay(id)}
-            />
-          </AsyncBoundary>
-        </View>
+        <StepSection
+          title="Elige el día"
+          boundary={{
+            loading: days.loading && days.data === null,
+            error: days.error,
+            onRetry: days.reload,
+            empty: (days.data ?? []).length === 0,
+            emptyIcon: 'calendar',
+            emptyTitle: 'Sin días disponibles',
+            emptyDescription: 'No hay disponibilidad este mes.',
+          }}
+        >
+          <FilterChips
+            options={dayOptions}
+            selectedId={sel.day ?? ''}
+            onSelect={(id) => void selectDay(id)}
+          />
+        </StepSection>
       ) : null}
 
       {step === 4 ? (
-        <View style={{ gap: 8 }}>
-          <SectionTitle>Elige el veterinario</SectionTitle>
-          <AsyncBoundary
-            loading={vetsLoading}
-            error={null}
-            empty={vets.length === 0}
-            emptyIcon="person"
-            emptyTitle="Sin veterinarios"
-            emptyDescription="No hay veterinarios disponibles ese día."
-          >
-            {vets.map((v) => (
-              <ListRow
-                key={v.id}
-                title={`${v.first_name} ${v.last_name}`}
-                showChevron={false}
-                trailing={sel.vetId === v.id ? CHECK_EL : undefined}
-                onPress={() => void selectVet(v.id)}
-              />
-            ))}
-          </AsyncBoundary>
-        </View>
+        <StepSection
+          title="Elige el veterinario"
+          boundary={{
+            loading: vetsLoading,
+            error: vetsError,
+            onRetry: () => {
+              if (sel.day) void selectDay(sel.day);
+            },
+            empty: vets.length === 0,
+            emptyIcon: 'person',
+            emptyTitle: 'Sin veterinarios',
+            emptyDescription: 'No hay veterinarios disponibles ese día.',
+          }}
+        >
+          {vets.map((v) => (
+            <ListRow
+              key={v.id}
+              title={`${v.first_name} ${v.last_name}`}
+              showChevron={false}
+              trailing={sel.vetId === v.id ? CHECK_EL : undefined}
+              onPress={() => void selectVet(v.id)}
+            />
+          ))}
+        </StepSection>
       ) : null}
 
       {step === 5 ? (
-        <View style={{ gap: 8 }}>
-          <SectionTitle>Elige la hora</SectionTitle>
-          <AsyncBoundary
-            loading={slotsLoading}
-            error={null}
-            empty={slotOptions.length === 0}
-            emptyIcon="time"
-            emptyTitle="Sin horarios"
-            emptyDescription="No hay horarios disponibles para ese veterinario."
-          >
-            <FilterChips
-              options={slotOptions}
-              selectedId={sel.time ?? ''}
-              onSelect={(id) => patch({ time: id })}
-            />
-          </AsyncBoundary>
-        </View>
+        <StepSection
+          title="Elige la hora"
+          boundary={{
+            loading: slotsLoading,
+            error: slotsError,
+            onRetry: () => {
+              if (sel.vetId !== undefined) void selectVet(sel.vetId);
+            },
+            empty: slotOptions.length === 0,
+            emptyIcon: 'time',
+            emptyTitle: 'Sin horarios',
+            emptyDescription: 'No hay horarios disponibles para ese veterinario.',
+          }}
+        >
+          <FilterChips
+            options={slotOptions}
+            selectedId={sel.time ?? ''}
+            onSelect={(id) => patch({ time: id })}
+          />
+        </StepSection>
       ) : null}
 
       <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>

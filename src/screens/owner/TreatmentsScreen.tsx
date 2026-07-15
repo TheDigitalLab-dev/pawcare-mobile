@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { FlatList, StyleSheet, Text, View, type ListRenderItemInfo } from 'react-native';
 
@@ -29,11 +29,14 @@ function formatDoseTime(iso: string): string {
 
 function TreatmentCard({
   treatment,
+  busy,
   onTaken,
   onShift,
   onFinish,
 }: {
   treatment: ActiveTreatment;
+  /** true mientras una mutación de ESTE tratamiento está en vuelo (anti doble-tap). */
+  busy: boolean;
   onTaken: (t: ActiveTreatment) => void;
   onShift: (t: ActiveTreatment, minutes: number) => void;
   onFinish: (t: ActiveTreatment) => void;
@@ -76,6 +79,7 @@ function TreatmentCard({
                 label={s.label}
                 variant="outline"
                 size="sm"
+                disabled={busy}
                 onPress={() => onShift(treatment, s.minutes)}
               />
             ))}
@@ -92,11 +96,16 @@ function TreatmentCard({
           <Button
             label="Administrado ✓"
             fullWidth
-            disabled={!treatment.nextDose}
+            disabled={busy || !treatment.nextDose}
             onPress={() => onTaken(treatment)}
           />
         </View>
-        <Button label="Finalizar" variant="outline" onPress={() => onFinish(treatment)} />
+        <Button
+          label="Finalizar"
+          variant="outline"
+          disabled={busy}
+          onPress={() => onFinish(treatment)}
+        />
       </View>
     </Card>
   );
@@ -107,24 +116,47 @@ export function TreatmentsScreen() {
   const back = navigation.canGoBack() ? navigation.goBack : undefined;
   const { treatments, permissionDenied, markTaken, moveNextDose, finish } =
     useTreatments();
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const onTaken = useCallback((t: ActiveTreatment) => void markTaken(t), [markTaken]);
-  const onShift = useCallback(
-    (t: ActiveTreatment, minutes: number) => void moveNextDose(t, minutes),
-    [moveNextDose],
+  // Serializa las mutaciones por tratamiento: mientras una está en vuelo, los
+  // botones de esa tarjeta se deshabilitan (evita tomas dobles por doble-tap).
+  const run = useCallback(
+    async (t: ActiveTreatment, fn: () => Promise<void>) => {
+      if (busyId !== null) return;
+      setBusyId(t.id);
+      try {
+        await fn();
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [busyId],
   );
-  const onFinish = useCallback((t: ActiveTreatment) => void finish(t), [finish]);
+
+  const onTaken = useCallback(
+    (t: ActiveTreatment) => void run(t, () => markTaken(t)),
+    [run, markTaken],
+  );
+  const onShift = useCallback(
+    (t: ActiveTreatment, minutes: number) => void run(t, () => moveNextDose(t, minutes)),
+    [run, moveNextDose],
+  );
+  const onFinish = useCallback(
+    (t: ActiveTreatment) => void run(t, () => finish(t)),
+    [run, finish],
+  );
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<ActiveTreatment>) => (
       <TreatmentCard
         treatment={item}
+        busy={busyId === item.id}
         onTaken={onTaken}
         onShift={onShift}
         onFinish={onFinish}
       />
     ),
-    [onTaken, onShift, onFinish],
+    [busyId, onTaken, onShift, onFinish],
   );
 
   return (

@@ -24,7 +24,7 @@ export function DewormingsScreen() {
   // O4 del plan: aviso local 3 días antes de la próxima desparasitación.
   useEffect(() => {
     if (!data) return;
-    void syncReminders(dewormingReminders(data, new Date().toISOString()));
+    void syncReminders('dew-', dewormingReminders(data, new Date().toISOString()));
   }, [data]);
   const items = data ?? [];
 
