@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -8,6 +8,10 @@ import { AsyncBoundary, Fab, FilterChips, type BadgeVariant } from '@/components
 import { AppointmentCard } from '@/components/domain';
 import type { AdminAgendaStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
+import { useChangeAlerts } from '@/hooks/useChangeAlerts';
+import { adminAppointmentAlerts } from '@/services/changeAlertConfigs';
+import { syncReminders } from '@/services/reminderAlarms';
+import { clinicAgendaReminders } from '@/utils/reminders';
 import { listAdminAppointments } from '@/services/admin';
 import { formatDateTime } from '@/utils/format';
 import {
@@ -39,6 +43,14 @@ export function AdminAppointmentsListScreen() {
   const navigation = useNavigation<Nav>();
   const [filter, setFilter] = useState('all');
   const { data, loading, error, reload } = useAsync(() => listAdminAppointments());
+
+  // A1/A2 del plan: citas nuevas y cancelaciones al centro de notificaciones.
+  useChangeAlerts(data, adminAppointmentAlerts);
+  // A3/V2: resumen local de la agenda de mañana a las 7:30.
+  useEffect(() => {
+    if (!data) return;
+    void syncReminders(clinicAgendaReminders(data, new Date().toISOString()));
+  }, [data]);
 
   useFocusEffect(
     useCallback(() => {

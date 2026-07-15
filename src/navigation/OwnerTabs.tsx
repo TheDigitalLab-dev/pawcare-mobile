@@ -27,8 +27,11 @@ import {
   PetMedicalHubScreen,
   PetsListScreen,
   ProfileScreen,
+  TreatmentsScreen,
+  TreatmentStartScreen,
   VaccinationsScreen,
 } from '@/screens/owner';
+import { NotificationPrefsScreen, NotificationsScreen } from '@/screens/common';
 import type {
   OwnerAppointmentsStackParamList,
   OwnerHomeStackParamList,
@@ -42,6 +45,7 @@ function OwnerHomeStack() {
   return (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="OwnerDashboard" component={OwnerDashboardScreen} />
+      <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
       <HomeStack.Screen name="OwnerPayments" component={OwnerPaymentsScreen} />
       <HomeStack.Screen
         name="OwnerPaymentRegister"
@@ -79,6 +83,8 @@ function OwnerPetsStack() {
         component={MedicalReportDetailScreen}
       />
       <PetsStack.Screen name="LabExams" component={LabExamsScreen} />
+      <PetsStack.Screen name="Treatments" component={TreatmentsScreen} />
+      <PetsStack.Screen name="TreatmentStart" component={TreatmentStartScreen} />
     </PetsStack.Navigator>
   );
 }
@@ -101,6 +107,7 @@ function OwnerProfileStack() {
       <ProfileStack.Screen name="Profile" component={ProfileScreen} />
       <ProfileStack.Screen name="EditProfile" component={EditProfileScreen} />
       <ProfileStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+      <ProfileStack.Screen name="NotificationPrefs" component={NotificationPrefsScreen} />
     </ProfileStack.Navigator>
   );
 }

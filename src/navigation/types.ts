@@ -60,6 +60,7 @@ export type OwnerHomeStackParamList = {
   OwnerMedicalHistory: undefined;
   OwnerSponsorships: undefined;
   OwnerSponsorshipDetail: { id: number };
+  Notifications: undefined;
 };
 
 export type OwnerPetsStackParamList = {
@@ -75,6 +76,16 @@ export type OwnerPetsStackParamList = {
   MedicalReports: { petId: number };
   MedicalReportDetail: { petId: number; id: number };
   LabExams: { petId: number; consultationId: number };
+  Treatments: undefined;
+  TreatmentStart: {
+    petId: number;
+    petName?: string;
+    prescriptionItemId?: number;
+    medicationName: string;
+    dose?: string;
+    frequency?: string;
+    duration?: string;
+  };
 };
 
 export type OwnerAppointmentsStackParamList = {
@@ -87,6 +98,7 @@ export type OwnerProfileStackParamList = {
   Profile: undefined;
   EditProfile: undefined;
   ChangePassword: undefined;
+  NotificationPrefs: undefined;
 };
 
 // --- Admin -----------------------------------------------------------------
@@ -99,6 +111,7 @@ export type AdminTabParamList = {
 
 export type AdminHomeStackParamList = {
   AdminDashboard: undefined;
+  Notifications: undefined;
 };
 
 export type AdminPatientsStackParamList = {
@@ -119,6 +132,7 @@ export type AdminAgendaStackParamList = {
 
 export type AdminMoreStackParamList = {
   AdminModules: undefined;
+  NotificationPrefs: undefined;
   AdminConsultationsList: undefined;
   AdminConsultationDetail: { id: number };
   AdminConsultationForm: { id?: number };

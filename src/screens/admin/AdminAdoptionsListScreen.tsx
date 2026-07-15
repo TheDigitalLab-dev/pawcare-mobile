@@ -6,6 +6,8 @@ import { AppHeader, MobileShell } from '@/components/layout';
 import { AsyncBoundary, PetAvatar } from '@/components/ui';
 import { ListRow } from '@/components/domain';
 import { useAsync } from '@/hooks/useAsync';
+import { useChangeAlerts } from '@/hooks/useChangeAlerts';
+import { adminAdoptionAlerts } from '@/services/changeAlertConfigs';
 import { listAdminAdoptions, type AdoptionRecord } from '@/services/admin';
 import { formatDate } from '@/utils/format';
 
@@ -15,6 +17,9 @@ const PAW_AVATAR = <PetAvatar fallback="🐾" size="md" />;
 export function AdminAdoptionsListScreen() {
   const navigation = useNavigation();
   const { data, loading, error, reload } = useAsync(() => listAdminAdoptions());
+
+  // A5 del plan: registros de adopción nuevos al centro de notificaciones.
+  useChangeAlerts(data, adminAdoptionAlerts);
   const items = data ?? [];
 
   useFocusEffect(

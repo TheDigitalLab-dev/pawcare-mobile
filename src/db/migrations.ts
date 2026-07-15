@@ -49,6 +49,88 @@ const MIGRATIONS: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_outbox_created ON sync_outbox (created_at);
     `,
   },
+  {
+    id: 2,
+    name: 'treatments_and_doses',
+    sql: `
+      CREATE TABLE IF NOT EXISTS treatments (
+        id TEXT PRIMARY KEY NOT NULL,
+        server_id INTEGER,
+        pet_id INTEGER NOT NULL,
+        pet_name TEXT,
+        prescription_item_id INTEGER,
+        medication_name TEXT NOT NULL,
+        dose TEXT,
+        frequency_hours INTEGER NOT NULL CHECK (frequency_hours > 0),
+        duration_days INTEGER NOT NULL CHECK (duration_days > 0),
+        started_at TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'active'
+          CHECK (status IN ('active', 'completed', 'cancelled')),
+        sync_status TEXT NOT NULL DEFAULT 'pending'
+          CHECK (sync_status IN ('pending', 'synced', 'error')),
+        updated_at TEXT NOT NULL,
+        deleted_at TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS treatment_doses (
+        id TEXT PRIMARY KEY NOT NULL,
+        treatment_id TEXT NOT NULL REFERENCES treatments (id),
+        dose_index INTEGER NOT NULL,
+        scheduled_at TEXT NOT NULL,
+        taken_at TEXT,
+        status TEXT NOT NULL DEFAULT 'pending'
+          CHECK (status IN ('pending', 'taken', 'skipped')),
+        notification_id TEXT,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_treatments_status ON treatments (status);
+      CREATE INDEX IF NOT EXISTS idx_treatments_pet ON treatments (pet_id);
+      CREATE INDEX IF NOT EXISTS idx_doses_treatment
+        ON treatment_doses (treatment_id, dose_index);
+      CREATE INDEX IF NOT EXISTS idx_doses_pending
+        ON treatment_doses (status, scheduled_at);
+    `,
+  },
+  {
+    id: 3,
+    name: 'notification_center',
+    sql: `
+      CREATE TABLE IF NOT EXISTS notifications (
+        id TEXT PRIMARY KEY NOT NULL,
+        type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        body TEXT,
+        dedupe_key TEXT UNIQUE,
+        created_at TEXT NOT NULL,
+        read_at TEXT
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_notifications_created
+        ON notifications (created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_notifications_unread
+        ON notifications (read_at);
+    `,
+  },
+  {
+    id: 4,
+    name: 'entity_snapshots_and_prefs',
+    sql: `
+      CREATE TABLE IF NOT EXISTS entity_snapshots (
+        entity TEXT NOT NULL,
+        entity_id TEXT NOT NULL,
+        state TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        PRIMARY KEY (entity, entity_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS notification_prefs (
+        category TEXT PRIMARY KEY NOT NULL,
+        enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),
+        updated_at TEXT NOT NULL
+      );
+    `,
+  },
 ];
 
 /**

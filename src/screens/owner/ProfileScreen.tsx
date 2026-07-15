@@ -91,6 +91,11 @@ export function ProfileScreen() {
           onPress={() => navigation.navigate('EditProfile')}
         />
         <ListRow
+          title="Notificaciones"
+          subtitle="Preferencias por categoría"
+          onPress={() => navigation.navigate('NotificationPrefs')}
+        />
+        <ListRow
           title="Cambiar contraseña"
           leading={PASSWORD_ICON}
           onPress={() => navigation.navigate('ChangePassword')}

@@ -18,3 +18,4 @@ export { AppointmentCard, type AppointmentCardProps } from './AppointmentCard';
 export { PaymentCard, type PaymentCardProps } from './PaymentCard';
 export { ProductCard, type ProductCardProps } from './ProductCard';
 export { ThemeToggle } from './ThemeToggle';
+export { NotificationsBell } from './NotificationsBell';

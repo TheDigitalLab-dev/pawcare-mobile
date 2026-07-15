@@ -44,6 +44,12 @@ export function PetMedicalHubScreen() {
       icon: 'reader',
       onPress: () => navigation.navigate('MedicalReports', { petId }),
     },
+    {
+      id: 'treatments',
+      label: 'Tratamientos',
+      icon: 'alarm',
+      onPress: () => navigation.navigate('Treatments'),
+    },
   ];
 
   return (
