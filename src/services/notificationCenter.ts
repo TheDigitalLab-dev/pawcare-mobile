@@ -58,6 +58,12 @@ function toNotification(row: Row): AppNotification {
 export function createNotificationCenter(exec: SqlExecutor): NotificationCenter {
   return {
     add(input) {
+      // Opt-out por categoría: el `type` del aviso es su categoría de preferencia.
+      const pref = exec.get<{ enabled: number }>(
+        'SELECT enabled FROM notification_prefs WHERE category = ?',
+        [input.type],
+      );
+      if (pref && pref.enabled === 0) return;
       exec.run(
         `INSERT OR IGNORE INTO notifications (id, type, title, body, dedupe_key, created_at)
          VALUES (?, ?, ?, ?, ?, ?)`,

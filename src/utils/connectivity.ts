@@ -5,7 +5,7 @@
  */
 
 export interface ConnectivityEvent {
-  type: 'connectivity';
+  type: 'conectividad';
   title: string;
   body: string;
 }
@@ -17,13 +17,13 @@ export function connectivityEvent(
   if (prevOnline === online) return null;
   if (!online) {
     return {
-      type: 'connectivity',
+      type: 'conectividad',
       title: '📴 Sin conexión',
       body: 'Trabajando con los datos locales del teléfono; tus cambios se guardan aquí y nada se pierde.',
     };
   }
   return {
-    type: 'connectivity',
+    type: 'conectividad',
     title: '📶 Conexión recuperada',
     body: 'Los cambios locales pendientes se van a sincronizar con el consultorio.',
   };

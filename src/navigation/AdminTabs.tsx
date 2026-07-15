@@ -32,7 +32,7 @@ import {
   AdminVaccinationsListScreen,
 } from '@/screens/admin';
 import { ServerSettingsScreen } from '@/screens/auth';
-import { NotificationsScreen } from '@/screens/common';
+import { NotificationPrefsScreen, NotificationsScreen } from '@/screens/common';
 import type {
   AdminAgendaStackParamList,
   AdminHomeStackParamList,
@@ -103,6 +103,7 @@ function AdminMoreStack() {
   return (
     <MoreStack.Navigator screenOptions={{ headerShown: false }}>
       <MoreStack.Screen name="AdminModules" component={AdminModulesScreen} />
+      <MoreStack.Screen name="NotificationPrefs" component={NotificationPrefsScreen} />
       <MoreStack.Screen
         name="AdminConsultationsList"
         component={AdminConsultationsListScreen}

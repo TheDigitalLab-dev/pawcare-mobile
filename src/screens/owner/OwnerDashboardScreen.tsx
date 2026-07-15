@@ -21,7 +21,12 @@ import { listPets } from '@/services/pets';
 import { listAppointments } from '@/services/appointments';
 import { listPayments } from '@/services/payments';
 import { syncReminders } from '@/services/reminderAlarms';
-import { appointmentReminders } from '@/utils/reminders';
+import { useChangeAlerts } from '@/hooks/useChangeAlerts';
+import {
+  ownerAppointmentAlerts,
+  ownerPaymentAlerts,
+} from '@/services/changeAlertConfigs';
+import { appointmentReminders, pendingPaymentReminders } from '@/utils/reminders';
 import { formatDateTime, formatMoney } from '@/utils/format';
 import {
   APPOINTMENT_STATUS_LABEL,
@@ -55,6 +60,16 @@ export function OwnerDashboardScreen() {
     if (!appointments.data) return;
     void syncReminders(appointmentReminders(appointments.data, new Date().toISOString()));
   }, [appointments.data]);
+
+  // O8: recordatorio local (mañana 10:00) de pagos pendientes o vencidos.
+  useEffect(() => {
+    if (!payments.data) return;
+    void syncReminders(pendingPaymentReminders(payments.data, new Date().toISOString()));
+  }, [payments.data]);
+
+  // O2/O7: cambios de estado de citas y pagos al centro de notificaciones.
+  useChangeAlerts(appointments.data, ownerAppointmentAlerts);
+  useChangeAlerts(payments.data, ownerPaymentAlerts);
 
   const upcoming = (appointments.data ?? []).filter((a) => UPCOMING.includes(a.status));
   const nextAppointment = upcoming[0];

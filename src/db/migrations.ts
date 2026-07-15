@@ -112,6 +112,25 @@ const MIGRATIONS: Migration[] = [
         ON notifications (read_at);
     `,
   },
+  {
+    id: 4,
+    name: 'entity_snapshots_and_prefs',
+    sql: `
+      CREATE TABLE IF NOT EXISTS entity_snapshots (
+        entity TEXT NOT NULL,
+        entity_id TEXT NOT NULL,
+        state TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        PRIMARY KEY (entity, entity_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS notification_prefs (
+        category TEXT PRIMARY KEY NOT NULL,
+        enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),
+        updated_at TEXT NOT NULL
+      );
+    `,
+  },
 ];
 
 /**

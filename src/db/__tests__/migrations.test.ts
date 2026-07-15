@@ -29,7 +29,7 @@ describe('applyMigrations', () => {
   it('aplica las migraciones en orden y es idempotente', () => {
     const { db, exec } = freshDb();
 
-    expect(applyMigrations(exec)).toEqual([1, 2, 3]);
+    expect(applyMigrations(exec)).toEqual([1, 2, 3, 4]);
     // Segunda pasada: no reaplica nada.
     expect(applyMigrations(exec)).toEqual([]);
 
@@ -46,6 +46,8 @@ describe('applyMigrations', () => {
         'treatments',
         'treatment_doses',
         'notifications',
+        'entity_snapshots',
+        'notification_prefs',
       ]),
     );
 

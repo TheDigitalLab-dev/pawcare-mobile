@@ -73,7 +73,7 @@ export function useTreatments(executor?: SqlExecutor): UseTreatments {
         });
       }
       center.add({
-        type: 'treatment',
+        type: 'tratamientos',
         title: '💊 Tratamiento iniciado',
         body: `${created.medicationName}${created.petName ? ` para ${created.petName}` : ''}: ${created.doses.length} tomas programadas.`,
       });
@@ -117,7 +117,7 @@ export function useTreatments(executor?: SqlExecutor): UseTreatments {
       repo.finishTreatment(treatment.id, 'completed');
       await cancelDoseAlarms(repo.listDoses(treatment.id));
       center.add({
-        type: 'treatment',
+        type: 'tratamientos',
         title: '✅ Tratamiento finalizado',
         body: `${treatment.medicationName}: ${treatment.takenCount} de ${treatment.totalCount} tomas registradas.`,
       });

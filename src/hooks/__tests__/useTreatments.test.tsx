@@ -111,7 +111,7 @@ describe('useTreatments', () => {
     await startLuna(result);
 
     const rows = exec.all<{ title: string; body: string }>(
-      "SELECT title, body FROM notifications WHERE type = 'treatment'",
+      "SELECT title, body FROM notifications WHERE type = 'tratamientos'",
     );
     expect(rows).toHaveLength(1);
     expect(rows[0]!.body).toContain('Amoxicilina');

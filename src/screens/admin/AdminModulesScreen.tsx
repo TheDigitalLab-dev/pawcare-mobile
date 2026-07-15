@@ -72,6 +72,11 @@ export function AdminModulesScreen() {
       <SectionTitle>Cuenta y servidor</SectionTitle>
       <View style={{ gap: 8 }}>
         <ListRow
+          title="Notificaciones"
+          subtitle="Preferencias por categoría"
+          onPress={() => navigation.navigate('NotificationPrefs')}
+        />
+        <ListRow
           title="Configurar servidor"
           subtitle="Elige a qué backend se conecta la app"
           leading={SERVER_ICON}

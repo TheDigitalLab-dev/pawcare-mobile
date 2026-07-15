@@ -1,4 +1,12 @@
-import { appointmentReminders, vaccinationReminders } from '@/utils/reminders';
+import {
+  appointmentReminders,
+  clinicAgendaReminders,
+  dewormingReminders,
+  pendingPaymentReminders,
+  sponsorshipReminders,
+  vaccinationReminders,
+  vaccinationScheduleReminders,
+} from '@/utils/reminders';
 
 const NOW = '2026-07-14T12:00:00.000Z';
 
@@ -96,5 +104,122 @@ describe('vaccinationReminders', () => {
       NOW,
     );
     expect(specs).toEqual([]);
+  });
+});
+
+describe('dewormingReminders', () => {
+  it('avisa 3 días antes de la próxima aplicación (O4)', () => {
+    const specs = dewormingReminders(
+      [{ id: 4, product_name: 'Drontal', next_due_date: '2026-07-25' }],
+      NOW,
+    );
+    expect(specs).toHaveLength(1);
+    expect(specs[0]!.identifier).toBe('dew-4-due');
+    expect(specs[0]!.body).toContain('Drontal');
+    expect(specs[0]!.category).toBe('vacunas');
+    expect(new Date(specs[0]!.triggerAt).getDate()).toBe(22);
+  });
+
+  it('omite sin fecha o en el pasado', () => {
+    expect(
+      dewormingReminders(
+        [
+          { id: 1, product_name: 'A', next_due_date: null },
+          { id: 2, product_name: 'B', next_due_date: '2026-07-01' },
+        ],
+        NOW,
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe('pendingPaymentReminders', () => {
+  it('recuerda mañana a las 10:00 los pagos pendientes y vencidos (O8)', () => {
+    const specs = pendingPaymentReminders(
+      [
+        { id: 1, status: 'pending', amount: 25, currency: 'USD' },
+        { id: 2, status: 'overdue', amount: 10, currency: 'USD' },
+        { id: 3, status: 'completed', amount: 99, currency: 'USD' },
+      ],
+      NOW,
+    );
+    expect(specs.map((s) => s.identifier)).toEqual(['pay-1-pending', 'pay-2-pending']);
+    expect(specs[1]!.title).toContain('vencido');
+    const trigger = new Date(specs[0]!.triggerAt);
+    expect(trigger.getHours()).toBe(10);
+    expect(specs[0]!.category).toBe('pagos');
+  });
+});
+
+describe('clinicAgendaReminders', () => {
+  it('programa el resumen de mañana a las 7:30 con el conteo de citas (A3/V2)', () => {
+    const specs = clinicAgendaReminders(
+      [
+        { id: 1, scheduled_at: '2026-07-15T14:00:00.000Z', status: 'confirmed' },
+        { id: 2, scheduled_at: '2026-07-15T16:00:00.000Z', status: 'pending' },
+        { id: 3, scheduled_at: '2026-07-15T18:00:00.000Z', status: 'cancelled' },
+        { id: 4, scheduled_at: '2026-07-20T18:00:00.000Z', status: 'confirmed' },
+      ],
+      NOW,
+    );
+    expect(specs).toHaveLength(1);
+    expect(specs[0]!.identifier).toBe('agenda-2026-07-15');
+    expect(specs[0]!.body).toContain('2 citas');
+    const trigger = new Date(specs[0]!.triggerAt);
+    expect(trigger.getHours()).toBe(7);
+    expect(trigger.getMinutes()).toBe(30);
+  });
+
+  it('sin citas mañana, no hay resumen', () => {
+    expect(
+      clinicAgendaReminders(
+        [{ id: 4, scheduled_at: '2026-07-20T18:00:00.000Z', status: 'confirmed' }],
+        NOW,
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe('vaccinationScheduleReminders', () => {
+  it('avisa el día previo a la vacunación programada de la clínica (A10)', () => {
+    const specs = vaccinationScheduleReminders(
+      [
+        {
+          id: 7,
+          schedule_type: 'Refuerzo anual',
+          start_date: '2026-07-20',
+          status: 'pending',
+          pet: { name: 'Rocky' },
+        },
+        {
+          id: 8,
+          schedule_type: 'Primaria',
+          start_date: null,
+          status: 'pending',
+          pet: null,
+        },
+      ],
+      NOW,
+    );
+    expect(specs).toHaveLength(1);
+    expect(specs[0]!.identifier).toBe('vsched-7');
+    expect(specs[0]!.body).toContain('Rocky');
+    expect(specs[0]!.category).toBe('agenda');
+  });
+});
+
+describe('sponsorshipReminders', () => {
+  it('avisa 5 días antes del fin del apadrinamiento activo (O10)', () => {
+    const specs = sponsorshipReminders(
+      [
+        { id: 3, status: 'active', end_date: '2026-07-25', pet: { name: 'Milo' } },
+        { id: 4, status: 'cancelled', end_date: '2026-07-25', pet: null },
+      ],
+      NOW,
+    );
+    expect(specs).toHaveLength(1);
+    expect(specs[0]!.identifier).toBe('sponsor-3-renewal');
+    expect(specs[0]!.body).toContain('Milo');
+    expect(new Date(specs[0]!.triggerAt).getDate()).toBe(20);
   });
 });

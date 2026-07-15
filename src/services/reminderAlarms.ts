@@ -10,6 +10,7 @@ import { Platform } from 'react-native';
 import type { ReminderSpec } from '@/utils/reminders';
 
 import { ensureAlarmPermissions } from './alarms';
+import { categoryEnabled } from './notificationPrefs';
 
 export const REMINDERS_CHANNEL_ID = 'reminders';
 
@@ -28,15 +29,19 @@ async function ensureChannel(): Promise<void> {
   channelReady = true;
 }
 
-/** Programa (o reemplaza) los avisos dados. Sin permiso, no hace nada. */
+/**
+ * Programa (o reemplaza) los avisos dados, respetando el opt-out por categoría.
+ * Sin permiso de notificaciones, no hace nada.
+ */
 export async function syncReminders(specs: ReminderSpec[]): Promise<void> {
-  if (specs.length === 0) return;
+  const enabled = specs.filter((s) => categoryEnabled(s.category));
+  if (enabled.length === 0) return;
   const granted = await ensureAlarmPermissions();
   if (!granted) return;
   await ensureChannel();
 
   await Promise.all(
-    specs.map((spec) =>
+    enabled.map((spec) =>
       Notifications.scheduleNotificationAsync({
         identifier: spec.identifier,
         content: { title: spec.title, body: spec.body, sound: 'default' },

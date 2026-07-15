@@ -90,3 +90,16 @@ Los dueños necesitan que la app **programe alarmas con los horarios de los medi
 2. **Backend**: se necesita un modelo `Notification` + endpoints móviles (listar, marcar leída, preferencias) y el registro de tokens push; los mailers existentes marcan exactamente dónde disparar cada evento (mismo punto de emisión, segundo canal).
 3. **Preferencias por usuario**: pantalla de ajustes con opt-in/opt-out por categoría (obligatorio para prioridad Baja/marketing).
 4. **Orden de implementación sugerido**: F1 centro in-app + ciclo offline/sync (O12, O13) + push locales de recordatorios (O1, O3, A3, V2) — todo sin cambios complejos de backend → F2 alarmas de medicación (O14, O15: requieren posología estructurada en la receta) y push remotas de eventos críticos (O2, O5, O7, A1, A4, A7) → F3 resto + pantalla de preferencias.
+
+## Estado de implementación (al 14-jul-2026)
+
+**Implementado en la app (local-first, sin cambios de backend):**
+
+- **Infraestructura**: centro de notificaciones in-app con campana y badge (dueño y admin), banner offline global, pantalla de **preferencias por categoría** (opt-out real: silencia recordatorios y centro), y **motor de alertas por cambio**: al sincronizar cada lista real se diffea contra el snapshot local (`entity_snapshots`) y las novedades caen al centro — sustituye a las push remotas hasta que exista F2.
+- **Dueño**: O1 (citas 24 h/2 h), O2 (cita confirmada/cancelada/reprogramada — por diff), O3 (vacunas), O4 (desparasitación), O5 (informes nuevos y resultados de laboratorio — por diff), O7 (pago confirmado/vencido/anulado y cobros nuevos — por diff), O8 (recordatorio de pago pendiente), O10 (renovación de apadrinamiento), O12/O13 (offline/sync), O14/O15 (alarmas de medicación con «Tratamiento iniciado» y reanclaje de tomas).
+- **Personal (admin/vet)**: A1/A2 (citas nuevas y canceladas — por diff), A3/V2 (agenda del día, resumen 7:30), A4 (pagos por verificar — por diff), A5 (adopciones nuevas — por diff), A10 (vacunaciones programadas, día previo), V3 (resultados de laboratorio — por diff).
+
+**Requiere backend (fase F2 — fuera del alcance de este repo):**
+
+- Push remotas verdaderas (con la app cerrada y sin abrirla): registro de tokens de dispositivo + emisor en Rails junto a los mailers existentes. El motor de diff ya define los eventos y textos.
+- O6 (recetas emitidas — llega hoy vía consulta), O11/A9 (estado de pedidos: sin endpoint móvil de pedidos), O16 (campañas: sin endpoint), A6 (apadrinamientos clínica: sin listado admin), A7 (inventario: sin endpoint móvil), A8 (mensajes de contacto: sin endpoint de lectura), A11 (usuarios nuevos: sin listado), V1 (asignación por profesional: requiere filtro por `assigned_to` en el API), V6 (consulta sin cerrar: requiere campo de estado de cierre).

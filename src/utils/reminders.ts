@@ -13,6 +13,8 @@ export interface ReminderSpec {
   body: string;
   /** ISO del momento en que debe sonar. */
   triggerAt: string;
+  /** Categoría de preferencias (opt-out por categoría). */
+  category: string;
 }
 
 interface AppointmentLike {
@@ -66,6 +68,7 @@ export function appointmentReminders(
         title: `📅 Cita ${lead}`,
         body,
         triggerAt: new Date(triggerMs).toISOString(),
+        category: 'citas',
       });
     }
   }
@@ -96,6 +99,178 @@ export function vaccinationReminders(
         `${vacc.next_due_date}T09:00:00`,
       ).toLocaleDateString('es-VE', { day: 'numeric', month: 'long' })}`,
       triggerAt: trigger.toISOString(),
+      category: 'vacunas',
+    });
+  }
+  return specs;
+}
+
+interface DewormingLike {
+  id: number;
+  product_name: string;
+  next_due_date?: string | null;
+}
+
+/** O4 — desparasitación: aviso 3 días antes de la próxima aplicación, 9:00. */
+export function dewormingReminders(
+  dewormings: DewormingLike[],
+  nowIso: string,
+): ReminderSpec[] {
+  const now = Date.parse(nowIso);
+  const specs: ReminderSpec[] = [];
+
+  for (const dew of dewormings) {
+    if (!dew.next_due_date) continue;
+    const due = new Date(`${dew.next_due_date}T09:00:00`);
+    if (Number.isNaN(due.getTime())) continue;
+    const trigger = new Date(due.getTime());
+    trigger.setDate(trigger.getDate() - 3);
+    if (trigger.getTime() <= now) continue;
+
+    specs.push({
+      identifier: `dew-${dew.id}-due`,
+      title: '🪱 Desparasitación pendiente',
+      body: `${dew.product_name} — próxima aplicación el ${due.toLocaleDateString('es-VE', { day: 'numeric', month: 'long' })}`,
+      triggerAt: trigger.toISOString(),
+      category: 'vacunas',
+    });
+  }
+  return specs;
+}
+
+interface PaymentLike {
+  id: number;
+  status: string;
+  amount: number;
+  currency: string;
+}
+
+/** O8 — pagos pendientes o vencidos: recordatorio mañana a las 10:00. */
+export function pendingPaymentReminders(
+  payments: PaymentLike[],
+  nowIso: string,
+): ReminderSpec[] {
+  const now = new Date(nowIso);
+  if (Number.isNaN(now.getTime())) return [];
+  const trigger = new Date(now.getTime());
+  trigger.setDate(trigger.getDate() + 1);
+  trigger.setHours(10, 0, 0, 0);
+
+  const specs: ReminderSpec[] = [];
+  for (const p of payments) {
+    if (p.status !== 'pending' && p.status !== 'overdue') continue;
+    specs.push({
+      identifier: `pay-${p.id}-pending`,
+      title: p.status === 'overdue' ? '⚠️ Pago vencido' : '💳 Pago pendiente',
+      body: `${p.currency} ${p.amount} por pagar en el consultorio.`,
+      triggerAt: trigger.toISOString(),
+      category: 'pagos',
+    });
+  }
+  return specs;
+}
+
+interface AgendaAppointmentLike {
+  id: number;
+  scheduled_at: string;
+  status: string;
+}
+
+/** A3/V2 — agenda del día para el personal: resumen mañana a las 7:30. */
+export function clinicAgendaReminders(
+  appointments: AgendaAppointmentLike[],
+  nowIso: string,
+): ReminderSpec[] {
+  const now = new Date(nowIso);
+  if (Number.isNaN(now.getTime())) return [];
+  const tomorrow = new Date(now.getTime());
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dayKey = tomorrow.toISOString().slice(0, 10);
+
+  const count = appointments.filter((a) => {
+    if (SKIP_STATUSES.has(a.status)) return false;
+    const at = new Date(a.scheduled_at);
+    return !Number.isNaN(at.getTime()) && at.toISOString().slice(0, 10) === dayKey;
+  }).length;
+  if (count === 0) return [];
+
+  const trigger = new Date(tomorrow.getTime());
+  trigger.setHours(7, 30, 0, 0);
+  return [
+    {
+      identifier: `agenda-${dayKey}`,
+      title: '📋 Agenda de hoy',
+      body: `${count} ${count === 1 ? 'cita programada' : 'citas programadas'} para hoy en la clínica.`,
+      triggerAt: trigger.toISOString(),
+      category: 'agenda',
+    },
+  ];
+}
+
+interface SponsorshipLike {
+  id: number;
+  status: string;
+  end_date?: string | null;
+  pet: { name: string } | null;
+}
+
+/** O10 — apadrinamiento por vencer: aviso 5 días antes del fin, 9:00. */
+export function sponsorshipReminders(
+  sponsorships: SponsorshipLike[],
+  nowIso: string,
+): ReminderSpec[] {
+  const now = Date.parse(nowIso);
+  const specs: ReminderSpec[] = [];
+
+  for (const sp of sponsorships) {
+    if (!sp.end_date || sp.status !== 'active') continue;
+    const end = new Date(`${sp.end_date}T09:00:00`);
+    if (Number.isNaN(end.getTime())) continue;
+    const trigger = new Date(end.getTime());
+    trigger.setDate(trigger.getDate() - 5);
+    if (trigger.getTime() <= now) continue;
+
+    specs.push({
+      identifier: `sponsor-${sp.id}-renewal`,
+      title: '💚 Apadrinamiento por renovar',
+      body: `${sp.pet?.name ? `${sp.pet.name} — ` : ''}vence el ${end.toLocaleDateString('es-VE', { day: 'numeric', month: 'long' })}. ¡Gracias por tu apoyo!`,
+      triggerAt: trigger.toISOString(),
+      category: 'pagos',
+    });
+  }
+  return specs;
+}
+
+interface VaccinationScheduleLike {
+  id: number;
+  schedule_type: string;
+  start_date?: string | null;
+  status: string;
+  pet: { name: string } | null;
+}
+
+/** A10 — calendario de vacunación de la clínica: aviso el día previo, 8:00. */
+export function vaccinationScheduleReminders(
+  schedules: VaccinationScheduleLike[],
+  nowIso: string,
+): ReminderSpec[] {
+  const now = Date.parse(nowIso);
+  const specs: ReminderSpec[] = [];
+
+  for (const sched of schedules) {
+    if (!sched.start_date || SKIP_STATUSES.has(sched.status)) continue;
+    const start = new Date(`${sched.start_date}T08:00:00`);
+    if (Number.isNaN(start.getTime())) continue;
+    const trigger = new Date(start.getTime());
+    trigger.setDate(trigger.getDate() - 1);
+    if (trigger.getTime() <= now) continue;
+
+    specs.push({
+      identifier: `vsched-${sched.id}`,
+      title: '💉 Vacunación programada',
+      body: `${sched.pet?.name ? `${sched.pet.name} — ` : ''}${sched.schedule_type} el ${start.toLocaleDateString('es-VE', { day: 'numeric', month: 'long' })}`,
+      triggerAt: trigger.toISOString(),
+      category: 'agenda',
     });
   }
   return specs;

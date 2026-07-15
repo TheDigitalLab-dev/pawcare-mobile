@@ -98,6 +98,7 @@ export type OwnerProfileStackParamList = {
   Profile: undefined;
   EditProfile: undefined;
   ChangePassword: undefined;
+  NotificationPrefs: undefined;
 };
 
 // --- Admin -----------------------------------------------------------------
@@ -131,6 +132,7 @@ export type AdminAgendaStackParamList = {
 
 export type AdminMoreStackParamList = {
   AdminModules: undefined;
+  NotificationPrefs: undefined;
   AdminConsultationsList: undefined;
   AdminConsultationDetail: { id: number };
   AdminConsultationForm: { id?: number };
