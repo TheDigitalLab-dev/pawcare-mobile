@@ -15,8 +15,8 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / "docs" / "pst" / "trabajo4-informe-final.md"
-OUT = ROOT / "docs" / "pst" / "trabajo4-informe-final.docx"
+SRC = ROOT / "docs" / "pst" / "presentacion" / "trabajo4-informe-final.md"
+OUT = ROOT / "docs" / "pst" / "presentacion" / "trabajo4-informe-final.docx"
 
 FONT = "Arial"
 MONO = "Consolas"

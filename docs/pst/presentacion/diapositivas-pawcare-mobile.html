@@ -293,7 +293,7 @@
   <h2>La app <em>Pawcare</em>: el consultorio en el bolsillo</h2>
   <div class="content">
     <div class="grid4" style="margin-bottom:2.4vmin">
-      <div class="stat"><div class="n">70</div><div class="l">pantallas con datos reales</div></div>
+      <div class="stat"><div class="n">74</div><div class="l">pantallas con datos reales</div></div>
       <div class="stat"><div class="n">4</div><div class="l">dominios: público · auth · dueño · admin</div></div>
       <div class="stat green"><div class="n">100%</div><div class="l">funcional — nada simulado, ni una pantalla falsa</div></div>
       <div class="stat blue"><div class="n">2</div><div class="l">temas: claro y oscuro</div></div>
@@ -302,6 +302,7 @@
       <li><b>Expo SDK 56 · React Native 0.85 · TypeScript estricto</b> sobre el API REST del CRM.</li>
       <li><b>Local-first:</b> los datos viven primero en el teléfono (SQLite) y <b>se sincronizan cuando hay conexión</b> — la atención a domicilio nunca depende de la red.</li>
       <li>Una app instalada en el teléfono del usuario: <b>el canal más efectivo</b> para una comunidad que no usa computadoras.</li>
+      <li><b>Notificaciones y alarmas de medicación</b> que suenan sin conexión: recordatorios de citas, vacunas y pagos, centro de avisos y tomas reajustables.</li>
     </ul>
   </div>
   <div class="foot"><span class="brand">Pawcare <b>Mobile</b></span><span class="num">8 / 16</span><span class="who">Presenta: Miguel</span></div>
@@ -351,7 +352,7 @@
       </div>
     </div>
     <div class="card" style="margin-top:2.4vmin">
-      <p style="font-size:1.95vmin"><b style="color:var(--primary)">La decisión más importante del proyecto:</b> sin señal, la app sigue funcionando con su base local; al recuperar conexión, sincroniza. Hoja de ruta en 4 fases — <b>F1 entregada</b> (base local con migraciones verificadas), F2–F4 (cola de escrituras y sincronización automática) planificadas como continuidad.</p>
+      <p style="font-size:1.95vmin"><b style="color:var(--primary)">La decisión más importante del proyecto:</b> sin señal, la app sigue funcionando con su base local; al recuperar conexión, sincroniza. Hoja de ruta en 4 fases — <b>F1 entregada</b> (base local con 4 migraciones verificadas) y ya productiva: las alarmas de medicación y el centro de notificaciones operan 100 % sobre la base local. F2–F4 (sincronización automática) planificadas como continuidad.</p>
     </div>
   </div>
   <div class="foot"><span class="brand">Pawcare <b>Mobile</b></span><span class="num">10 / 16</span><span class="who">Presenta: Miguel</span></div>
@@ -383,17 +384,18 @@
 <!-- ============ 12 · MÓDULOS ============ -->
 <section class="slide">
   <div class="kicker">Fase II · Alcance funcional</div>
-  <h2>Módulos y dominios: 70 pantallas</h2>
+  <h2>Módulos y dominios: 74 pantallas</h2>
   <div class="content"><div class="grid4">
     <div class="card"><h3>🌐 Público <span style="margin-left:auto;color:var(--text)">14</span></h3><ul>
       <li>Productos y servicios</li><li>Adopciones</li><li>Apadrinamientos</li><li>Checkout y contacto</li></ul></div>
     <div class="card"><h3>🔐 Autenticación <span style="margin-left:auto;color:var(--text)">6</span></h3><ul>
       <li>Inicio de sesión y registro</li><li>Recuperar contraseña</li><li>Selector de servidor</li></ul></div>
-    <div class="card"><h3>🏡 Dueño <span style="margin-left:auto;color:var(--text)">24</span></h3><ul>
-      <li>Mascotas y citas (asistente)</li><li>Historia clínica completa</li><li>Vacunas y desparasitación</li><li>Pagos y apadrinamientos</li></ul></div>
+    <div class="card"><h3>🏡 Dueño <span style="margin-left:auto;color:var(--text)">26</span></h3><ul>
+      <li>Mascotas y citas (asistente)</li><li>Historia clínica completa</li><li>Tratamientos con alarmas 💊</li><li>Pagos y apadrinamientos</li></ul></div>
     <div class="card"><h3>🩺 Administrador <span style="margin-left:auto;color:var(--text)">26</span></h3><ul>
       <li>Panel con métricas</li><li>Citas, consultas, vacunación</li><li>Pagos y adopciones</li><li>Informes, recetas, exámenes</li></ul></div>
-  </div></div>
+  </div>
+  <p style="font-size:1.5vmin;color:var(--muted);margin-top:1.6vmin">+ 2 pantallas comunes: centro de notificaciones (campana con badge) y preferencias por categoría.</p></div>
   <div class="foot"><span class="brand">Pawcare <b>Mobile</b></span><span class="num">12 / 16</span><span class="who">Presenta: Alejandra</span></div>
 </section>
 
@@ -408,15 +410,15 @@
         <tr><td>1 · 25 may – 7 jun</td><td>Diseño: requisitos, ADR local-first, demo UI</td><td>21</td></tr>
         <tr><td>2 · 8 – 21 jun</td><td>Todos los dominios sobre el API real (TDD)</td><td>34</td></tr>
         <tr><td>3 · 22 jun – 5 jul</td><td>F1 local-first (SQLite) + selector de servidor</td><td>26</td></tr>
-        <tr><td>4 · 6 – 19 jul</td><td>Virtualización de listas + entregables finales</td><td>15*</td></tr>
+        <tr><td>4 · 6 – 19 jul</td><td>Notificaciones + alarmas de medicación + virtualización</td><td>27</td></tr>
       </table>
-      <p class="muted" style="font-size:1.5vmin;margin-top:1.2vmin">* al corte del segundo informe parcial · 96 de 108 puntos comprometidos (89 %) · desviación de estimación &lt; 12 %</p>
+      <p class="muted" style="font-size:1.5vmin;margin-top:1.2vmin">108 de 108 puntos comprometidos (100 %) · desviación de estimación &lt; 12 %</p>
     </div>
     <div class="bars">
       <div class="bar"><span class="v">21</span><div class="col" style="height:52%"></div><span class="lbl">Sprint 1</span></div>
       <div class="bar"><span class="v">34</span><div class="col" style="height:85%"></div><span class="lbl">Sprint 2</span></div>
       <div class="bar"><span class="v">26</span><div class="col" style="height:65%"></div><span class="lbl">Sprint 3</span></div>
-      <div class="bar dim"><span class="v">15</span><div class="col" style="height:37%"></div><span class="lbl">Sprint 4<br>(en curso)</span></div>
+      <div class="bar"><span class="v">27</span><div class="col" style="height:67%"></div><span class="lbl">Sprint 4</span></div>
     </div>
   </div></div>
   <div class="foot"><span class="brand">Pawcare <b>Mobile</b></span><span class="num">13 / 16</span><span class="who">Presenta: Miguel</span></div>
@@ -428,15 +430,15 @@
   <h2>Resultados cuantitativos</h2>
   <div class="content">
     <div class="grid4" style="margin-bottom:2vmin">
-      <div class="stat"><div class="n">70</div><div class="l">pantallas funcionales en 4 dominios</div></div>
+      <div class="stat"><div class="n">74</div><div class="l">pantallas funcionales con datos reales</div></div>
       <div class="stat"><div class="n">10</div><div class="l">servicios de dominio contra el API real</div></div>
       <div class="stat blue"><div class="n">156<span style="font-size:2.4vmin;color:var(--muted)">/157</span></div><div class="l">endpoints trazados (99,4 %)</div></div>
       <div class="stat"><div class="n">43</div><div class="l">requisitos: 26 RF + 17 RNF</div></div>
     </div>
     <div class="grid4">
-      <div class="stat green"><div class="n">49</div><div class="l">pruebas de integración contra el backend real — 0 simuladas</div></div>
+      <div class="stat green"><div class="n">104</div><div class="l">pruebas de integración contra el backend real — 0 simuladas</div></div>
       <div class="stat green"><div class="n">0</div><div class="l">hallazgos de análisis estático y react-doctor al cierre</div></div>
-      <div class="stat amber"><div class="n">96</div><div class="l">puntos de historia completados en 4 sprints</div></div>
+      <div class="stat amber"><div class="n">108</div><div class="l">puntos de historia completados en 4 sprints (100 %)</div></div>
       <div class="stat"><div class="n">🐙</div><div class="l">código público:<br>github.com/TheDigitalLab-dev</div></div>
     </div>
   </div>
@@ -478,6 +480,7 @@
     <div class="grid2">
       <div class="card"><h3>🔭 Recomendaciones</h3><ul>
         <li>Completar F2–F4: sincronización automática al recuperar conexión.</li>
+        <li>Push remotas con la app cerrada: plan 033 ya escrito en el backend.</li>
         <li>CI remota, pruebas E2E y distribución del APK con capacitación.</li></ul></div>
       <div class="card"><h3>🤖 Fuera de alcance, sobre la mesa</h3><ul>
         <li>Spike pawcare-harness: asistente conversacional con IA operando el consultorio con la identidad del usuario — candidato a evolución post-PST.</li></ul></div>

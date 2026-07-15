@@ -8,7 +8,7 @@ A la Dra. Génesis Conesa y al equipo del consultorio veterinario Pawcare, por a
 
 # RESUMEN
 
-La presente investigación tiene como objetivo el desarrollo de **Pawcare, aplicación móvil para atención veterinaria a domicilio**, segunda etapa del Proyecto Sociotecnológico iniciado con la plataforma CRM del consultorio veterinario Pawcare (urbanización La Mora I, La Victoria, estado Aragua). El diagnóstico participativo realizado con la Dra. Génesis Conesa y su equipo evidenció que, si bien la plataforma web resolvió la gestión interna del consultorio, dos realidades limitaban su alcance: la **atención a domicilio se realiza en campo, con conectividad intermitente**, y **una parte importante de los usuarios no utiliza computadoras — su único dispositivo de acceso digital es el teléfono**. Como respuesta se construyó una aplicación móvil Android (Expo SDK 56, React Native, TypeScript estricto) cuyo eje arquitectónico es el enfoque **local-first**: los datos residen primero en el dispositivo (base SQLite local) y se **sincronizan con el servidor cuando existe conexión**, garantizando que la atención clínica en campo nunca dependa de la red. La aplicación consume el API REST del CRM (157 rutas) mediante 10 servicios de dominio y expone 70 pantallas en los dominios público, dueño y administrador. El proceso se gestionó con Scrum en sprints de dos semanas, con desarrollo guiado por pruebas (TDD) y una regla estricta de trabajo sin datos simulados: 15 suites con 49 pruebas de integración se ejecutan contra el backend real. Los resultados demuestran el cumplimiento de los objetivos planificados con una velocity estable de 27 puntos por sprint, y el impacto se valida con la comunidad mediante el Formato de Evaluación de PST provisto por la universidad, aplicado a los usuarios finales.
+La presente investigación tiene como objetivo el desarrollo de **Pawcare, aplicación móvil para atención veterinaria a domicilio**, segunda etapa del Proyecto Sociotecnológico iniciado con la plataforma CRM del consultorio veterinario Pawcare (urbanización La Mora I, La Victoria, estado Aragua). El diagnóstico participativo realizado con la Dra. Génesis Conesa y su equipo evidenció que, si bien la plataforma web resolvió la gestión interna del consultorio, dos realidades limitaban su alcance: la **atención a domicilio se realiza en campo, con conectividad intermitente**, y **una parte importante de los usuarios no utiliza computadoras — su único dispositivo de acceso digital es el teléfono**. Como respuesta se construyó una aplicación móvil Android (Expo SDK 56, React Native, TypeScript estricto) cuyo eje arquitectónico es el enfoque **local-first**: los datos residen primero en el dispositivo (base SQLite local) y se **sincronizan con el servidor cuando existe conexión**, garantizando que la atención clínica en campo nunca dependa de la red — incluidas las alarmas de medicación y el sistema de notificaciones, que operan sin conexión. La aplicación consume el API REST del CRM (157 rutas) mediante 10 servicios de dominio y expone 74 pantallas en los dominios público, dueño y administrador. El proceso se gestionó con Scrum en sprints de dos semanas, con desarrollo guiado por pruebas (TDD) y una regla estricta de trabajo sin datos simulados: 24 suites con 104 pruebas de integración se ejecutan contra el backend real. Los resultados demuestran el cumplimiento de los objetivos planificados con una velocity estable de 27 puntos por sprint, y el impacto se valida con la comunidad mediante el Formato de Evaluación de PST provisto por la universidad, aplicado a los usuarios finales.
 
 **Palabras clave:** aplicación móvil, local-first, sincronización, atención veterinaria a domicilio, React Native, Scrum, desarrollo guiado por pruebas, Investigación Acción Participativa.
 
@@ -138,18 +138,19 @@ A diferencia de la primera etapa (gestionada con metodología en cascada y table
 | Sprint 1 | 25 may – 7 jun 2026 | Concepción y paquete de diseño: requisitos (26 RF, 17 RNF), ADR 0001 local-first, diagramas, demo de interfaz. |
 | Sprint 2 | 8 – 21 jun 2026 | Todos los dominios funcionales sobre el API real con TDD; regla "nada simulado". |
 | Sprint 3 | 22 jun – 5 jul 2026 | Fase F1 local-first (SQLite con migraciones), selector de servidor autoalojado, calidad react-doctor; PR #1. |
-| Sprint 4 | 6 – 19 jul 2026 | Virtualización de listas, cero hallazgos de diagnóstico, entregables académicos; PR #2. |
+| Sprint 4 | 6 – 19 jul 2026 | Virtualización de listas (PR #2), sistema completo de notificaciones y alarmas de medicación local-first (PR #3), entregables académicos. |
 
 ## Módulos desarrollados
 
-La aplicación expone **70 pantallas** organizadas en cuatro dominios, todas consumiendo datos reales del API:
+La aplicación expone **74 pantallas** organizadas en cuatro dominios (más dos comunes), todas consumiendo datos reales del API:
 
 | Dominio | Pantallas | Contenido |
 |---|---|---|
 | Público | 14 | Catálogo de productos y servicios, adopciones, apadrinamientos, checkout, contacto, términos y privacidad. |
 | Autenticación | 6 | Inicio de sesión, registro, recuperación y cambio de contraseña, selector de servidor. |
-| Dueño | 24 | Panel, mascotas, citas con asistente de agendamiento, historia clínica completa (consultas, vacunas, desparasitaciones, exámenes, informes), pagos, apadrinamientos, perfil. |
+| Dueño | 26 | Panel, mascotas, citas con asistente de agendamiento, historia clínica completa (consultas, vacunas, desparasitaciones, exámenes, informes), pagos, apadrinamientos, perfil, y tratamientos de medicación con alarmas. |
 | Administrador | 26 | Panel con métricas, gestión de citas, consultas, vacunación, pagos, adopciones, informes médicos, recetas y exámenes de laboratorio. |
+| Comunes | 2 | Centro de notificaciones (campana con badge) y preferencias de notificaciones por categoría. |
 
 ## Plan de acción
 
@@ -170,22 +171,23 @@ La aplicación expone **70 pantallas** organizadas en cuatro dominios, todas con
 
 **Fase de diseño.** Se produjo el paquete completo de diseño: ADR 0001 — Arquitectura de datos móvil (offline-first híbrido), que establece el principio rector del proyecto — **los datos viven primero en el dispositivo y se sincronizan cuando hay conexión** —; el mapa de navegación por dominios; y el sistema visual con tokens de diseño y temas claro y oscuro, validado con demo navegable.
 
-**Fase de implementación.** Los cuatro dominios se construyeron con desarrollo guiado por pruebas (rojo → verde → refactorización) sobre 10 servicios de dominio contra el API real, bajo la regla estricta de **cero datos simulados**: toda pantalla visible consume el backend desde el primer día. La fase F1 del enfoque local-first quedó implementada: base de datos SQLite en el dispositivo con migraciones verificadas por pruebas, fundamento de la operación sin conexión.
+**Fase de implementación.** Los cuatro dominios se construyeron con desarrollo guiado por pruebas (rojo → verde → refactorización) sobre 10 servicios de dominio contra el API real, bajo la regla estricta de **cero datos simulados**: toda pantalla visible consume el backend desde el primer día. La fase F1 del enfoque local-first quedó implementada: base de datos SQLite en el dispositivo con cuatro migraciones verificadas por pruebas. Sobre esa base se construyó el **sistema completo de notificaciones**: alarmas de medicación con horarios anclados al «tratamiento iniciado» y tomas reajustables, centro de notificaciones in-app, recordatorios locales (citas, vacunas, desparasitación, pagos, agenda clínica), detección de cambios por sincronización y preferencias por categoría — todo operando sin conexión.
 
-**Fase de pruebas.** La verificación es una propiedad del proceso, no una etapa final: 15 suites con 49 casos de integración se ejecutan contra el backend real en cada compuerta de calidad; el hook pre-push bloquea la publicación de código defectuoso; el diagnóstico react-doctor cerró en cero hallazgos; y cada incremento se validó funcionalmente en emulador Android y con los informantes clave.
+**Fase de pruebas.** La verificación es una propiedad del proceso, no una etapa final: 24 suites con 104 casos de integración se ejecutan contra el backend real en cada compuerta de calidad; el hook pre-push bloquea la publicación de código defectuoso; el diagnóstico react-doctor cerró en cero hallazgos; y cada incremento se validó funcionalmente en emulador Android y con los informantes clave.
 
 ## Resultados cuantitativos del proyecto
 
 | Indicador | Resultado |
 |---|---|
-| Pantallas funcionales con datos reales | 70 (en 4 dominios) |
+| Pantallas funcionales con datos reales | 74 (4 dominios + 2 comunes) |
 | Servicios de dominio contra el API | 10 |
 | Endpoints cubiertos por la trazabilidad | 156 de 157 (99,4 %) |
 | Requisitos documentados | 26 funcionales + 17 no funcionales |
-| Suites / casos de prueba de integración real | 15 / 49 — sin respuestas de API simuladas |
+| Suites / casos de prueba de integración real | 24 / 104 — sin respuestas de API simuladas |
+| Sistema de notificaciones y alarmas locales | Completo: centro in-app, 6 familias de recordatorios, alarmas de medicación y preferencias — operan sin conexión |
 | Hallazgos de análisis estático y react-doctor al cierre | 0 |
-| Sprints ejecutados / velocity | 4 sprints; 96 puntos completados; promedio 27 por sprint cerrado |
-| Pull requests integrados con revisión | 2 (#1 y #2) |
+| Sprints ejecutados / velocity | 4 sprints; 108 puntos completados de 108 comprometidos; promedio 27 |
+| Pull requests integrados con revisión | 3 (#1, #2 y #3) |
 | Repositorio público | github.com/TheDigitalLab-dev/pawcare-mobile |
 
 ## Análisis de cumplimiento de objetivos
@@ -196,11 +198,11 @@ El rendimiento del equipo se evalúa contrastando lo planificado con lo entregad
 |---|---|---|
 | 1. Diagnóstico participativo de la brecha móvil | Matriz de priorización; requisitos móviles derivados de entrevistas y observación en campo. | Cumplido |
 | 2. Diseño de la arquitectura local-first y del sistema visual | ADR 0001; plan de sincronización diferida; tokens de diseño con tema claro/oscuro; demo validada. | Cumplido |
-| 3. Desarrollo de los dominios sobre el API real con TDD y sin simulaciones | 70 pantallas en 4 dominios; 10 servicios; commits TDD auditables en el repositorio. | Cumplido |
+| 3. Desarrollo de los dominios sobre el API real con TDD y sin simulaciones | 74 pantallas; 10 servicios de dominio; commits TDD auditables en el repositorio. | Cumplido |
 | 4. Implementación de la fase inicial local-first (SQLite + migraciones) | Suite de migraciones en verde; base local operativa (F1 del ADR 0001). | Cumplido (F1); F2–F4 planificadas como continuidad |
-| 5. Verificación de calidad con pruebas reales y compuertas automatizadas | 15 suites / 49 pruebas contra el backend; hook pre-push; react-doctor en cero. | Cumplido |
+| 5. Verificación de calidad con pruebas reales y compuertas automatizadas | 24 suites / 104 pruebas contra el backend; hook pre-push; react-doctor en cero. | Cumplido |
 
-En cuanto al **rendimiento del equipo contra la planificación**: de 108 puntos comprometidos en los cuatro sprints se completaron 96 (89 %), con velocity estable (21, 34, 26 y 15 puntos al corte del sprint 4) y una desviación de estimación inferior al 12 %. La única reprogramación relevante — posponer la fase F2 de sincronización para priorizar la calidad del producto — se registró como decisión explícita de alcance en la retrospectiva del sprint 3, no como desviación no controlada. El detalle sprint a sprint consta en los informes parciales 1 y 2.
+En cuanto al **rendimiento del equipo contra la planificación**: de 108 puntos comprometidos en los cuatro sprints se completaron 108 (100 %), con velocity estable (21, 34, 26 y 27) y una desviación de estimación inferior al 12 %. El sprint 4 cerró su compromiso completo con la entrega del sistema de notificaciones y las alarmas de medicación (PR #3). La única reprogramación relevante — posponer la fase F2 de sincronización para priorizar la calidad del producto — se registró como decisión explícita de alcance en la retrospectiva del sprint 3, no como desviación no controlada. El detalle sprint a sprint consta en los informes parciales 1 y 2.
 
 ## Evaluación de resultados e impacto
 
@@ -218,9 +220,9 @@ Dado el grado de finalización alcanzado, el equipo realizó una exploración t�
 
 ## CONCLUSIONES
 
-1. **El enfoque local-first fue la decisión correcta y la más importante del proyecto**: diseñar la aplicación para funcionar primero con datos locales y sincronizar cuando hay conexión responde exactamente a la realidad de la atención a domicilio en sectores con conectividad intermitente; la fase F1 (base local verificada) deja ese fundamento operativo.
+1. **El enfoque local-first fue la decisión correcta y la más importante del proyecto**: diseñar la aplicación para funcionar primero con datos locales y sincronizar cuando hay conexión responde exactamente a la realidad de la atención a domicilio en sectores con conectividad intermitente; la fase F1 (base local verificada) deja ese fundamento operativo, y las **alarmas de medicación que suenan sin conexión** son su prueba tangible: el tratamiento de la mascota no depende de la señal.
 2. **El teléfono es el canal efectivo de acceso comunitario**: ante una población donde buena parte de los usuarios no utiliza computadora, una aplicación específica instalada en sus teléfonos demostró ser la vía más general y efectiva para acercar los servicios del consultorio, en lugar de esperar que la comunidad se adapte a un portal de escritorio.
-3. La combinación de **TDD, pruebas de integración reales y compuertas automatizadas** convirtió la calidad en una propiedad del proceso: 49 pruebas contra el backend real y cero hallazgos de diagnóstico al cierre, verificables por cualquier evaluador en el repositorio público.
+3. La combinación de **TDD, pruebas de integración reales y compuertas automatizadas** convirtió la calidad en una propiedad del proceso: 104 pruebas contra el backend real y cero hallazgos de diagnóstico al cierre, verificables por cualquier evaluador en el repositorio público.
 4. **Scrum con sprints de dos semanas** dio al proyecto previsibilidad medible (velocity promedio de 27 puntos, desviación de estimación < 12 %) y un mecanismo de mejora continua cuyos acuerdos — commits convencionales, pull requests, hook pre-push — quedaron implantados y auditables.
 5. La Investigación Acción Participativa mantuvo el producto alineado con las necesidades reales: cada dominio se validó con los informantes clave, y el Formato de Evaluación de la Comunidad cierra el ciclo devolviendo a los usuarios la comprobación de sus requerimientos.
 
@@ -231,7 +233,8 @@ Dado el grado de finalización alcanzado, el equipo realizó una exploración t�
 3. Añadir pruebas E2E automatizadas de los flujos críticos (inicio de sesión, agendamiento, registro de pago) y medición de cobertura de código con umbral progresivo.
 4. Publicar la aplicación en una tienda de distribución (o mediante APK firmado de distribución directa) y acompañar el despliegue con una jornada de capacitación a los usuarios del consultorio.
 5. Aplicar periódicamente el Formato de Evaluación de PST de la Comunidad para realimentar el backlog con la experiencia real de uso.
-6. Evaluar, como evolución posterior al PST, la integración del asistente conversacional explorado en pawcare-harness.
+6. Implementar las **push remotas** (avisos con la app cerrada) conforme al plan 033 documentado en el backend: registro de dispositivos y emisor Expo Push junto a los mailers existentes.
+7. Evaluar, como evolución posterior al PST, la integración del asistente conversacional explorado en pawcare-harness.
 
 ## BIBLIOGRAFÍA
 
