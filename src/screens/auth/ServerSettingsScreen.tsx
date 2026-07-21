@@ -90,6 +90,12 @@ export function ServerSettingsScreen() {
         autoCorrect={false}
         textContentType="URL"
       />
+      {/^http:\/\//i.test(trimmed) ? (
+        <InfoBanner
+          tone="warning"
+          message="Conexión sin cifrado (http): tus credenciales viajarán en claro. Úsala solo con un servidor en tu propia red local de confianza."
+        />
+      ) : null}
 
       <View style={{ flexDirection: 'row', gap: 12 }}>
         <Button

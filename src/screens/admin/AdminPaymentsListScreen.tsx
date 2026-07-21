@@ -8,6 +8,8 @@ import { AsyncBoundary, FilterChips, type BadgeVariant } from '@/components/ui';
 import { PaymentCard } from '@/components/domain';
 import type { AdminMoreStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
+import { useChangeAlerts } from '@/hooks/useChangeAlerts';
+import { adminPaymentAlerts } from '@/services/changeAlertConfigs';
 import { listAdminPayments } from '@/services/admin';
 import { formatDate, formatMoney } from '@/utils/format';
 import { PAYMENT_STATUS_LABEL, type Payment, type PaymentStatus } from '@/types/models';
@@ -34,6 +36,9 @@ export function AdminPaymentsListScreen() {
   const navigation = useNavigation<Nav>();
   const [filter, setFilter] = useState('all');
   const { data, loading, error, reload } = useAsync(() => listAdminPayments());
+
+  // A4 del plan: pagos nuevos por verificar al centro de notificaciones.
+  useChangeAlerts(data, adminPaymentAlerts);
 
   useFocusEffect(
     useCallback(() => {

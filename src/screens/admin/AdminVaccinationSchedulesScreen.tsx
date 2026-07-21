@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -6,6 +6,8 @@ import { AppHeader, MobileShell } from '@/components/layout';
 import { AsyncBoundary, Badge, type BadgeVariant } from '@/components/ui';
 import { ListRow } from '@/components/domain';
 import { useAsync } from '@/hooks/useAsync';
+import { syncReminders } from '@/services/reminderAlarms';
+import { vaccinationScheduleReminders } from '@/utils/reminders';
 import { listVaccinationSchedules, type VaccinationSchedule } from '@/services/admin';
 import { formatDate } from '@/utils/format';
 
@@ -20,6 +22,15 @@ export function AdminVaccinationSchedulesScreen() {
   const navigation = useNavigation();
   const back = navigation.canGoBack() ? navigation.goBack : undefined;
   const { data, loading, error, reload } = useAsync(() => listVaccinationSchedules());
+
+  // A10 del plan: aviso el día previo a cada vacunación programada.
+  useEffect(() => {
+    if (!data) return;
+    void syncReminders(
+      'vsched-',
+      vaccinationScheduleReminders(data, new Date().toISOString()),
+    );
+  }, [data]);
   const items = data ?? [];
 
   const renderItem = useCallback(

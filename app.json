@@ -14,8 +14,35 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "versionCode": 1,
+      "permissions": ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED"],
+      "usesCleartextTraffic": true
     },
-    "plugins": ["expo-secure-store", "expo-font", "expo-sqlite", "expo-image"]
+    "plugins": [
+      "expo-secure-store",
+      "expo-font",
+      "expo-sqlite",
+      "expo-image",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-monochrome.png",
+          "color": "#0e7268",
+          "defaultChannel": "medication-alarms"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "backgroundColor": "#E6F4FE",
+          "dark": {
+            "backgroundColor": "#020817"
+          }
+        }
+      ]
+    ]
   }
 }

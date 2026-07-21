@@ -1,0 +1,76 @@
+/**
+ * Programa los recordatorios locales calculados por `utils/reminders` (puros y
+ * probados con TDD). Capa fina sobre expo-notifications: el `identifier`
+ * estable de cada aviso hace la operación idempotente — reprogramar reemplaza,
+ * nunca duplica. Los avisos suenan sin conexión (local-first).
+ */
+import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
+
+import type { ReminderSpec } from '@/utils/reminders';
+
+import { ensureAlarmPermissions } from './alarms';
+import { categoryEnabled } from './notificationPrefs';
+
+export const REMINDERS_CHANNEL_ID = 'reminders';
+
+let channelReady = false;
+
+async function ensureChannel(): Promise<void> {
+  if (channelReady || Platform.OS !== 'android') {
+    channelReady = true;
+    return;
+  }
+  await Notifications.setNotificationChannelAsync(REMINDERS_CHANNEL_ID, {
+    name: 'Recordatorios de citas y vacunas',
+    importance: Notifications.AndroidImportance.HIGH,
+    sound: 'default',
+  });
+  channelReady = true;
+}
+
+/**
+ * Sincroniza la FAMILIA de avisos del prefijo dado: cancela los programados de
+ * esa familia que ya no aplican (p. ej. un pago que se saldó) y programa o
+ * reemplaza los vigentes, respetando el opt-out por categoría. Sin permiso de
+ * notificaciones, solo cancela.
+ */
+export async function syncReminders(
+  prefix: string,
+  specs: ReminderSpec[],
+): Promise<void> {
+  const enabled = specs.filter((s) => categoryEnabled(s.category));
+  const wanted = new Set(enabled.map((s) => s.identifier));
+
+  try {
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    const stale: Promise<void>[] = [];
+    for (const n of scheduled) {
+      if (n.identifier.startsWith(prefix) && !wanted.has(n.identifier)) {
+        stale.push(Notifications.cancelScheduledNotificationAsync(n.identifier));
+      }
+    }
+    await Promise.allSettled(stale);
+  } catch {
+    // Sin acceso a las programadas: se sigue con la reprogramación.
+  }
+
+  if (enabled.length === 0) return;
+  const granted = await ensureAlarmPermissions();
+  if (!granted) return;
+  await ensureChannel();
+
+  await Promise.allSettled(
+    enabled.map((spec) =>
+      Notifications.scheduleNotificationAsync({
+        identifier: spec.identifier,
+        content: { title: spec.title, body: spec.body, sound: 'default' },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: new Date(spec.triggerAt),
+          channelId: REMINDERS_CHANNEL_ID,
+        },
+      }),
+    ),
+  );
+}

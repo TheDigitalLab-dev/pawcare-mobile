@@ -4,6 +4,7 @@
  */
 import { DatabaseSync } from 'node:sqlite';
 
+import { purgeAllTables } from '@/db/database';
 import { applyMigrations } from '@/db/migrations';
 import type { SqlExecutor } from '@/db/sqlExecutor';
 
@@ -26,10 +27,10 @@ function freshDb(): { db: DatabaseSync; exec: SqlExecutor } {
 }
 
 describe('applyMigrations', () => {
-  it('aplica la migración inicial y es idempotente', () => {
+  it('aplica las migraciones en orden y es idempotente', () => {
     const { db, exec } = freshDb();
 
-    expect(applyMigrations(exec)).toEqual([1]);
+    expect(applyMigrations(exec)).toEqual([1, 2, 3, 4]);
     // Segunda pasada: no reaplica nada.
     expect(applyMigrations(exec)).toEqual([]);
 
@@ -39,7 +40,16 @@ describe('applyMigrations', () => {
       }>("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
       .map((r) => r.name);
     expect(tables).toEqual(
-      expect.arrayContaining(['schema_migrations', 'sync_outbox', 'weighings']),
+      expect.arrayContaining([
+        'schema_migrations',
+        'sync_outbox',
+        'weighings',
+        'treatments',
+        'treatment_doses',
+        'notifications',
+        'entity_snapshots',
+        'notification_prefs',
+      ]),
     );
 
     db.close();
@@ -62,6 +72,25 @@ describe('applyMigrations', () => {
     expect(row?.weight_kg).toBe(12.5);
     expect(row?.sync_status).toBe('pending');
 
+    db.close();
+  });
+
+  it('purgeAllTables vacía los datos del usuario al cerrar sesión', () => {
+    const { db, exec } = freshDb();
+    applyMigrations(exec);
+    exec.run(
+      `INSERT INTO weighings (id, pet_id, weight_kg, measured_at, sync_status, updated_at)
+       VALUES ('w1', 1, 10, '2026-07-15T10:00:00Z', 'pending', '2026-07-15T10:00:00Z')`,
+    );
+    exec.run(
+      `INSERT INTO notifications (id, type, title, created_at)
+       VALUES ('n1', 'citas', 'Cita confirmada', '2026-07-15T10:00:00Z')`,
+    );
+
+    purgeAllTables(exec);
+
+    expect(exec.all('SELECT * FROM weighings')).toEqual([]);
+    expect(exec.all('SELECT * FROM notifications')).toEqual([]);
     db.close();
   });
 

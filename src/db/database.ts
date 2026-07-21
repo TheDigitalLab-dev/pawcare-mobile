@@ -44,3 +44,30 @@ export function getExecutor(): SqlExecutor {
   if (!executor) throw new Error('initDatabase() no ha sido llamado todavía.');
   return executor;
 }
+
+/** Tablas de datos del usuario (todas menos el registro de migraciones). */
+const USER_DATA_TABLES = [
+  'weighings',
+  'sync_outbox',
+  'treatments',
+  'treatment_doses',
+  'notifications',
+  'entity_snapshots',
+  'notification_prefs',
+] as const;
+
+/** Vacía las tablas de datos del usuario (lógica pura, testeable). */
+export function purgeAllTables(exec: SqlExecutor): void {
+  for (const table of USER_DATA_TABLES) {
+    exec.run(`DELETE FROM ${table}`);
+  }
+}
+
+/**
+ * Purga los datos locales al cerrar sesión: en un teléfono compartido, el
+ * siguiente usuario no debe heredar datos clínicos ni avisos del anterior.
+ */
+export function purgeLocalData(): void {
+  if (!executor) return; // la base nunca se abrió: no hay nada que purgar
+  purgeAllTables(executor);
+}

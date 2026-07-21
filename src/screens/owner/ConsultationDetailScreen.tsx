@@ -60,12 +60,29 @@ function Body({ consultation, petId }: { consultation: Consultation; petId: numb
                 </Text>
               ) : null}
               {p.items.map((it) => (
-                <Text key={it.id} style={{ fontSize: 14, color: colors.foreground }}>
-                  • {it.medication_name}
-                  {it.dose ? ` — ${it.dose}` : ''}
-                  {it.frequency ? `, ${it.frequency}` : ''}
-                  {it.duration ? `, ${it.duration}` : ''}
-                </Text>
+                <View key={it.id} style={{ gap: 6 }}>
+                  <Text style={{ fontSize: 14, color: colors.foreground }}>
+                    • {it.medication_name}
+                    {it.dose ? ` — ${it.dose}` : ''}
+                    {it.frequency ? `, ${it.frequency}` : ''}
+                    {it.duration ? `, ${it.duration}` : ''}
+                  </Text>
+                  <Button
+                    label="Tratamiento iniciado 💊"
+                    variant="outline"
+                    size="sm"
+                    onPress={() =>
+                      navigation.navigate('TreatmentStart', {
+                        petId,
+                        prescriptionItemId: it.id,
+                        medicationName: it.medication_name,
+                        dose: it.dose ?? undefined,
+                        frequency: it.frequency ?? undefined,
+                        duration: it.duration ?? undefined,
+                      })
+                    }
+                  />
+                </View>
               ))}
             </Card>
           ))}

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -8,6 +8,8 @@ import { AsyncBoundary, Badge } from '@/components/ui';
 import { ListRow } from '@/components/domain';
 import type { OwnerHomeStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
+import { syncReminders } from '@/services/reminderAlarms';
+import { sponsorshipReminders } from '@/utils/reminders';
 import { listSponsorships } from '@/services/sponsorships';
 import { formatMoney } from '@/utils/format';
 import type { Sponsorship } from '@/types/models';
@@ -18,6 +20,12 @@ export function OwnerSponsorshipsScreen() {
   const navigation = useNavigation<Nav>();
   const back = navigation.canGoBack() ? navigation.goBack : undefined;
   const { data, loading, error, reload } = useAsync(() => listSponsorships());
+
+  // O10 del plan: aviso 5 días antes del vencimiento del apadrinamiento.
+  useEffect(() => {
+    if (!data) return;
+    void syncReminders('sponsor-', sponsorshipReminders(data, new Date().toISOString()));
+  }, [data]);
   const items = data ?? [];
 
   const renderItem = useCallback(

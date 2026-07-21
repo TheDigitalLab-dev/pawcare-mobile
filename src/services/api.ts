@@ -74,6 +74,38 @@ function messageFor(kind: ApiErrorKind, fallback?: string): string {
   }
 }
 
+// El backend responde en inglés (config/locales/en.yml): se traducen los
+// mensajes de validación comunes de ActiveRecord antes de mostrarlos.
+const RAILS_MESSAGE_TRANSLATIONS: [RegExp, string][] = [
+  [/can't be blank/i, 'no puede estar vacío'],
+  [/has already been taken/i, 'ya está en uso'],
+  [/is invalid/i, 'no es válido'],
+  [
+    /is too short \(minimum is (\d+) characters?\)/i,
+    'es demasiado corto (mínimo $1 caracteres)',
+  ],
+  [
+    /is too long \(maximum is (\d+) characters?\)/i,
+    'es demasiado largo (máximo $1 caracteres)',
+  ],
+  [/doesn't match confirmation/i, 'no coincide con la confirmación'],
+  [/doesn't match/i, 'no coincide'],
+  [/is not a number/i, 'debe ser un número'],
+  [/must be greater than (\S+)/i, 'debe ser mayor que $1'],
+  [/must be less than (\S+)/i, 'debe ser menor que $1'],
+  [/is not included in the list/i, 'no es una opción válida'],
+  [/^Invalid credentials$/i, 'Credenciales inválidas.'],
+  [/^Unauthorized$/i, 'No autorizado.'],
+];
+
+function translateRailsMessage(text: string): string {
+  let out = text;
+  for (const [pattern, replacement] of RAILS_MESSAGE_TRANSLATIONS) {
+    out = out.replace(pattern, replacement);
+  }
+  return out;
+}
+
 /** Extrae fieldErrors y mensaje de un body de error de Rails (formato flexible). */
 function parseErrorBody(body: unknown): {
   message?: string;
@@ -85,13 +117,15 @@ function parseErrorBody(body: unknown): {
   if (obj.errors && typeof obj.errors === 'object' && !Array.isArray(obj.errors)) {
     const fieldErrors: FieldErrors = {};
     for (const [k, v] of Object.entries(obj.errors as Record<string, unknown>)) {
-      fieldErrors[k] = Array.isArray(v) ? v.map(String) : [String(v)];
+      const msgs = Array.isArray(v) ? v.map(String) : [String(v)];
+      fieldErrors[k] = msgs.map(translateRailsMessage);
     }
     return { fieldErrors };
   }
   // { error: "msg" } o { message: "msg" }
-  if (typeof obj.error === 'string') return { message: obj.error };
-  if (typeof obj.message === 'string') return { message: obj.message };
+  if (typeof obj.error === 'string') return { message: translateRailsMessage(obj.error) };
+  if (typeof obj.message === 'string')
+    return { message: translateRailsMessage(obj.message) };
   return {};
 }
 
@@ -209,7 +243,7 @@ export const api = {
   put: <T>(path: string, body?: unknown, options?: RequestOptions) =>
     request<T>('PUT', path, body, options),
   delete: <T>(path: string, options?: RequestOptions) =>
-    request<T>('DELETE', path, undefined, options),
+    request<T>('DELETE', path, options?.body, options),
   /** Subida multipart (F8): pasa un FormData ya construido. */
   upload: <T>(path: string, form: FormData, options?: RequestOptions) =>
     request<T>('POST', path, form, options),

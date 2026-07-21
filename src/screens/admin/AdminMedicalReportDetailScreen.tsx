@@ -66,7 +66,15 @@ export function AdminMedicalReportDetailScreen() {
       header={<AppHeader title="Reporte médico" onBack={back} />}
       contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
-      <AsyncBoundary loading={loading && data === null} error={error} onRetry={reload}>
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={!loading && data === null}
+        emptyIcon="reader"
+        emptyTitle="Reporte no encontrado"
+        emptyDescription="El reporte médico solicitado no existe o fue eliminado."
+      >
         {data ? <Body report={data} /> : null}
       </AsyncBoundary>
     </MobileShell>

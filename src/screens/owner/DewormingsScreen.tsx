@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 
@@ -7,6 +7,8 @@ import { AsyncBoundary } from '@/components/ui';
 import { TimelineItem } from '@/components/domain';
 import type { OwnerPetsStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
+import { syncReminders } from '@/services/reminderAlarms';
+import { dewormingReminders } from '@/utils/reminders';
 import { listDewormings } from '@/services/medical';
 import { formatDate } from '@/utils/format';
 import type { Deworming } from '@/types/models';
@@ -18,6 +20,12 @@ export function DewormingsScreen() {
   const back = navigation.canGoBack() ? navigation.goBack : undefined;
 
   const { data, loading, error, reload } = useAsync(() => listDewormings(petId));
+
+  // O4 del plan: aviso local 3 días antes de la próxima desparasitación.
+  useEffect(() => {
+    if (!data) return;
+    void syncReminders('dew-', dewormingReminders(data, new Date().toISOString()));
+  }, [data]);
   const items = data ?? [];
 
   const renderItem = useCallback(

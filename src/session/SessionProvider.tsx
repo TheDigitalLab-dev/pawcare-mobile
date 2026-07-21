@@ -4,6 +4,8 @@ import type { AuthUser } from '@/types/models';
 import type { OwnerRegistration } from '@/screens/auth/RegisterScreen';
 import * as authService from '@/services/auth';
 import * as secureStore from '@/utils/secureStore';
+import { purgeLocalData } from '@/db/database';
+import { cancelAllLocalAlarms } from '@/services/alarms';
 
 /** Rol efectivo que decide el árbol de navegación (RNF-SEC-002). */
 export type SessionRole = 'public' | 'owner' | 'admin';
@@ -96,6 +98,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         authService.resetPassword(token, password, passwordConfirmation),
       signOut: async () => {
         await authService.logout();
+        // Teléfono compartido: ni los datos clínicos locales ni las alarmas del
+        // usuario saliente deben sobrevivir a su sesión.
+        try {
+          purgeLocalData();
+        } catch {
+          // La base local no estaba abierta: nada que purgar.
+        }
+        await cancelAllLocalAlarms();
         setUser(null);
         setRole('public');
       },

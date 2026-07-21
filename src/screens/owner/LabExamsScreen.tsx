@@ -7,6 +7,8 @@ import { AsyncBoundary, Badge, type BadgeVariant } from '@/components/ui';
 import { ListRow } from '@/components/domain';
 import type { OwnerPetsStackParamList } from '@/navigation/types';
 import { useAsync } from '@/hooks/useAsync';
+import { useChangeAlerts } from '@/hooks/useChangeAlerts';
+import { labExamAlerts } from '@/services/changeAlertConfigs';
 import { listConsultations } from '@/services/medical';
 import type { LabExam } from '@/types/models';
 
@@ -30,6 +32,10 @@ export function LabExamsScreen() {
   const { data, loading, error, reload } = useAsync(() => listConsultations(petId));
   const consultation = (data ?? []).find((c) => c.id === consultationId);
   const exams = consultation?.lab_exams ?? [];
+
+  // V3/O5 del plan: resultados de laboratorio listos → centro de notificaciones.
+  // La identidad de `lab_exams` es estable: viene del estado de useAsync.
+  useChangeAlerts(consultation ? consultation.lab_exams : null, labExamAlerts);
 
   const renderItem = useCallback(
     ({ item: e }: ListRenderItemInfo<LabExam>) => (

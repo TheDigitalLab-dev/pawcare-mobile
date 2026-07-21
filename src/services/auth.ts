@@ -103,11 +103,10 @@ export async function resetPassword(
 export async function logout(): Promise<void> {
   const refresh = await secureStore.getRefreshToken();
   try {
-    // DELETE no lleva cuerpo en el cliente HTTP: el refresh a revocar viaja como
-    // query param (se revoca de inmediato). `skipRefresh` evita bucles si el
-    // access ya expiró.
+    // El refresh a revocar viaja en el CUERPO (los query params quedan en logs
+    // de servidores/proxies). `skipRefresh` evita bucles si el access expiró.
     await api.delete(`${BASE}/logout`, {
-      params: refresh ? { refresh_token: refresh } : undefined,
+      body: refresh ? { refresh_token: refresh } : undefined,
       skipRefresh: true,
     });
   } finally {

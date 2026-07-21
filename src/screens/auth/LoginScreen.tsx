@@ -50,7 +50,6 @@ export function LoginScreen({
           onChangeText={setLogin}
           autoCapitalize="none"
           autoCorrect={false}
-          keyboardType="email-address"
           textContentType="username"
           returnKeyType="next"
         />

@@ -75,7 +75,15 @@ export function AdminMedicalProfileScreen() {
       header={<AppHeader title="Perfil médico" onBack={back} />}
       contentStyle={{ gap: 12, paddingBottom: 32 }}
     >
-      <AsyncBoundary loading={loading && data === null} error={error} onRetry={reload}>
+      <AsyncBoundary
+        loading={loading && data === null}
+        error={error}
+        onRetry={reload}
+        empty={!loading && data === null}
+        emptyIcon="medkit"
+        emptyTitle="Perfil médico no disponible"
+        emptyDescription="Esta mascota aún no tiene perfil médico registrado."
+      >
         <Body profile={data} />
       </AsyncBoundary>
     </MobileShell>
