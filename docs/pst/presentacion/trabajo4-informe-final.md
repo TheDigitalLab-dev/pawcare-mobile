@@ -1,10 +1,20 @@
 # DEDICATORIA
 
-A las familias de La Victoria que cuidan a sus mascotas como a un miembro más del hogar, y a los profesionales de la medicina veterinaria que las atienden — muchas veces a domicilio, con más vocación que herramientas. Este trabajo es para ellos.
+Miguel
+
+A Fedora y Chepino. Nos vemos en el Valhalla.
 
 # AGRADECIMIENTO
 
-A la Dra. Génesis Conesa y al equipo del consultorio veterinario Pawcare, por abrirnos las puertas de su práctica y validar cada incremento del producto con paciencia y franqueza. A nuestra docente guía, la profesora Yuly Delgado, por su acompañamiento durante todo el proyecto. A la Universidad Nacional Experimental de las Telecomunicaciones e Informática (UNETI), por formarnos en la convicción de que la tecnología se hace con y para la comunidad.
+Miguel
+
+A Rafael Hernandez y Augusto Gonzalez por todas las preguntas que respondieron sobre arquitectura para mobile, system design, local first y otro montón de inventos que metí en una aplicación solo porque sí.
+
+A Jose Manuel da Silva; especialmente por el aprendizaje obtenido en economía y emprendimiento. Gracias a ti he logrado conseguir el capital para varios proyectos propios y universitarios también, parte de este trabajo es gracias a estas valiosas habilidades.
+
+A algo expert, Wadie Aziz y la profesora yuly; quienes a pesar de la UNETI hacen esfuerzos sobrehumanos para mantener la calidad de la educación.
+
+A la Uneti, por ser un mal ejemplo, gracias a esto pude canalizar mi ira y mi decepción en un proyecto como este y convertirlo en un bien para todo el ecosistema relacionado con el cuidado animal.
 
 # RESUMEN
 

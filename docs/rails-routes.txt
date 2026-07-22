@@ -1,5 +1,4 @@
                                           Prefix Verb   URI Pattern                                                                                       Controller#Action
-                               letter_opener_web        /letter_opener                                                                                    LetterOpenerWeb::Engine
                               rails_health_check GET    /up(.:format)                                                                                     rails/health#show
                                           health GET    /health(.:format)                                                                                 pages#health
                                             root GET    /                                                                                                 pages#home
@@ -19,7 +18,6 @@
                                            terms GET    /terms(.:format)                                                                                  pages#terms
                                          privacy GET    /privacy(.:format)                                                                                pages#privacy
                                          pawcare GET    /pawcare(.:format)                                                                                pages#pawcare
-                                     user_manual GET    /user_manual(.:format)                                                                            pages#user_manual
                                         adoption GET    /adoption(.:format)                                                                               adoption#index
                                    adoption_pets GET    /adoption/pets(.:format)                                                                          adoption#pets
                                     adoption_pet GET    /adoption/pets/:id(.:format)                                                                      adoption#show
@@ -101,9 +99,6 @@
                             admin_financial_page GET    /admin/financial(.:format)                                                                        admin_pages#financial
                               admin_content_page GET    /admin/content(.:format)                                                                          admin_pages#content
                     admin_products_services_page GET    /admin/products-services(.:format)                                                                admin_pages#products_services
-                          admin_user_manual_page GET    /admin/user-manual(.:format)                                                                      admin_pages#user_manual
-                         admin_user_manual_files GET    /admin/user-manual-files(.:format)                                                                admin_pages#user_manual_files
-                       admin_user_manual_content GET    /admin/user-manual-content(.:format)                                                              admin_pages#user_manual_content
                        admin_email_settings_page GET    /admin/settings/email(.:format)                                                                   admin_pages#email_settings
                         admin_smtp_settings_page GET    /admin/settings/smtp(.:format)                                                                    admin_pages#smtp_settings
                     admin_currency_settings_page GET    /admin/settings/currency(.:format)                                                                admin_pages#currency_settings
@@ -169,7 +164,14 @@ preview_recipients_admin_content_email_campaigns POST   /admin/content/email_cam
                       admin_stock_movements_list GET    /admin/stock-movements-list(.:format)                                                             admin/stock_movements#index
                    admin_service_categories_list GET    /admin/service-categories-list(.:format)                                                          admin/service_categories#index
                      admin_email_settings_config GET    /admin/settings/email-config(.:format)                                                            admin/settings#email
+                     admin_settings_email_config PATCH  /admin/settings/email-config(.:format)                                                            admin/settings#update_email
                       admin_smtp_settings_config GET    /admin/settings/smtp-config(.:format)                                                             admin/settings#smtp
+                      admin_settings_smtp_config PATCH  /admin/settings/smtp-config(.:format)                                                             admin/settings#update_smtp
+                        admin_smtp_settings_test POST   /admin/settings/smtp-config/test(.:format)                                                        admin/settings#test_smtp
+                  admin_currency_settings_config GET    /admin/settings/currency-config(.:format)                                                         admin/settings#currency
+                  admin_settings_currency_config PATCH  /admin/settings/currency-config(.:format)                                                         admin/settings#update_currency
+                   admin_general_settings_config GET    /admin/settings/general-config(.:format)                                                          admin/settings#general
+                   admin_settings_general_config PATCH  /admin/settings/general-config(.:format)                                                          admin/settings#update_general
                                admin_smtp_status GET    /admin/settings/smtp-status(.:format)                                                             admin/settings#smtp_status
                            photo_admin_owner_pet POST   /admin/owners/:owner_id/pets/:id/photo(.:format)                                                  admin/owner_pets#photo
                                                  DELETE /admin/owners/:owner_id/pets/:id/photo(.:format)                                                  admin/owner_pets#delete_photo
@@ -309,6 +311,17 @@ preview_recipients_admin_content_email_campaigns POST   /admin/content/email_cam
                          admin_financial_balance GET    /admin/financial/balance(.:format)                                                                admin/financial#balance
                          admin_financial_refunds GET    /admin/financial/refunds(.:format)                                                                admin/financial#refunds_index
                                    admin_refunds POST   /admin/financial/refunds(.:format)                                                                admin/financial#refunds_create
+                                                 POST   /auth/mobile/login(.:format)                                                                      auth/mobile#login
+                                        register POST   /auth/mobile/register(.:format)                                                                   auth/mobile#register
+                                                 POST   /auth/mobile/refresh(.:format)                                                                    auth/mobile#refresh
+                                              me GET    /auth/mobile/me(.:format)                                                                         auth/mobile#me
+                                                 DELETE /auth/mobile/logout(.:format)                                                                     auth/mobile#logout
+                                                 POST   /auth/mobile/forgot_password(.:format)                                                            auth/mobile#forgot_password
+                                                 POST   /auth/mobile/reset_password(.:format)                                                             auth/mobile#reset_password
+                                                 GET    /auth/mobile/reset_password/:token(.:format)                                                      auth/mobile#validate_reset_token
+                                         devices POST   /auth/mobile/devices(.:format)                                                                    auth/mobile#register_device
+                                                 PATCH  /auth/mobile/devices(.:format)                                                                    auth/mobile#update_device
+                                                 DELETE /auth/mobile/devices(.:format)                                                                    auth/mobile#unregister_device
                                                         /*path(.:format)                                                                                  pages#not_found
                    rails_postmark_inbound_emails POST   /rails/action_mailbox/postmark/inbound_emails(.:format)                                           action_mailbox/ingresses/postmark/inbound_emails#create
                       rails_relay_inbound_emails POST   /rails/action_mailbox/relay/inbound_emails(.:format)                                              action_mailbox/ingresses/relay/inbound_emails#create
@@ -333,10 +346,3 @@ preview_recipients_admin_content_email_campaigns POST   /admin/content/email_cam
                               rails_disk_service GET    /rails/active_storage/disk/:encoded_key/*filename(.:format)                                       active_storage/disk#show
                        update_rails_disk_service PUT    /rails/active_storage/disk/:encoded_token(.:format)                                               active_storage/disk#update
                             rails_direct_uploads POST   /rails/active_storage/direct_uploads(.:format)                                                    active_storage/direct_uploads#create
-
-Routes for LetterOpenerWeb::Engine:
-      letters GET  /                                letter_opener_web/letters#index
-clear_letters POST /clear(.:format)                 letter_opener_web/letters#clear
-       letter GET  /:id(/:style)(.:format)          letter_opener_web/letters#show
-delete_letter POST /:id/delete(.:format)            letter_opener_web/letters#destroy
-              GET  /:id/attachments/:file(.:format) letter_opener_web/letters#attachment {file: /[^\/]+/}

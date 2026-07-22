@@ -5,8 +5,16 @@ numero de pagina arriba a la derecha, con el cuerpo JUSTIFICADO.
 CON portada institucional (formato del equipo: membrete, titulo, integrantes
 con C.I., tutora y ciudad-fecha; sin numero de pagina en la portada).
 Soporta encabezados, listas, **negrita**, tablas markdown y bloques ```...```.
+
+Anexos (interlineado compacto):
+  A. Requisitos funcionales y no funcionales (docs/mobile-requirements.md)
+  B. Demo de interfaz (docs/PawCare Mobile — Demo UI.pdf → imagenes, requiere pdftoppm)
+  C. Diagramas de arquitectura (docs/PawCare Mobile — Diagramas de Arquitectura.pdf → imagenes)
+  D. Rutas del API Rails (docs/rails-routes.txt como tabla)
 """
 import re
+import subprocess
+import tempfile
 from pathlib import Path
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
@@ -17,6 +25,15 @@ from docx.oxml import OxmlElement
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "docs" / "pst" / "presentacion" / "trabajo4-informe-final.md"
 OUT = ROOT / "docs" / "pst" / "presentacion" / "trabajo4-informe-final.docx"
+
+DOCS = ROOT / "docs"
+ANEXO_REQ_MD = DOCS / "mobile-requirements.md"
+ANEXO_DEMO_PDF = DOCS / "PawCare Mobile — Demo UI.pdf"
+ANEXO_DIAG_PDF = DOCS / "PawCare Mobile — Diagramas de Arquitectura.pdf"
+ANEXO_ROUTES = DOCS / "rails-routes.txt"
+
+# ancho util de pagina A4 con margenes de 2.54 cm
+CONTENT_WIDTH_CM = 15.92
 
 FONT = "Arial"
 MONO = "Consolas"
@@ -35,7 +52,7 @@ PORTADA = {
         "Alejandra Herde C.I: V-23.711.974",
         "Tutora: Yuly Delgado",
     ],
-    "fecha": "Caracas, Julio de 2026",
+    "fecha": "La Victoria, Julio de 2026",
 }
 
 
@@ -126,24 +143,29 @@ def add_portada(doc):
     doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
 
 
-def add_heading(doc, text, level):
+def add_heading(doc, text, level, compact=False):
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER if level == 1 else WD_ALIGN_PARAGRAPH.LEFT
     p.paragraph_format.space_before = Pt(12)
     p.paragraph_format.space_after = Pt(6)
+    if compact:
+        p.paragraph_format.line_spacing = 1.15
     set_font(p.add_run(text), size=14 if level == 1 else 12, bold=True)
 
 
-def add_body_paragraph(doc, text, justify=True, references=False):
+def add_body_paragraph(doc, text, justify=True, references=False, compact=False):
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY if justify else WD_ALIGN_PARAGRAPH.LEFT
     if references:
         p.paragraph_format.first_line_indent = Cm(-1.27)
         p.paragraph_format.left_indent = Cm(1.27)
+    if compact:
+        p.paragraph_format.line_spacing = 1.15
+        p.paragraph_format.space_after = Pt(4)
     add_runs_with_bold(p, text)
 
 
-def add_list_item(doc, text, ordered=False):
+def add_list_item(doc, text, ordered=False, compact=False):
     style = 'List Number' if ordered else 'List Bullet'
     try:
         p = doc.add_paragraph(style=style)
@@ -151,6 +173,9 @@ def add_list_item(doc, text, ordered=False):
         p = doc.add_paragraph()
         text = ("• " + text) if not ordered else text
     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    if compact:
+        p.paragraph_format.line_spacing = 1.15
+        p.paragraph_format.space_after = Pt(2)
     add_runs_with_bold(p, text)
 
 
@@ -193,7 +218,7 @@ def split_table_row(line):
     return [c for c in line.strip().strip('|').split('|')]
 
 
-def parse_markdown(doc, md):
+def parse_markdown(doc, md, compact=False):
     lines = md.splitlines()
     in_refs = False
     i = 0
@@ -201,9 +226,12 @@ def parse_markdown(doc, md):
     while i < n:
         line = lines[i].rstrip()
         stripped = line.strip()
-        if stripped == "":
+        if stripped == "" or re.match(r"^-{3,}$", stripped):
             i += 1
             continue
+        if stripped.startswith("> "):
+            stripped = stripped[2:].strip()
+            line = stripped
         # bloque de codigo
         if stripped.startswith("```"):
             code = []
@@ -225,19 +253,147 @@ def parse_markdown(doc, md):
             if tbl:
                 add_table(doc, tbl)
             continue
-        if line.startswith("## "):
-            add_heading(doc, line[3:].strip(), level=2)
+        if line.startswith("#### "):
+            add_body_paragraph(doc, "**" + line[5:].strip() + "**", justify=False, compact=compact)
+        elif line.startswith("### "):
+            add_heading(doc, line[4:].strip(), level=2, compact=compact)
+        elif line.startswith("## "):
+            add_heading(doc, line[3:].strip(), level=2, compact=compact)
         elif line.startswith("# "):
             title = line[2:].strip()
             in_refs = title.lower().startswith("referencias")
-            add_heading(doc, title, level=1)
+            add_heading(doc, title, level=1, compact=compact)
         elif line.startswith("- "):
-            add_list_item(doc, line[2:].strip(), ordered=False)
+            add_list_item(doc, line[2:].strip(), ordered=False, compact=compact)
         elif re.match(r"^\d+\.\s", line):
-            add_list_item(doc, re.sub(r"^\d+\.\s", "", line).strip(), ordered=True)
+            add_list_item(doc, re.sub(r"^\d+\.\s", "", line).strip(), ordered=True, compact=compact)
         else:
-            add_body_paragraph(doc, stripped, justify=not in_refs, references=in_refs)
+            add_body_paragraph(doc, stripped, justify=not in_refs, references=in_refs, compact=compact)
         i += 1
+
+
+def add_page_break(doc):
+    doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
+
+
+def add_annex_heading(doc, letra, titulo, fuente=None):
+    add_page_break(doc)
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_after = Pt(6)
+    set_font(p.add_run(f"ANEXO {letra}"), size=14, bold=True)
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_after = Pt(6)
+    set_font(p.add_run(titulo), size=12, bold=True)
+    if fuente:
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.line_spacing = 1.15
+        set_font(p.add_run(f"Fuente: {fuente}"), size=10)
+
+
+def add_annex_cover(doc):
+    add_page_break(doc)
+    for _ in range(6):
+        doc.add_paragraph()
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    set_font(p.add_run("ANEXOS"), size=16, bold=True)
+    doc.add_paragraph()
+    for linea in (
+        "Anexo A. Requisitos funcionales y no funcionales del cliente móvil",
+        "Anexo B. Demo de interfaz de usuario (Demo UI)",
+        "Anexo C. Diagramas de arquitectura",
+        "Anexo D. Rutas del API Rails consumidas por la aplicación (rails-routes.txt)",
+    ):
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.line_spacing = 1.5
+        set_font(p.add_run(linea), size=12)
+
+
+def add_pdf_pages_as_images(doc, pdf_path, dpi=130):
+    """Rasteriza cada pagina del PDF con pdftoppm y la inserta a ancho completo."""
+    with tempfile.TemporaryDirectory() as tmp:
+        prefix = Path(tmp) / "page"
+        subprocess.run(
+            ["pdftoppm", "-png", "-r", str(dpi), str(pdf_path), str(prefix)],
+            check=True,
+        )
+        pages = sorted(Path(tmp).glob("page-*.png"))
+        if not pages:
+            raise RuntimeError(f"pdftoppm no produjo paginas para {pdf_path}")
+        for png in pages:
+            doc.add_picture(str(png), width=Cm(CONTENT_WIDTH_CM))
+            pic = doc.paragraphs[-1]
+            pic.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            pic.paragraph_format.line_spacing = 1.0
+            pic.paragraph_format.space_after = Pt(6)
+
+
+VERBOS_HTTP = {"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"}
+
+
+def parse_routes_line(line):
+    tokens = line.split()
+    if len(tokens) >= 4 and tokens[1] in VERBOS_HTTP:
+        return tokens[0], tokens[1], tokens[2], " ".join(tokens[3:])
+    if len(tokens) == 3:
+        if tokens[0] in VERBOS_HTTP:
+            return "", tokens[0], tokens[1], tokens[2]
+        return tokens[0], "", tokens[1], tokens[2]
+    if len(tokens) == 2:
+        return "", "", tokens[0], tokens[1]
+    return "", "", line.strip(), ""
+
+
+def add_routes_table(doc, txt_path):
+    lines = [ln for ln in txt_path.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    table = doc.add_table(rows=1, cols=4)
+    table.style = 'Table Grid'
+    anchos = (Cm(4.1), Cm(1.5), Cm(5.7), Cm(4.6))
+    encabezado = ("Prefix", "Verb", "URI Pattern", "Controller#Action")
+    for j, texto in enumerate(encabezado):
+        c = table.rows[0].cells[j]
+        c.width = anchos[j]
+        c.paragraphs[0].paragraph_format.line_spacing = 1.0
+        set_font(c.paragraphs[0].add_run(texto), size=8, bold=True)
+    for ln in lines[1:]:  # salta la fila de encabezado del propio archivo
+        celdas = table.add_row().cells
+        for j, texto in enumerate(parse_routes_line(ln)):
+            celdas[j].width = anchos[j]
+            par = celdas[j].paragraphs[0]
+            par.paragraph_format.line_spacing = 1.0
+            set_font(par.add_run(texto), size=7, mono=True)
+
+
+def add_annexes(doc):
+    add_annex_cover(doc)
+
+    add_annex_heading(
+        doc, "A", "Requisitos funcionales y no funcionales del cliente móvil",
+        fuente="docs/mobile-requirements.md — 26 RF y 17 RNF trazados a las 157 rutas del API",
+    )
+    parse_markdown(doc, ANEXO_REQ_MD.read_text(encoding="utf-8"), compact=True)
+
+    add_annex_heading(
+        doc, "B", "Demo de interfaz de usuario (Demo UI)",
+        fuente="docs/PawCare Mobile — Demo UI.pdf — sistema visual con temas claro y oscuro",
+    )
+    add_pdf_pages_as_images(doc, ANEXO_DEMO_PDF)
+
+    add_annex_heading(
+        doc, "C", "Diagramas de arquitectura",
+        fuente="docs/PawCare Mobile — Diagramas de Arquitectura.pdf (v4.0, julio 2026)",
+    )
+    add_pdf_pages_as_images(doc, ANEXO_DIAG_PDF)
+
+    add_annex_heading(
+        doc, "D", "Rutas del API Rails consumidas por la aplicación",
+        fuente="docs/rails-routes.txt — generado con `rails routes` desde el backend",
+    )
+    add_routes_table(doc, ANEXO_ROUTES)
 
 
 def main():
@@ -250,6 +406,7 @@ def main():
     add_page_number_header(sec)
     add_portada(doc)
     parse_markdown(doc, md)
+    add_annexes(doc)
     doc.save(str(OUT))
     print(f"OK -> {OUT}")
 

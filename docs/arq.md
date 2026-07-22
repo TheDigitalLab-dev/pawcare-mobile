@@ -5,10 +5,13 @@
 | Capa | Tecnología |
 |------|-----------|
 | Framework | React Native (Expo SDK 56) |
-| Lenguaje | TypeScript |
+| Lenguaje | TypeScript (estricto) |
 | Package Manager | Yarn Berry 4.x (node-modules linker) |
 | Navegación | React Navigation |
-| Backend | Rails API (existente) |
+| Base local (local-first F1) | SQLite (expo-sqlite) — 4 migraciones, 7 tablas |
+| Notificaciones/alarmas | expo-notifications (programación local, sin conexión) |
+| Credenciales | expo-secure-store (tokens Bearer) |
+| Backend | Rails API (existente) — sesión móvil por `/auth/mobile/*` |
 
 ## Estructura de Directorios
 
@@ -27,25 +30,37 @@ pawcare-mobile/
 │   │   ├── Card.tsx
 │   │   ├── Input.tsx
 │   │   └── ...
-│   ├── screens/             # Pantallas completas
-│   │   ├── auth/            # Login, Register, ForgotPassword
-│   │   ├── home/            # Dashboard principal
-│   │   ├── pets/            # Listado y detalle de mascotas
-│   │   ├── appointments/    # Citas veterinarias
-│   │   └── profile/         # Perfil del usuario
+│   ├── screens/             # 74 pantallas completas
+│   │   ├── public/          # Dominio público (14): tienda, adopción, patrocinios…
+│   │   ├── auth/            # Autenticación (6): login, registro, selector de servidor…
+│   │   ├── owner/           # Dueño (26): mascotas, citas, historia, tratamientos…
+│   │   ├── admin/           # Administrador (26): agenda, consultas, pagos…
+│   │   └── common/          # Comunes (2): centro y preferencias de notificaciones
 │   ├── navigation/          # Configuración de navegación
 │   │   ├── RootNavigator.tsx
 │   │   ├── AuthStack.tsx
-│   │   └── MainTabs.tsx
-│   ├── services/            # Comunicación con el API
-│   │   ├── api.ts           # Cliente HTTP base
-│   │   ├── auth.ts          # Endpoints de autenticación
-│   │   ├── pets.ts          # Endpoints de mascotas
-│   │   └── appointments.ts  # Endpoints de citas
+│   │   ├── PublicStack.tsx
+│   │   ├── OwnerTabs.tsx
+│   │   └── AdminTabs.tsx
+│   ├── db/                  # Base local SQLite (local-first F1)
+│   │   ├── database.ts      # Apertura y acceso a la base
+│   │   ├── migrations.ts    # 4 migraciones · 7 tablas (sync_outbox, treatments…)
+│   │   └── sqlExecutor.ts   # Ejecutor SQL tipado
+│   ├── services/            # 10 servicios HTTP + servicios locales
+│   │   ├── api.ts           # Cliente HTTP base (Bearer + refresh)
+│   │   ├── auth.ts …        # HTTP: auth, profile, pets, appointments, payments,
+│   │   │                    #   medical, orders, public, sponsorships, admin
+│   │   └── treatments.ts …  # Locales (SQLite): treatments, notificationCenter,
+│   │                        #   notificationPrefs, changeAlerts, alarms, reminderAlarms
+│   ├── session/             # Estado de sesión y tokens
+│   ├── config/              # Selector de servidor (autoalojado)
 │   ├── hooks/               # Custom hooks
 │   │   ├── useAuth.ts
-│   │   ├── useTheme.ts
-│   │   └── ...
+│   │   ├── useNotifications.ts
+│   │   ├── useTreatments.ts
+│   │   ├── useChangeAlerts.ts
+│   │   ├── useConnectivity.ts
+│   │   └── useAsync.ts
 │   ├── types/               # Tipos TypeScript compartidos
 │   │   ├── api.ts
 │   │   ├── models.ts
@@ -63,29 +78,27 @@ pawcare-mobile/
 
 Maneja todo el flujo entre pantallas:
 
-- **RootNavigator** — decide si mostrar AuthStack o MainTabs según el estado de autenticación.
-- **AuthStack** — stack navigator para Login → Register → ForgotPassword.
-- **MainTabs** — bottom tab navigator con las secciones principales (Home, Mascotas, Citas, Perfil).
-- Cada tab puede tener su propio stack para navegación interna (ej: lista de mascotas → detalle).
+- **RootNavigator** — decide el árbol según el estado de sesión y el rol (público / dueño / staff).
+- **PublicStack** — dominio público sin autenticación (tienda, adopción, patrocinios, contacto).
+- **AuthStack** — Login → Registro → Recuperar/Cambiar contraseña → Selector de servidor.
+- **OwnerTabs** — bottom tabs del dueño (Home, Mascotas, Citas, Perfil), cada uno con su stack.
+- **AdminTabs** — bottom tabs del staff (panel con métricas, gestión clínica y administrativa).
 
 ```
 RootNavigator
-├── AuthStack (no autenticado)
-│   ├── LoginScreen
-│   ├── RegisterScreen
-│   └── ForgotPasswordScreen
-└── MainTabs (autenticado)
-    ├── HomeStack
-    │   └── HomeScreen
-    ├── PetsStack
-    │   ├── PetsListScreen
-    │   └── PetDetailScreen
-    ├── AppointmentsStack
-    │   ├── AppointmentsListScreen
-    │   └── AppointmentDetailScreen
-    └── ProfileStack
-        └── ProfileScreen
+├── PublicStack (sin auth · 14 pantallas)
+├── AuthStack (no autenticado · 6 pantallas)
+├── OwnerTabs (dueño · 26 pantallas)
+│   ├── HomeStack      → Panel · Notificaciones · Pagos · Historia · Patrocinios
+│   ├── PetsStack      → Lista · Detalle · Hub médico · Vacunas · Tratamientos…
+│   ├── ApptStack      → Lista · Detalle · Asistente de agendamiento
+│   └── ProfileStack   → Perfil · Editar · Contraseña · Preferencias
+└── AdminTabs (staff · 26 pantallas)
+    └── Panel · Mascotas · Citas · Consultas · Vacunas · Pagos · Adopciones…
 ```
+
+Las 2 pantallas comunes (centro y preferencias de notificaciones) se montan dentro
+de los navegadores autenticados.
 
 ### 2. Screens (Pantallas)
 
@@ -115,20 +128,37 @@ Los design tokens en `src/theme/tokens.ts` definen:
 - **Sombras** — adaptadas al formato nativo (iOS shadow + Android elevation).
 - **Layout** — constantes de header, bottom nav, padding, touch targets.
 
-### 5. Services (API)
+### 5. Services (API y locales)
 
-Capa de comunicación con el backend Rails:
-- Un **cliente HTTP base** configura la URL, headers, y manejo de tokens.
-- Cada módulo de servicio agrupa los endpoints relacionados.
-- Las rutas del API están documentadas en `docs/rails-routes.txt`.
+Capa de comunicación con el backend Rails (10 servicios de dominio):
+- Un **cliente HTTP base** (`api.ts`) configura la URL (con selector de servidor), headers Bearer y refresh automático ante 401 vía `/auth/mobile/refresh`.
+- Servicios HTTP: `auth`, `profile`, `pets`, `appointments`, `payments`, `medical`, `orders`, `public`, `sponsorships`, `admin`.
+- Las rutas del API están documentadas en `docs/rails-routes.txt` y `docs/mobile-routes.md`.
 
-### 6. Hooks
+Servicios **locales** sobre SQLite (operan sin conexión):
+- `treatments` — tratamientos de medicación con tomas reajustables.
+- `notificationCenter` — centro de notificaciones in-app (tabla `notifications`).
+- `notificationPrefs` — preferencias por categoría.
+- `changeAlerts` / `changeAlertConfigs` — detección de cambios al sincronizar (`entity_snapshots`).
+- `alarms` / `reminderAlarms` — programación de alarmas con expo-notifications.
+
+### 6. Base local (src/db · local-first F1)
+
+- `migrations.ts` define 4 migraciones verificadas por pruebas que crean 7 tablas:
+  `sync_outbox`, `weighings`, `treatments`, `treatment_doses`, `notifications`,
+  `entity_snapshots`, `notification_prefs` (más `schema_migrations` de control).
+- `sync_outbox` queda lista para la cola de escrituras de la fase F2 (ADR 0001).
+
+### 7. Hooks
 
 Custom hooks que encapsulan lógica reutilizable:
 - `useAuth` — estado de autenticación, login, logout, token management.
 - `useTheme` — acceso a los tokens según el color scheme del dispositivo.
+- `useNotifications` / `useTreatments` / `useChangeAlerts` — datos locales de notificaciones y tratamientos.
+- `useConnectivity` — estado de red para los indicadores offline.
+- `useAsync` — ciclo carga / error / dato para pantallas que piden datos.
 
-### 7. Types
+### 8. Types
 
 Tipos TypeScript compartidos:
 - **Models** — interfaces para entidades (User, Pet, Appointment, etc.)
@@ -142,7 +172,9 @@ Usuario interactúa
        ↓
 Screen (orquesta)
        ↓
-Service (HTTP) ←→ Rails API
+Hook (useAsync · useAuth · useNotifications…)
+       ↓
+Service HTTP (Bearer) ←→ Rails API        Service local ←→ SQLite (sin conexión)
        ↓
 Estado local / React State
        ↓

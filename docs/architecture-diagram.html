@@ -185,8 +185,10 @@
 
 <div class="scope no-break">
   <strong>Alcance:</strong> este documento cubre <strong>unicamente lo que consume la app movil</strong> &mdash;
-  las <strong>157 rutas</strong> de <code>mobile-routes.md</code> (Public 19 · Owner 54 · Admin 84), repartidas en <strong>33 controladores</strong> del backend Rails.<br>
-  <span class="excluded">Excluido (solo web):</span> metricas, turnos/shifts, modulo financiero, gestion de contenido y campanas de email, administracion de staff, movimientos de stock, categorias de servicio y configuracion. Esos endpoints existen en el backend pero la app movil no los usa.
+  las <strong>157 rutas</strong> de <code>mobile-routes.md</code> (Public 19 · Owner 54 · Admin 84), repartidas en <strong>33 controladores</strong> del backend Rails.
+  La autenticacion de la app usa las rutas dedicadas <code>/auth/mobile/*</code> (sesion Bearer, fase F4), equivalentes moviles del grupo <code>auth</code>.<br>
+  <span class="excluded">Excluido (solo web):</span> metricas, turnos/shifts, modulo financiero, gestion de contenido y campanas de email, administracion de staff, movimientos de stock, categorias de servicio y configuracion. Esos endpoints existen en el backend pero la app movil no los usa.<br>
+  <strong>Estado implementado:</strong> 74 pantallas con datos reales · 10 servicios de dominio HTTP · base local SQLite (fase F1 del ADR 0001: 4 migraciones, 7 tablas) · sistema de notificaciones y alarmas de medicacion local-first (sprint 4).
 </div>
 
 </section>
@@ -201,8 +203,8 @@
     <span class="band-title">Presentacion · React Native</span>
     <div class="band-row">
       <span class="node n-primary">Navigation<small>stacks · tabs · guards de rol</small></span>
-      <span class="node n-primary">Screens<small>~98 pantallas</small></span>
-      <span class="node n-primary">Components UI<small>Button · Card · Input · Badge</small></span>
+      <span class="node n-primary">Screens<small>74 pantallas · publico · auth · owner · admin · comunes</small></span>
+      <span class="node n-primary">Components UI<small>Button · Card · Input · Badge · ListRow</small></span>
       <span class="node n-primary">Theme / Tokens<small>claro · oscuro</small></span>
     </div>
   </div>
@@ -212,9 +214,9 @@
   <div class="layer-band band-secondary">
     <span class="band-title">Logica de cliente</span>
     <div class="band-row">
-      <span class="node n-secondary">Hooks<small>useAuth · useTheme · data</small></span>
+      <span class="node n-secondary">Hooks<small>useAuth · useNotifications · useTreatments · useChangeAlerts · useConnectivity</small></span>
       <span class="node n-secondary">Types<small>models · payloads · nav</small></span>
-      <span class="node n-secondary">Cola offline<small>borradores · reintentos</small></span>
+      <span class="node n-secondary">Session<small>tokens Bearer · SecureStore</small></span>
       <span class="node n-secondary">Utils<small>storage · format</small></span>
     </div>
   </div>
@@ -222,13 +224,25 @@
   <div class="v-arrow">&darr;</div>
 
   <div class="layer-band band-success">
-    <span class="band-title">Servicios HTTP (src/services)</span>
+    <span class="band-title">Local-first · fase F1 (src/db + servicios locales)</span>
     <div class="band-row">
-      <span class="node n-success">api.ts<small>cliente base · JWT · refresh</small></span>
+      <span class="node n-success">SQLite (expo-sqlite)<small>4 migraciones · 7 tablas</small></span>
+      <span class="node n-success">treatments · notificationCenter<small>tratamientos · centro in-app</small></span>
+      <span class="node n-success">changeAlerts · notificationPrefs<small>deteccion de cambios · preferencias</small></span>
+      <span class="node n-success">alarms · reminderAlarms<small>expo-notifications · sin conexion</small></span>
+    </div>
+  </div>
+
+  <div class="v-arrow">&darr;</div>
+
+  <div class="layer-band band-success">
+    <span class="band-title">Servicios HTTP (src/services · 10 dominios)</span>
+    <div class="band-row">
+      <span class="node n-success">api.ts<small>cliente base · Bearer · refresh</small></span>
       <span class="node n-success">auth · profile</span>
       <span class="node n-success">pets · appointments</span>
       <span class="node n-success">payments · medical</span>
-      <span class="node n-success">products · adoption · sponsorships</span>
+      <span class="node n-success">orders · public · sponsorships · admin</span>
     </div>
   </div>
 
@@ -265,7 +279,7 @@
   <div class="h-arrow">&rarr;</div>
   <div class="step"><b>2 · Hook</b>Valida, arma payload, estado local</div>
   <div class="h-arrow">&rarr;</div>
-  <div class="step"><b>3 · Service</b>Request con JWT (SecureStore)</div>
+  <div class="step"><b>3 · Service</b>Request con Bearer (SecureStore)</div>
   <div class="h-arrow">&rarr;</div>
   <div class="step"><b>4 · Rails API</b>Controller &rarr; Action &rarr; JSON</div>
   <div class="h-arrow">&rarr;</div>
@@ -273,13 +287,13 @@
 </div>
 
 <div class="flow no-break" style="margin-top:18px;">
-  <div class="step n-muted" style="max-width:220px;"><b>401 · sesion</b>Dispara POST /auth/refresh; reintenta. Si falla &rarr; login</div>
+  <div class="step n-muted" style="max-width:220px;"><b>401 · sesion</b>Dispara POST /auth/mobile/refresh; reintenta. Si falla &rarr; login</div>
   <div class="h-arrow">&nbsp;</div>
-  <div class="step n-muted" style="max-width:220px;"><b>422 · validacion</b>Marca el campo afectado en el formulario</div>
+  <div class="step n-muted" style="max-width:220px;"><b>422 · validacion</b>Marca el campo afectado, con errores del servidor traducidos</div>
   <div class="h-arrow">&nbsp;</div>
-  <div class="step n-muted" style="max-width:220px;"><b>Sin red</b>Encola escritura &rarr; sincroniza con WiFi/datos (opt-in)</div>
+  <div class="step n-muted" style="max-width:220px;"><b>Sin red</b>Notificaciones, alarmas y tratamientos siguen operando en SQLite; cola de escrituras al API = fase F2 (planificada)</div>
 </div>
-<p class="figcaption">Manejo de errores y operacion offline (RNF-REL / RNF-MOB-002).</p>
+<p class="figcaption">Manejo de errores y operacion offline (RNF-REL / RNF-MOB-002). Estado actual: F1 entregada; F2&ndash;F4 como continuidad.</p>
 
 </section>
 
@@ -291,7 +305,7 @@
 
   <div>
     <ul class="tree">
-      <li><span class="leaf l-success">PublicStack <small>· sin auth · 19</small></span>
+      <li><span class="leaf l-success">PublicStack <small>· sin auth · 14 pantallas</small></span>
         <ul>
           <li><span class="leaf l-plain">Servicios</span></li>
           <li><span class="leaf l-plain">Productos &rarr; Detalle &rarr; Checkout &rarr; Comprobante</span></li>
@@ -302,11 +316,20 @@
       </li>
     </ul>
     <ul class="tree" style="margin-top:12px;">
-      <li><span class="leaf l-primary">AuthStack <small>· no autenticado</small></span>
+      <li><span class="leaf l-primary">AuthStack <small>· no autenticado · 6 pantallas</small></span>
         <ul>
           <li><span class="leaf l-plain">Login</span></li>
           <li><span class="leaf l-plain">Registro de dueno</span></li>
-          <li><span class="leaf l-plain">Olvide / Restablecer contrasena</span></li>
+          <li><span class="leaf l-plain">Olvide / Restablecer / Cambiar contrasena</span></li>
+          <li><span class="leaf l-plain">Selector de servidor <small>(autoalojado)</small></span></li>
+        </ul>
+      </li>
+    </ul>
+    <ul class="tree" style="margin-top:12px;">
+      <li><span class="leaf l-success">Comunes <small>· autenticado · 2 pantallas</small></span>
+        <ul>
+          <li><span class="leaf l-plain">Centro de notificaciones <small>(campana con badge)</small></span></li>
+          <li><span class="leaf l-plain">Preferencias de notificaciones <small>por categoria</small></span></li>
         </ul>
       </li>
     </ul>
@@ -314,24 +337,26 @@
 
   <div>
     <ul class="tree">
-      <li><span class="leaf l-primary">MainTabs (Owner) <small>· autenticado · 54</small></span>
+      <li><span class="leaf l-primary">OwnerTabs <small>· autenticado · 26 pantallas</small></span>
         <ul>
-          <li><span class="leaf l-plain">HomeStack &rarr; Dashboard (resumen)</span></li>
+          <li><span class="leaf l-plain">HomeStack &rarr; Panel · Pagos · Historia · Patrocinios</span></li>
           <li><span class="leaf l-plain">PetsStack</span>
             <ul>
               <li><span class="leaf l-plain">Lista &rarr; Detalle &rarr; Crear / Editar</span></li>
-              <li><span class="leaf l-plain">Historial · Perfil · Vacunas · Desparasit.</span></li>
+              <li><span class="leaf l-plain">Hub medico · Perfil · Vacunas · Desparasit. · Consultas</span></li>
               <li><span class="leaf l-plain">Reportes (PDF) · Examenes lab</span></li>
+              <li><span class="leaf l-plain">Tratamientos &rarr; Iniciar <small>(alarmas de medicacion)</small></span></li>
             </ul>
           </li>
-          <li><span class="leaf l-plain">AppointmentsStack &rarr; Lista · Agendar</span></li>
-          <li><span class="leaf l-plain">ProfileStack &rarr; Perfil · Pagos · Patrocinios · Ajustes</span></li>
+          <li><span class="leaf l-plain">AppointmentsStack &rarr; Lista · Detalle · Asistente de agendamiento</span></li>
+          <li><span class="leaf l-plain">ProfileStack &rarr; Perfil · Editar · Contrasena · Preferencias</span></li>
         </ul>
       </li>
     </ul>
     <ul class="tree" style="margin-top:12px;">
-      <li><span class="leaf l-secondary">AdminStack (Staff) <small>· rol staff · 84</small></span>
+      <li><span class="leaf l-secondary">AdminTabs (Staff) <small>· rol staff · 26 pantallas</small></span>
         <ul>
+          <li><span class="leaf l-plain">Panel con metricas</span></li>
           <li><span class="leaf l-plain">Mascotas · Mascotas de duenos · Perfil medico</span></li>
           <li><span class="leaf l-plain">Citas (agenda · disponibilidad · slots)</span></li>
           <li><span class="leaf l-plain">Consultas &rarr; Recetas · Examenes lab</span></li>
@@ -348,7 +373,7 @@
 <!-- ============ 4. DOMAINS / ROUTES ============ -->
 <section class="sheet">
 <h2>4. Diagrama de dominios y grupos de rutas</h2>
-<p class="legend">Las 157 rutas moviles agrupadas por dominio y controlador (numero de rutas entre parentesis).</p>
+<p class="legend">Las 157 rutas moviles agrupadas por dominio y controlador (numero de rutas entre parentesis). El grupo <code>auth</code> se consume a traves de sus equivalentes dedicados <code>/auth/mobile/*</code> (Bearer, fase F4 de sesion movil).</p>
 <div class="cols-3 no-break">
 
   <ul class="tree">
@@ -521,19 +546,19 @@
 <!-- ============ 6. AUTH SEQUENCE ============ -->
 <section class="sheet">
 <h2>6. Diagrama de secuencia &mdash; sesion y seguridad</h2>
-<p class="legend">Manejo de tokens (RNF-SEC-001) y control de acceso por rol (RNF-SEC-002).</p>
+<p class="legend">Manejo de tokens Bearer por <code>/auth/mobile/*</code> (RNF-SEC-001) y control de acceso por rol (RNF-SEC-002). Sesion movil separada del flujo web por cookies.</p>
 <div class="flow no-break">
-  <div class="step n-primary"><b>App start</b>Lee token de SecureStore</div>
+  <div class="step n-primary"><b>App start</b>Lee tokens de SecureStore</div>
   <div class="h-arrow">&rarr;</div>
-  <div class="step"><b>GET current_user</b>Restaura sesion + rol</div>
+  <div class="step"><b>GET /auth/mobile/me</b>Restaura sesion + rol</div>
   <div class="h-arrow">&rarr;</div>
   <div class="step n-secondary"><b>Router por rol</b>public · owner · admin</div>
   <div class="h-arrow">&rarr;</div>
-  <div class="step"><b>Refresh</b>POST /auth/refresh ante 401</div>
+  <div class="step"><b>Refresh</b>POST /auth/mobile/refresh ante 401</div>
   <div class="h-arrow">&rarr;</div>
-  <div class="step n-danger"><b>Logout</b>DELETE /auth/logout + purga local</div>
+  <div class="step n-danger"><b>Logout</b>DELETE /auth/mobile/logout + purga local (SecureStore + SQLite)</div>
 </div>
-<p class="figcaption">Un dueno nunca accede a pantallas ni endpoints /admin/*; intentos no autorizados &rarr; 403 / redireccion a login.</p>
+<p class="figcaption">Un dueno nunca accede a pantallas ni endpoints /admin/*; intentos no autorizados &rarr; 403 / redireccion a login. Al cerrar sesion se purgan tokens y datos locales del usuario.</p>
 
 </section>
 
@@ -578,15 +603,15 @@
 
     <!-- Local-first store -->
     <rect class="d-local" x="44" y="194" width="252" height="96" rx="10"/>
-    <text class="t-title c-green" x="60" y="220">Local-first</text>
-    <text class="t-sub" x="60" y="237">Cache local de datos sincronizados</text>
-    <text class="t-sub" x="60" y="252">Cola offline de escrituras + borradores</text>
+    <text class="t-title c-green" x="60" y="220">Local-first · F1 (implementada)</text>
+    <text class="t-sub" x="60" y="237">SQLite (expo-sqlite) · 4 migraciones · 7 tablas</text>
+    <text class="t-sub" x="60" y="252">Notificaciones, alarmas y tratamientos offline</text>
     <text class="t-sub" x="60" y="267">SecureStore (tokens cifrados)</text>
-    <text class="t-sub" x="60" y="282">Lectura/edicion sin conexion</text>
+    <text class="t-sub" x="60" y="282">sync_outbox creada para la fase F2</text>
 
     <!-- Sync engine -->
     <rect class="d-app" x="44" y="306" width="252" height="62" rx="10"/>
-    <text class="t-title c-blue" x="60" y="330">Motor de sincronizacion</text>
+    <text class="t-title c-blue" x="60" y="330">Motor de sincronizacion (F2&ndash;F4 · plan)</text>
     <text class="t-sub" x="60" y="347">Opt-in del usuario · WiFi / datos</text>
     <text class="t-sub" x="60" y="362">Reconcilia cola &harr; API al recuperar red</text>
 
@@ -599,7 +624,7 @@
     <path class="d-link2" d="M320,250 L470,250"/>
     <rect x="345" y="225" width="100" height="24" rx="12" fill="#f1f5f9" stroke="#94a3b8"/>
     <text class="t-lbl" x="395" y="241" text-anchor="middle">HTTPS · JSON</text>
-    <text class="t-sub" x="395" y="270" text-anchor="middle">REST · JWT (httpOnly)</text>
+    <text class="t-sub" x="395" y="270" text-anchor="middle">REST · Bearer JWT (movil)</text>
 
     <!-- ===== VPS / Docker host ===== -->
     <rect class="d-host" x="470" y="40" width="330" height="380" rx="14"/>
@@ -611,7 +636,7 @@
     <rect class="d-cont" x="496" y="116" width="278" height="108" rx="10"/>
     <text class="t-title c-amber" x="512" y="130">Contenedor: API Rails 8</text>
     <text class="t-sub" x="512" y="148">Controllers · Actions (Result)</text>
-    <text class="t-sub" x="512" y="163">Autenticacion JWT · roles</text>
+    <text class="t-sub" x="512" y="163">Auth Bearer /auth/mobile (app) + cookies (web)</text>
     <text class="t-sub" x="512" y="178">ActiveJob (colas async)</text>
     <text class="t-sub" x="512" y="193">ActiveStorage (fotos · PDF · lab)</text>
     <text class="t-sub" x="512" y="208">Expone las 157 rutas moviles</text>
@@ -634,8 +659,8 @@
     <polyline class="d-link" points="496,200 482,200 482,377 496,377"/>
   </svg>
   <p class="figcaption">
-    El movil es <strong>local-first</strong>: funciona con su copia local y encola cambios; sincroniza con el backend por HTTPS solo con consentimiento del usuario (RNF-MOB-002 / RNF-REL-003).
-    El backend Rails y MySQL se despliegan como contenedores Docker independientes sobre un <strong>VPS</strong> (servidor virtual remoto).
+    El movil es <strong>local-first</strong>: la fase F1 (base SQLite verificada) ya opera notificaciones, alarmas y tratamientos sin conexion; la cola de escrituras y el motor de sincronizacion son las fases F2&ndash;F4 del ADR 0001 (continuidad).
+    El backend Rails y MySQL se despliegan como contenedores Docker independientes sobre un <strong>VPS</strong>; la app permite ademas apuntar a un <strong>servidor autoalojado</strong> mediante el selector de servidor.
   </p>
 </div>
 </section>
@@ -759,8 +784,8 @@
 
 <!-- ============ 9. SYNC FLOWCHART ============ -->
 <section class="sheet">
-<h2>9. Diagrama de sincronizacion (local-first)</h2>
-<p class="legend">Flujo de la cola offline y el motor de sincronizacion (RNF-MOB-002, RNF-REL-002/003). Rombos = decision.</p>
+<h2>9. Diagrama de sincronizacion (local-first · diseno F2&ndash;F4)</h2>
+<p class="legend">Flujo de la cola offline y el motor de sincronizacion (RNF-MOB-002, RNF-REL-002/003). Rombos = decision. <strong>Estado:</strong> diseno del ADR 0001; la fase F1 (base SQLite + tabla <code>sync_outbox</code>) esta implementada y las fases F2&ndash;F4 quedan como continuidad del proyecto.</p>
 <div class="hub-wrap no-break">
   <svg viewBox="0 0 800 660" role="img" aria-label="Flujo de sincronizacion local-first">
     <defs><marker id="arS10" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker></defs>
@@ -834,9 +859,50 @@
 
 </section>
 
-<!-- ============ 10. UI COMPONENTS ============ -->
+<!-- ============ 10. NOTIFICATIONS (LOCAL-FIRST) ============ -->
 <section class="sheet">
-<h2>10. Diagrama de componentes UI</h2>
+<h2>10. Diagrama del sistema de notificaciones (local-first · sprint 4)</h2>
+<p class="legend">Todo el sistema opera <strong>sin conexion</strong> sobre la base SQLite local (fase F1). Las fuentes generan notificaciones que el centro in-app muestra y las preferencias por categoria filtran.</p>
+
+<div class="layers no-break">
+  <div class="layer-band band-primary">
+    <span class="band-title">Fuentes de notificacion</span>
+    <div class="band-row">
+      <span class="node n-primary">Tratamientos<small>treatments · treatment_doses<br>horarios anclados al inicio · tomas reajustables</small></span>
+      <span class="node n-primary">Recordatorios<small>citas · vacunas · desparasitacion · pagos · agenda clinica</small></span>
+      <span class="node n-primary">Deteccion de cambios<small>entity_snapshots &rarr; changeAlerts al sincronizar</small></span>
+    </div>
+  </div>
+
+  <div class="v-arrow">&darr;</div>
+
+  <div class="layer-band band-success">
+    <span class="band-title">Servicios locales (SQLite · sin red)</span>
+    <div class="band-row">
+      <span class="node n-success">notificationCenter<small>tabla notifications · leido/no leido</small></span>
+      <span class="node n-success">alarms · reminderAlarms<small>expo-notifications · programacion local</small></span>
+      <span class="node n-success">notificationPrefs<small>tabla notification_prefs · filtro por categoria</small></span>
+    </div>
+  </div>
+
+  <div class="v-arrow">&darr;</div>
+
+  <div class="layer-band band-secondary">
+    <span class="band-title">Presentacion</span>
+    <div class="band-row">
+      <span class="node n-secondary">Campana con badge<small>contador de no leidas</small></span>
+      <span class="node n-secondary">Centro de notificaciones<small>pantalla comun · in-app</small></span>
+      <span class="node n-secondary">Alarma del sistema<small>suena aunque no haya senal</small></span>
+      <span class="node n-secondary">Preferencias<small>pantalla por categoria</small></span>
+    </div>
+  </div>
+</div>
+<p class="figcaption">Las alarmas de medicacion son la prueba tangible del enfoque local-first: el tratamiento de la mascota no depende de la red. Las push remotas (app cerrada) quedan planificadas en el plan 033 del backend.</p>
+</section>
+
+<!-- ============ 11. UI COMPONENTS ============ -->
+<section class="sheet">
+<h2>11. Diagrama de componentes UI</h2>
 <p class="legend">Jerarquia de composicion (de <code>mobile-ui-components.md</code>). Los primitivos consumen los tokens del design system.</p>
 <div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:22px;" class="no-break">
 
@@ -886,8 +952,8 @@
 </div>
 
 <div style="margin-top:42px; padding-top:14px; border-top:1px solid var(--line-soft); font-size:11px; color:var(--muted); display:flex; justify-content:space-between;">
-  <span>PawCare Mobile &mdash; Diagramas de arquitectura (alcance movil) · v3.0</span>
-  <span>Fuentes: mobile-routes.md · mobile-requirements.md · mobile-ui-components.md · arq.md · architecture.json</span>
+  <span>PawCare Mobile &mdash; Diagramas de arquitectura (alcance movil) · v4.0 · julio 2026</span>
+  <span>Fuentes: mobile-routes.md · mobile-requirements.md · mobile-ui-components.md · rails-routes.txt · src/ (codigo real)</span>
 </div>
 </section>
 
