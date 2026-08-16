@@ -1,0 +1,117 @@
+# Release Android — compila el APK de producción con EAS Build y lo adjunta a
+# un GitHub Release cuando se empuja un tag `v*`. También se puede lanzar a
+# mano (workflow_dispatch) para probar el pipeline con el perfil preview.
+#
+# Prerrequisitos (una sola vez):
+#   1. `npx eas-cli init` en el repo para vincular el proyecto de EAS
+#      (escribe `extra.eas.projectId` en app.json) — aún no está hecho.
+#   2. Crear un access token en https://expo.dev/accounts/[cuenta]/settings/access-tokens
+#      y guardarlo como secret `EXPO_TOKEN` del repositorio.
+#
+# Los tests de integración NO corren aquí: requieren el backend de ../pawcare
+# vivo y sembrado; son compuerta local pre-commit (ver AGENTS.md). CI valida
+# typecheck + lint + formato antes de compilar.
+#
+# Solo Android por ahora; iOS se añadirá cuando haya cuenta de Apple Developer.
+
+name: Release Android
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Perfil de EAS Build
+        type: choice
+        options: [production, preview]
+        default: preview
+
+concurrency:
+  group: release-android-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  quality:
+    name: Typecheck, lint y formato
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Habilitar corepack (Yarn 4)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - name: Instalar dependencias
+        run: yarn install --immutable
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Formato
+        run: yarn format:check
+
+  build:
+    name: EAS Build (Android)
+    needs: quality
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # para crear el GitHub Release con el APK
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Habilitar corepack (Yarn 4)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - name: Instalar dependencias
+        run: yarn install --immutable
+
+      - name: Configurar EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Compilar APK con EAS
+        # En tags siempre production; en dispatch manda el input (default preview).
+        run: |
+          PROFILE="${{ github.event.inputs.profile || 'production' }}"
+          echo "Perfil: $PROFILE"
+          eas build --platform android --profile "$PROFILE" \
+            --non-interactive --json > build.json
+          cat build.json
+
+      - name: Descargar APK
+        run: |
+          URL=$(jq -r '.[0].artifacts.buildUrl' build.json)
+          test "$URL" != "null" || { echo "EAS no devolvió artifact"; exit 1; }
+          curl -fL "$URL" -o pawcare-mobile.apk
+          ls -lh pawcare-mobile.apk
+
+      - name: Subir APK como artifact del workflow
+        uses: actions/upload-artifact@v4
+        with:
+          name: pawcare-mobile-android
+          path: pawcare-mobile.apk
+          if-no-files-found: error
+
+      - name: Publicar GitHub Release con el APK
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" pawcare-mobile.apk \
+            --title "Pawcare móvil ${GITHUB_REF_NAME}" \
+            --generate-notes
