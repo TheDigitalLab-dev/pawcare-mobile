@@ -126,7 +126,7 @@ import {
 /* ============================================================
    Tokens (extracto de src/theme/tokens.ts)
    ============================================================ */
-export const tokens = {
+const tokens = {
   colors: {
     background: '#FAF8F3',
     foreground: '#1F2A37',

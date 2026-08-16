@@ -37,8 +37,12 @@ function AdoptionForm({ pets, owners }: { pets: AdoptionPet[]; owners: AdminOwne
   const navigation = useNavigation<Nav>();
   const back = navigation.canGoBack() ? navigation.goBack : undefined;
 
-  const [petId, setPetId] = useState<number | undefined>(pets[0]?.id);
-  const [adopterId, setAdopterId] = useState<number | undefined>(owners[0]?.id);
+  // Solo se guarda la elección explícita; el default (primer elemento) se
+  // deriva en render para no copiar props a estado.
+  const [petChoice, setPetChoice] = useState<number>();
+  const [adopterChoice, setAdopterChoice] = useState<number>();
+  const petId = petChoice ?? pets[0]?.id;
+  const adopterId = adopterChoice ?? owners[0]?.id;
   const [date, setDate] = useState(() => todayDate());
   const [notes, setNotes] = useState('');
 
@@ -86,7 +90,7 @@ function AdoptionForm({ pets, owners }: { pets: AdoptionPet[]; owners: AdminOwne
         <FilterChips
           options={pets.map((p) => ({ id: String(p.id), label: p.name }))}
           selectedId={petId !== undefined ? String(petId) : ''}
-          onSelect={(id) => setPetId(Number(id))}
+          onSelect={(id) => setPetChoice(Number(id))}
         />
       </View>
 
@@ -94,7 +98,7 @@ function AdoptionForm({ pets, owners }: { pets: AdoptionPet[]; owners: AdminOwne
       <FilterChips
         options={owners.map((o) => ({ id: String(o.id), label: ownerLabel(o) }))}
         selectedId={adopterId !== undefined ? String(adopterId) : ''}
-        onSelect={(id) => setAdopterId(Number(id))}
+        onSelect={(id) => setAdopterChoice(Number(id))}
       />
 
       <TextField
