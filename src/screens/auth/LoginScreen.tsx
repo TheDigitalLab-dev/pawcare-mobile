@@ -10,6 +10,8 @@ export interface LoginScreenProps {
   onSubmit?: (credentials: { login: string; password: string }) => void;
   onForgotPassword?: () => void;
   onCreateAccount?: () => void;
+  /** Acceso a la configuración del servidor (antes vivía en Welcome). */
+  onOpenServerSettings?: () => void;
   submitting?: boolean;
   /** Error general (p. ej. credenciales inválidas). */
   errorMessage?: string;
@@ -24,6 +26,7 @@ export function LoginScreen({
   onSubmit,
   onForgotPassword,
   onCreateAccount,
+  onOpenServerSettings,
   submitting,
   errorMessage,
 }: LoginScreenProps) {
@@ -88,6 +91,13 @@ export function LoginScreen({
         <Text style={{ color: colors.mutedForeground }}>¿No tienes cuenta?</Text>
         <Button label="Crear cuenta" variant="ghost" onPress={onCreateAccount} />
       </View>
+
+      <Button
+        label="Configurar servidor"
+        variant="ghost"
+        fullWidth
+        onPress={onOpenServerSettings}
+      />
     </MobileShell>
   );
 }

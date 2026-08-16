@@ -21,9 +21,13 @@ import type { PublicStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<PublicStackParamList>();
 
+// Los endpoints públicos están en vías de retirarse del backend: la app sin
+// sesión arranca directo en Auth (Login). Las pantallas públicas siguen
+// registradas solo para no romper los flujos internos que aún navegan entre
+// ellas mientras dure la transición.
 export function PublicStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator initialRouteName="Auth" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="PublicLanding" component={PublicLandingScreen} />
       <Stack.Screen name="Auth" component={AuthStack} />
       <Stack.Screen name="Services" component={ServicesScreen} />

@@ -84,6 +84,7 @@ function LoginRoute() {
       errorMessage={errorMessage}
       onForgotPassword={() => navigation.navigate('ForgotPassword')}
       onCreateAccount={() => navigation.navigate('Register')}
+      onOpenServerSettings={() => navigation.navigate('ServerSettings')}
     />
   );
 }
@@ -197,7 +198,7 @@ function ResetPasswordRoute() {
 
 export function AuthStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Welcome" component={WelcomeRoute} />
       <Stack.Screen name="Login" component={LoginRoute} />
       <Stack.Screen name="Register" component={RegisterRoute} />
